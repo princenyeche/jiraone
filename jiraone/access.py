@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Contains all Classes used to Authenticate Jira, endpoints and PrettyPrint.
+
 - Instantiate the endpoint to Jira API
 - alias to Authentication
 - alias to Endpoints
@@ -49,7 +50,7 @@ class Credentials(object):
 
 
 class Echo(PrettyPrinter):
-    """A Class used to inherit from PrettyPrinter"""
+    """A Class used to inherit from PrettyPrinter."""
 
     def __init__(self, *args, **kwargs):
         super(Echo, self).__init__(*args, **kwargs)
@@ -68,7 +69,7 @@ class InitProcess(Credentials):
     dunder method."""
 
     def __init__(self, user=None, password=None, url=None):
-        """A Call to the Credential Class"""
+        """A Call to the Credential Class."""
         super(InitProcess, self).__init__(user=user, password=password, url=url)
 
     def __call__(self, *args, **kwargs):
