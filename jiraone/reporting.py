@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Example methods of Generating reports
+"""Example methods of Generating reports
 Provided herein are Report Generator Classes and Methods
 Easily generate report for the various endpoints
 """
 from typing import Any, Optional, List, Iterable
 from collections import deque
-from jiraone import LOGIN, endpoint, add_log, WORK_PATH, echo
+from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
 import csv
 import sys
@@ -17,14 +16,14 @@ CsvData = List[List[str]]
 
 
 class Projects:
-    """ Get report on a Project based on user or user's attributes or groups """
+    """Get report on a Project based on user or user's attributes or groups"""
 
     @staticmethod
     def projects_accessible_by_users(*args: Any, project_folder: str = "Project",
                                      project_file_name: str = "project_file.csv",
                                      user_extraction_file: str = "project_extract.csv",
                                      permission: str = "BROWSE", **kwargs):
-        """ Send an argument as String equal to a value, example: status=live. Multiple arguments separate by comma
+        """Send an argument as String equal to a value, example: status=live. Multiple arguments separate by comma
         as the first argument in the function, all other arguments should be keyword args that follows.
 
         This API helps to generate full user accessibility to Projects on Jira. It checks the users access
@@ -180,7 +179,7 @@ class Users:
 
     def get_all_users(self, pull: str = "both", user_type: str = "atlassian",
                       file: str = None, folder: str = Any, **kwargs) -> Any:
-        """ Generates a list of users """
+        """Generates a list of users"""
         count_start_at = 0
         validate = LOGIN.get(endpoint.myself())
 
@@ -203,13 +202,13 @@ class Users:
             self.report(category=folder, filename=file)
 
     def report(self, category: str = Any, filename: str = "users_report.csv") -> Optional:
-        """ creates a user report file in CSV format """
+        """creates a user report file in CSV format"""
         read = [d for d in self.user_list]
         csv_writer(folder=category, file_name=filename, data=read, mark="many")
         add_log(f"Generating report file on {filename}", "info")
 
     def user_activity(self, status: str = Any, account_type: str = Any, results: List = Any) -> Any:
-        """ determines users activity """
+        """determines users activity"""
 
         # get both active and inactive users
         def stack(c: Any, f: Any, s: Any) -> Any:
@@ -230,7 +229,7 @@ class Users:
 
     def get_all_users_group(self, group_folder: str = "Groups", group_file_name: str = "group_file.csv",
                             user_extraction_file: str = "group_extraction.csv", **kwargs):
-        """ Get all users and the groups associated to them on the Instance """
+        """Get all users and the groups associated to them on the Instance"""
         headers = ["Name", "AccountId", "Groups", "User status"]
         csv_writer(folder=group_folder, file_name=group_file_name, data=headers, **kwargs)
         file_name = user_extraction_file
@@ -248,17 +247,17 @@ class Users:
 
 
 def call_users() -> Users:
-    """ should return an instance of Users class"""
+    """should return an instance of Users class"""
     return Users()
 
 
 def call_projects() -> Projects:
-    """ should return an instance of Projects class"""
+    """should return an instance of Projects class"""
     return Projects()
 
 
 def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
-    """ Builds a dir path and file path in a directory """
+    """Builds a dir path and file path in a directory"""
     base_dir = os.path.join(WORK_PATH, path)
     if not os.path.exists(base_dir):
         os.mkdir(base_dir)
@@ -269,7 +268,7 @@ def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
 
 def csv_writer(folder: str = Any, file_name: str = Any, data: Iterable = object,
                mark: str = "single", **kwargs) -> Any:
-    """ Reads and writes to a file, single or multiple rows """
+    """Reads and writes to a file, single or multiple rows"""
     file = path_builder(path=folder, file_name=file_name)
     with open(file, "a+") as f:
         write = csv.writer(f, delimiter=",")
@@ -281,7 +280,7 @@ def csv_writer(folder: str = Any, file_name: str = Any, data: Iterable = object,
 
 
 def csv_reader(folder: str = Any, file_name: str = Any, **kwargs) -> CsvData:
-    """ Reads a CSV file and returns a list comprehension of the data """
+    """Reads a CSV file and returns a list comprehension of the data"""
     file = path_builder(path=folder, file_name=file_name)
     with open(file, "r") as f:
         read = csv.reader(f, delimiter=",")

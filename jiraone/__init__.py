@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-JiraOne is an Atlassian REST API Interface used to Generate report on certain
+"""JiraOne is an Atlassian REST API Interface used to Generate report on certain
 aspect of Jira. You can dynamically generate a report of
+
 1. Total no of Fields used on per project or the instance
 2. Total Number of Users (active, inactive as well as user type)
 3. Report of Users able to Browse a certain Project, No of Issues of those Project
@@ -23,13 +23,13 @@ from jiraone.access import LOGIN, endpoint, echo
 from jiraone.jira_logs import add_log, WORK_PATH
 from jiraone.reporting import PROJECT, USER, csv_writer, csv_reader, path_builder
 
-__all__ = [LOGIN,
-           endpoint,
-           echo,
-           add_log,
-           WORK_PATH,
-           PROJECT,
-           USER,
-           csv_writer,
-           csv_reader,
-           path_builder]
+__all__ = ["LOGIN",
+           "endpoint",
+           "echo",
+           "add_log",
+           "WORK_PATH",
+           "PROJECT",
+           "USER",
+           "csv_writer",
+           "csv_reader",
+           "path_builder"]

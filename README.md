@@ -1,3 +1,5 @@
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/86f1594e0ac3406aa9609c4cd7c70642)](https://www.codacy.com/gh/princenyeche/atlassian-cloud-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/atlassian-cloud-api&amp;utm_campaign=Badge_Grade)
+
 # Jira one
 A REST API Implementation to Jira Cloud APIs for creating reports
 
@@ -5,10 +7,6 @@ A REST API Implementation to Jira Cloud APIs for creating reports
 Install using `pip`. you have to be on python >= 3.6.x in order to utilize this script.
 ```bash
 pip install jiraone
-```
-OR use the requirements.txt file to install
-```bash
-pip install -r requirements.txt
 ```
 
 ## Using the API
@@ -80,7 +78,7 @@ if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     PROJECT.dashboards_shared_with()
 ```
-* generate a report of all user in the instance and which group do they belong ot
+* generate a report of all user in the instance and which group do they belong to
 ```python
 from jiraone import LOGIN, USER
 
