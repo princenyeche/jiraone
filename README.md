@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     PROJECT.dashboards_shared_with()
 ```
-* generate a report of all user in the instance and which group do they belong ot
+* generate a report of all user in the instance and which group do they belong to
 ```python
 from jiraone import LOGIN, USER
 
