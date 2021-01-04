@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """JiraOne is an Atlassian REST API Interface used to Generate report on certain
 aspect of Jira. You can dynamically generate a report of
+
 1. Total no of Fields used on per project or the instance
 2. Total Number of Users (active, inactive as well as user type)
 3. Report of Users able to Browse a certain Project, No of Issues of those Project
