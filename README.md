@@ -1,3 +1,5 @@
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/86f1594e0ac3406aa9609c4cd7c70642)](https://www.codacy.com/gh/princenyeche/atlassian-cloud-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/atlassian-cloud-api&amp;utm_campaign=Badge_Grade)
+
 # Jira one
 A REST API Implementation to Jira Cloud APIs for creating reports
 
