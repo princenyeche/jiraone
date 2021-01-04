@@ -6,10 +6,6 @@ Install using `pip`. you have to be on python >= 3.6.x in order to utilize this 
 ```bash
 pip install jiraone
 ```
-OR use the requirements.txt file to install
-```bash
-pip install -r requirements.txt
-```
 
 ## Using the API
 Jiraone basically allows you to create a report based method using Atlassian REST API on your cloud infrastructure.
