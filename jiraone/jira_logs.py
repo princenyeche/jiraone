@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""A logging handler file, which helps in providing
-logs of the script execution
-"""
+"""A logging handler file, which helps in providing logs of the script execution."""
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from platform import system
@@ -34,7 +32,7 @@ if system() == "Windows":
 
 
 def add_log(message, level):
-    """Writes a log to a log file with activity done"""
+    """Writes a log to a log file with activity done."""
     if level == "debug".lower():
         logger.setLevel(logging.DEBUG)
         logger.debug(message)
