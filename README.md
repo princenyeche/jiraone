@@ -50,10 +50,12 @@ desired report.
   * `file_name` -> string: the name of the file being created
   * `data` -> iterable: an iterable data of any sort.
   * `mark` -> string: helps evaluates how data is created, available options ["single", "many"]
+  * `mode` -> string: file mode, available options ["a", "w", "a+", "w+", "wb"]
 * `csv_reader`  -&gt; This function helps in reading a csv file and returning a list comprehension of the data. Accepted
 parameter include
   * `folder` -> string: a path to the name of the folder
   * `file_name` -> string: the name of the file being created
+  * `mode` -> string: file mode, available options ["r", "rb"]
 * `path_builder` -&gt; This function helps to build a directory path and file path then returns the file path in the directory.
 parameters include
   * `path` -> string: a path to declare absolute to where the script is executed.
@@ -144,6 +146,20 @@ LOGIN(user=user, password=password, url=link)
 if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     USER.get_all_users_group(pull="active", user_type="atlassian")
+```
+* generate a report get all project list and users within a project as well as their corresponding project role in the project.
+```python
+from jiraone import LOGIN, PROJECT
+
+user = "email"
+password = "token"
+link = "https://yourinstance.atlassian.net"
+LOGIN(user=user, password=password, url=link)
+
+
+if __name__ == '__main__':
+    # the output of the file would be absolute to the directory where this python file is being executed from
+    PROJECT.get_all_roles_for_projects(pull="active", user_type="atlassian")
 ```
 
 ## Support
