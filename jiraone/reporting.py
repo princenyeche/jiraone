@@ -17,6 +17,7 @@ CsvData = List[List[str]]
 
 
 class Projects:
+
     """Get report on a Project based on user or user's attributes or groups."""
 
     @staticmethod
@@ -24,7 +25,8 @@ class Projects:
                                      project_file_name: str = "project_file.csv",
                                      user_extraction_file: str = "project_extract.csv",
                                      permission: str = "BROWSE", **kwargs):
-        """Send an argument as String equal to a value, example: status=live.
+        """
+        Send an argument as String equal to a value, example: status=live.
 
         Multiple arguments separate by comma as the first argument in the function, all other arguments should
         be keyword args that follows. This API helps to generate full user accessibility to Projects on Jira.
@@ -97,7 +99,8 @@ class Projects:
     def dashboards_shared_with(dashboard_folder: str = "Dashboard",
                                dashboard_file_name: str = "dashboard_file.csv",
                                **kwargs):
-        """Retrieve the Dashboard Id/Name/owner and who it is shared with.
+        """
+        Retrieve the Dashboard Id/Name/owner and who it is shared with.
 
         The only requirement is that the user querying this API should have access to all
         the Dashboard available else it will only return dashboard where the user's view access is allowed.
@@ -163,7 +166,9 @@ class Projects:
 
 
 class Users:
-    """Below methods helps to Generate the No of Users on Jira Cloud
+
+    """
+    Below methods helps to Generate the No of Users on Jira Cloud
 
     You can customize it to determine which user you're looking for.
     >> The below method here displays active or inactive users, so you'll be getting all users
@@ -204,13 +209,13 @@ class Users:
             self.report(category=folder, filename=file)
 
     def report(self, category: str = Any, filename: str = "users_report.csv") -> Optional:
-        """creates a user report file in CSV format."""
+        """Creates a user report file in CSV format."""
         read = [d for d in self.user_list]
         csv_writer(folder=category, file_name=filename, data=read, mark="many")
         add_log(f"Generating report file on {filename}", "info")
 
     def user_activity(self, status: str = Any, account_type: str = Any, results: List = Any) -> Any:
-        """determines users activity."""
+        """Determines users activity."""
 
         # get both active and inactive users
         def stack(c: Any, f: Any, s: Any) -> Any:
@@ -249,12 +254,12 @@ class Users:
 
 
 def call_users() -> Users:
-    """should return an instance of Users class."""
+    """Should return an instance of Users class."""
     return Users()
 
 
 def call_projects() -> Projects:
-    """should return an instance of Projects class."""
+    """Should return an instance of Projects class."""
     return Projects()
 
 

@@ -14,6 +14,7 @@ import requests
 
 
 class Credentials(object):
+
     """class.Credentials -> used for authentication of the user to the Instance."""
     auth_request = None
     headers = None
@@ -49,10 +50,11 @@ class Credentials(object):
 
 
 class Echo(PrettyPrinter):
+
     """A Class used to inherit from PrettyPrinter."""
 
     def __init__(self, *args, **kwargs):
-        """inherit from the parent."""
+        """Inherit from the parent."""
         super(Echo, self).__init__(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
@@ -81,6 +83,7 @@ LOGIN = InitProcess()
 
 
 class EndPoints:
+
     """A Structural way to dynamically load urls that is fed to other functions."""
 
     @classmethod
@@ -304,14 +307,16 @@ class EndPoints:
 
     @classmethod
     def get_all_application_role(cls):
-        """Returns all application roles.
+        """
+        Returns all application roles.
 
         In Jira, application roles are managed using the Application access configuration page."""
         return "{}/rest/api/3/applicationrole".format(LOGIN.base_url)
 
     @classmethod
     def search_all_workflows(cls, query: int = 0):
-        """Returns a paginated list of published classic workflows. When workflow names are specified.
+        """
+        Returns a paginated list of published classic workflows. When workflow names are specified.
 
         details of those workflows are returned. Otherwise, all published classic workflows are returned.
         This operation does not return next-gen workflows.
