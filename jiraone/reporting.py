@@ -19,7 +19,6 @@ CsvData = List[List[str]]
 class Projects:
 
     """Get report on a Project based on user or user's attributes or groups."""
-
     @staticmethod
     def projects_accessible_by_users(*args: Any, project_folder: str = "Project",
                                      project_file_name: str = "project_file.csv",
@@ -216,7 +215,6 @@ class Users:
 
     def user_activity(self, status: str = Any, account_type: str = Any, results: List = Any) -> Any:
         """Determines users activity."""
-
         # get both active and inactive users
         def stack(c: Any, f: Any, s: Any) -> Any:
             if status == "both":

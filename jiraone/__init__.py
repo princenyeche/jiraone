@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""JiraOne is an Atlassian REST API Interface used to Generate report on certain aspect of Jira.
+"""
+JiraOne is an Atlassian REST API Interface used to Generate report on certain aspect of Jira.
 
 You can dynamically generate a report of
 1. Total no of Fields used on per project or the instance

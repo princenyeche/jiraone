@@ -16,6 +16,7 @@ import requests
 class Credentials(object):
 
     """class.Credentials -> used for authentication of the user to the Instance."""
+
     auth_request = None
     headers = None
 
@@ -83,7 +84,7 @@ LOGIN = InitProcess()
 
 
 class EndPoints:
-
+    
     """A Structural way to dynamically load urls that is fed to other functions."""
 
     @classmethod
