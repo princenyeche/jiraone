@@ -14,7 +14,6 @@ import requests
 
 
 class Credentials(object):
-
     """class.Credentials -> used for authentication of the user to the Instance."""
 
     auth_request = None
@@ -51,7 +50,6 @@ class Credentials(object):
 
 
 class Echo(PrettyPrinter):
-
     """A Class used to inherit from PrettyPrinter."""
 
     def __init__(self, *args, **kwargs):
@@ -84,7 +82,6 @@ LOGIN = InitProcess()
 
 
 class EndPoints:
-    
     """A Structural way to dynamically load urls that is fed to other functions."""
 
     @classmethod
