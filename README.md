@@ -9,6 +9,59 @@ Install using `pip`. you have to be on python >= 3.6.x in order to utilize this 
 pip install jiraone
 ```
 
+## Classes, functions and methods
+Jiraone comes with various classes, functions and methods. Aliases as well, are used to represent
+links to classes and functions. The major ones to take note of are the below
+* `LOGIN` -&gt; This is a call to the `Credentials` class and the accepted parameters are
+  * user -&gt; string
+  * password -&gt; string
+  * url -&gt; string
+  * example usage: LOGIN(user="username", password="token", url="http://example.com")
+* `endpoint` -&gt; This is an alias to the `EndPoints` class and has many methods that can be called directly
+  * example usage: `endpoint.myself()`, `endpoint.search_users()`
+* `echo` -&gt; A copy of the PrettyPrint Class used to nicely format a printed result. to call, simply use the function `echo`
+  * example usage: 
+     ```python
+    from jiraone import echo
+    
+    data = "hello world"
+    echo(data)
+    # prints //
+    # hello world
+     ```
+* `add_log` -&gt; This is a function used log messages to a log file. it accepts two parameters `message` and `level`.
+the function uses the logging module and writes a log based on 3 levels, "debug", "info" or "error". The message part
+is a string used to denote what is written to the log.
+  * example usage:
+     ```python
+    from jiraone import add_log
+    
+    message = "successfully Initiated the script"
+    add_log(message, "info")
+     ```
+* `WORK_PATH` -&gt; This is simply the absolute path to where all files used or created in conjunction to the path where the script is
+being called from.
+* `PROJECT` -&gt; This is an alias to the `Project` class and it includes other methods that helps in quickly generating a
+desired report.
+* `USER` -&gt; This is an alias to the `User` class and it includes other methods that helps in quickly generating a
+desired report.
+* `csv_writer` -&gt; This function helps in creating a csv file. it comes with the below parameters 
+  * `folder` -> string: a path to the name of the folder
+  * `file_name` -> string: the name of the file being created
+  * `data` -> iterable: an iterable data of any sort.
+  * `mark` -> string: helps evaluates how data is created, available options ["single", "many"]
+* `csv_reader`  -&gt; This function helps in reading a csv file and returning a list comprehension of the data. Accepted
+parameter include
+  * `folder` -> string: a path to the name of the folder
+  * `file_name` -> string: the name of the file being created
+* `path_builder` -&gt; This function helps to build a directory path and file path then returns the file path in the directory.
+parameters include
+  * `path` -> string: a path to declare absolute to where the script is executed.
+  * `file_name` -> string: the name of the file being created
+
+For further knowledge on how to use the classes, methods or functions. Open the jiraone package and read the docstring on the
+aforementioned methods or functions above to get further information.
+
 ## Using the API
 Jiraone basically allows you to create a report based method using Atlassian REST API on your cloud infrastructure.
 it uses a class method on the Endpoint Class, so you can easily call the direct Atlassian API.
@@ -22,7 +75,7 @@ link = "https://yourinstance.atlassian.net"
 LOGIN(user=user, password=password, url=link)
 
 
-def priorities(self):
+def priorities():
         load = LOGIN.get(endpoint.get_all_priorities())
         if load.status_code == 200:
              # some expression here
