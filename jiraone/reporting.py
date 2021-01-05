@@ -5,7 +5,7 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
-from typing import Any, Optional, List, Iterable
+from typing import Any, Optional, List, Iterable, Tuple
 from collections import deque
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
@@ -17,8 +17,8 @@ CsvData = List[List[str]]
 
 
 class Projects:
-
     """Get report on a Project based on user or user's attributes or groups."""
+
     @staticmethod
     def projects_accessible_by_users(*args: Any, project_folder: str = "Project",
                                      project_file_name: str = "project_file.csv",
@@ -86,7 +86,11 @@ class Projects:
                     else:
                         raw = [keys, name, "No data available", "No data available"]
                         project()
-                print("Project Report reach")
+
+                print("Project Reporting Completed")
+                print("File extraction completed. Your file is located at {}"
+                      .format(path_builder(path=project_folder, file_name=project_file_name)))
+                add_log("Project Reporting Completed", "info")
                 if count_start_at > results["total"]:
                     break
             else:
@@ -160,12 +164,106 @@ class Projects:
 
                 if count_start_at > results["total"]:
                     print("Dashboard Reporting Completed")
+                    print("File extraction completed. Your file is located at {}"
+                          .format(path_builder(path=dashboard_folder, file_name=dashboard_file_name)))
                     add_log("Dashboard Reporting Completed", "info")
                     break
 
+    @staticmethod
+    def get_all_roles_for_projects(roles_folder: str = "Roles",
+                                   roles_file_name: str = "roles_file.csv",
+                                   user_extraction: str = "role_users.csv",
+                                   **kwargs):
+        """Get the roles available in a project and which user is assigned to which
+        role within the project"""
+        count_start_at = 0
+        headers = ["Project Id ", "Project Key", "Project Name", "Project roles", "User AccountId", "User DisplayName",
+                   "User role in Project"]
+        csv_writer(folder=roles_folder, file_name=roles_file_name, data=headers, **kwargs)
+
+        # get extraction of projects data
+        def role_on() -> Any:
+            project_role_list = deque()
+            for keys in results["values"]:
+                role_list = deque()
+                key = keys["key"]
+                pid = keys["id"]
+                name = keys["name"]
+                roles = LOGIN.get(endpoint.get_roles_for_project(pid))
+                print("Extracting Project Keys {}".format(key))
+                add_log("Extracting Project Keys {}".format(key), "info")
+
+                # find out what roles exist within each project
+                def role_over() -> Tuple:
+                    if roles.status_code == 200:
+                        extract = json.loads(roles.content)
+                        only_keys = extract.keys()
+                        casting = list(only_keys)
+                        only_values = extract.items()
+                        puller = list(only_values)
+                        z = [d for d in puller]
+                        return casting, z
+
+                caster = role_over()
+                raw = [pid, key, name, caster[0]]
+                role_list.append(raw)
+                add_log("Appending data to List Queue", "info")
+
+                for user in read_users:
+                    account_id = user[0]
+                    display_name = user[2]
+
+                    # extract the user role using the appropriate accountId
+                    def get_user_role(user_data) -> Any:
+                        for users in user_data[1]:
+                            check = LOGIN.get(users[1])
+                            if check.status_code == 200:
+                                result_data = json.loads(check.content)
+                                actors = result_data["actors"]
+                                for act in actors:
+                                    if "actorUser" in act:
+                                        if account_id == act["actorUser"]["accountId"]:
+                                            res = f"Role Name: {result_data['name']}"
+                                            project_role_list.append(res)
+
+                        # function to write collected data into a file
+                        def pull_data() -> Any:
+                            role_puller = [j for j in project_role_list]
+                            project_id = data[0]
+                            project_key = data[1]
+                            project_name = data[2]
+                            project_roles = data[3]
+                            raw_dump = [project_id, project_key, project_name, project_roles, account_id, display_name,
+                                        role_puller]
+                            csv_writer(folder=roles_folder, file_name=roles_file_name, data=raw_dump)
+
+                        for data in role_list:
+                            pull_data()
+
+                    get_user_role(caster)
+                    project_role_list = deque()
+
+        USER.get_all_users(folder=roles_folder, file=user_extraction, **kwargs)
+        read_users = csv_reader(folder=roles_folder, file_name=user_extraction, **kwargs)
+        while True:
+            init = LOGIN.get(endpoint.get_projects(start_at=count_start_at))
+            if init.status_code == 200:
+                print("Project Extraction")
+                results = json.loads(init.content)
+                add_log("Project Extraction Initiated", "info")
+                if count_start_at > results["total"]:
+                    break
+                if results["total"] > 0:
+                    role_on()
+            count_start_at += 50
+
+        print("File extraction completed. Your file is located at {}".format(path_builder
+                                                                             (path=roles_folder,
+                                                                              file_name=roles_file_name)))
+        add_log("File extraction completed", "info")
+
 
 class Users:
-
     """
     Below methods helps to Generate the No of Users on Jira Cloud
 
@@ -215,6 +313,7 @@ class Users:
 
     def user_activity(self, status: str = Any, account_type: str = Any, results: List = Any) -> Any:
         """Determines users activity."""
+
         # get both active and inactive users
         def stack(c: Any, f: Any, s: Any) -> Any:
             if status == "both":
@@ -250,6 +349,10 @@ class Users:
             raw = [display_name, account_id, get_all, active_status]
             csv_writer(folder=group_folder, file_name=group_file_name, data=raw)
 
+        print("File extraction completed. Your file is located at {}"
+              .format(path_builder(path=group_folder, file_name=group_file_name)))
+        add_log("Get Users group Completed", "info")
+
 
 def call_users() -> Users:
     """Should return an instance of Users class."""
@@ -272,26 +375,28 @@ def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
 
 
 def csv_writer(folder: str = Any, file_name: str = Any, data: Iterable = object,
-               mark: str = "single", **kwargs) -> Any:
+               mark: str = "single", mode: str = "a+", **kwargs) -> Any:
     """Reads and writes to a file, single or multiple rows."""
     file = path_builder(path=folder, file_name=file_name)
-    with open(file, "a+") as f:
-        write = csv.writer(f, delimiter=",")
-        if mark == "single":
-            write.writerow(data)
-        if mark == "many":
-            write.writerows(data)
-        add_log(f"Writing to file {file_name}", "info")
+    if mode:
+        with open(file, mode) as f:
+            write = csv.writer(f, delimiter=",")
+            if mark == "single":
+                write.writerow(data)
+            if mark == "many":
+                write.writerows(data)
+            add_log(f"Writing to file {file_name}", "info")
 
 
-def csv_reader(folder: str = Any, file_name: str = Any, **kwargs) -> CsvData:
+def csv_reader(folder: str = Any, file_name: str = Any, mode: str = "r", **kwargs) -> CsvData:
     """Reads a CSV file and returns a list comprehension of the data."""
     file = path_builder(path=folder, file_name=file_name)
-    with open(file, "r") as f:
-        read = csv.reader(f, delimiter=",")
-        load = [d for d in read]
-        add_log(f"Read file {file_name}", "info")
-        return load
+    if mode:
+        with open(file, mode) as f:
+            read = csv.reader(f, delimiter=",")
+            load = [d for d in read]
+            add_log(f"Read file {file_name}", "info")
+            return load
 
 
 USER = call_users()
