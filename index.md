@@ -91,6 +91,7 @@ All these methods and functions are accessible directly from the jiraone package
 The script comes with some basic reporting Classes and methods which you can use to generate a report in CSV format.
 currently only CSV file output is supported. other format such as JSON might be available in future.
 * generate a report of all active users in your instance
+
 ```python
 from jiraone import LOGIN, USER
 
@@ -104,7 +105,9 @@ if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     USER.get_all_users(pull="active", user_type="atlassian", file="user_file.csv")
 ```
+
 * generate a report of users in your instance, who has BROWSE access to the projects on the instance.
+
 ```python
 from jiraone import LOGIN, PROJECT
 
@@ -133,7 +136,9 @@ if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     PROJECT.dashboards_shared_with()
 ```
+
 * generate a report of all user in the instance and which group do they belong to
+
 ```python
 from jiraone import LOGIN, USER
 
@@ -147,7 +152,9 @@ if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     USER.get_all_users_group(pull="active", user_type="atlassian")
 ```
-* generate a report get all project list and users within a project as well as their corresponding project role in the project.
+
+* generate a report, get all project list and users within a project as well as their corresponding project role in the project.
+
 ```python
 from jiraone import LOGIN, PROJECT
 
