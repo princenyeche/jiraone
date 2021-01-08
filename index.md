@@ -122,7 +122,9 @@ if __name__ == '__main__':
     PROJECT.projects_accessible_by_users("expand=insight,description", "searchBy=key,name", permission="BROWSE",
                                         pull="active", user_type="atlassian")
 ```
+
 * generate a report of the number of Dashboard on the Instance, who's the owner and who it is shared with.
+
 ```python
 from jiraone import LOGIN, PROJECT
 
