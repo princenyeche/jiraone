@@ -932,12 +932,12 @@ class EndPoints:
                   :query param: issue_key_or_id required
                               : deleteSubtasks, datatype -> string, values = (true | false)
         """
-        if uri is not None:
+        if uri is not None and query is None:
             return "{}/rest/api/3/issue/{}".format(LOGIN.base_url, uri)
         elif uri is not None and query is not None:
             return "{}/rest/api/3/issue/{}?{}".format(LOGIN.base_url, uri, query)
         else:
-            if issue_key_or_id is not None:
+            if issue_key_or_id is not None and query is None:
                 return "{}/rest/api/3/issue/{}".format(LOGIN.base_url, issue_key_or_id)
             elif issue_key_or_id is not None and query is not None:
                 return "{}/rest/api/3/issue/{}?{}".format(LOGIN.base_url, issue_key_or_id, query)
