@@ -24,7 +24,7 @@ class Credentials(object):
         self.base_url = url
         self.token_session(email=user, token=password)
 
-    # produce a session for the script
+    # produce a session for the script and save the session
     def token_session(self, email: Any = None, token: Any = None) -> Any:
         self.auth_request = HTTPBasicAuth(email, token)
         self.headers = {"Content-Type": "application/json"}
