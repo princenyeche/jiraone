@@ -369,6 +369,7 @@ class EndPoints:
 
     @classmethod
     def move_issues_to_backlog(cls):
+
         """Move issues to the backlog.
 
         This operation is equivalent to remove future and active sprints from a given set of issues.
@@ -382,6 +383,7 @@ class EndPoints:
 
     @classmethod
     def move_issues_to_backlog_from_board(cls, board_id):
+
         """Move issues to the backlog of a particular board (if they are already on that board).
 
         This operation is equivalent to remove future and active sprints from a given set of issues
@@ -400,6 +402,7 @@ class EndPoints:
 
     @classmethod
     def create_board(cls):
+
         """Creates a new board. Board name, type and filter ID is required.
 
         :request:POST:
@@ -411,6 +414,7 @@ class EndPoints:
 
     @classmethod
     def get_board_by_filter_id(cls, filter_id, start_at: int = 0, max_results: int = 50) -> Any:
+
         """Returns any boards which use the provided filter id.
 
         This method can be executed by users without a valid software license
@@ -428,6 +432,7 @@ class EndPoints:
 
     @classmethod
     def get_board(cls, board_id):
+
         """Returns the board for the given board ID.
 
         This board will only be returned if the user has permission to view it.
@@ -438,6 +443,7 @@ class EndPoints:
 
     @classmethod
     def get_issues_on_backlog(cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50) -> Any:
+
         """Returns all issues from the board's backlog, for the given board ID.
 
         This only includes issues that the user has permission to view.
@@ -463,6 +469,7 @@ class EndPoints:
 
     @classmethod
     def get_issues_on_board(cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50) -> Any:
+
         """Returns all issues from a board, for a given board ID.
 
         This only includes issues that the user has permission to view.
@@ -488,6 +495,7 @@ class EndPoints:
 
     @classmethod
     def move_issues_to_board(cls, board_id):
+
         """Move issues from the backog to the board (if they are already in the backlog of that board).
 
         This operation either moves an issue(s) onto a board from the backlog (by adding it to the issueList
@@ -503,6 +511,7 @@ class EndPoints:
 
     @classmethod
     def get_projects_on_board(cls, board_id, start_at: int = 0, max_results: int = 50) -> Any:
+
         """Returns all projects that are associated with the board, for the given board ID.
 
          If the user does not have permission to view the board, no projects will be returned at all.
@@ -517,6 +526,7 @@ class EndPoints:
 
     @classmethod
     def get_all_quick_filters(cls, board_id, start_at: int = 0, max_results: int = 50) -> Any:
+
         """Returns all quick filters from a board, for a given board ID.
 
         :param: board_id required
@@ -528,6 +538,7 @@ class EndPoints:
 
     @classmethod
     def get_quick_filter(cls, board_id, quick_filter_id):
+
         """Returns the quick filter for a given quick filter ID.
 
         The quick filter will only be returned if the user can view the board that the
@@ -541,16 +552,21 @@ class EndPoints:
 
     @classmethod
     def get_all_sprints(cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50) -> Any:
+        """Get all Sprint on a Board."""
         if query is not None:
             return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}".format(LOGIN.base_url, board_id,
-                                                                                       query, start_at, max_results)
+                                                                                       query, 
+                                                                                       start_at, 
+                                                                                       max_results)
         else:
             return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}".format(LOGIN.base_url, board_id,
-                                                                                       start_at, max_results)
+                                                                                       start_at, 
+                                                                                       max_results)
 
     # SPRINT -> API for Sprints
     @classmethod
     def create_sprint(cls):
+
         """Creates a future sprint. Sprint name and origin board id are required.
 
         Start date, end date, and goal are optional.
@@ -562,6 +578,7 @@ class EndPoints:
 
     @classmethod
     def get_sprint(cls, sprint_id):
+
         """Returns the sprint for a given sprint ID.
 
         The sprint will only be returned if the user can view the board that the sprint was created on,
@@ -572,6 +589,7 @@ class EndPoints:
 
     @classmethod
     def update_sprint(cls, sprint_id):
+
         """Performs a full update of a sprint.
 
         A full update means that the result will be exactly the same as the request body.
@@ -586,6 +604,7 @@ class EndPoints:
 
     @classmethod
     def delete_sprint(cls, sprint_id):
+
         """Deletes a sprint.
 
         Once a sprint is deleted, all open issues in the sprint will be moved to the backlog.
@@ -600,6 +619,7 @@ class EndPoints:
 
     @classmethod
     def create_customer(cls):
+
         """This method adds a customer to the Jira Service Management.
 
         instance by passing a JSON file including an email address and display name.
@@ -610,6 +630,7 @@ class EndPoints:
 
     @classmethod
     def get_server_info(cls):
+
         """This method retrieves information about the Jira Service Management.
 
         instance such as software version, builds, and related links."""
@@ -617,6 +638,7 @@ class EndPoints:
 
     @classmethod
     def get_organizations(cls, start: int = 0, limit: int = 50, account_id: str = None) -> Any:
+
         """This method returns a list of organizations in the Jira Service Management instance.
 
         Use this method when you want to present a list of organizations or want to locate an organization by name.
@@ -632,6 +654,7 @@ class EndPoints:
 
     @classmethod
     def create_organization(cls):
+
         """This method creates an organization by passing the name of the organization.
 
         :request:POST:
@@ -641,6 +664,7 @@ class EndPoints:
 
     @classmethod
     def get_organization(cls, org_id):
+
         """This method returns details of an organization.
 
         Use this method to get organization details whenever your application component is passed an organization ID
@@ -651,6 +675,7 @@ class EndPoints:
 
     @classmethod
     def delete_organization(cls, org_id):
+
         """This method deletes an organization.
 
         Note that the organization is deleted regardless of other associations it may have.
@@ -662,6 +687,7 @@ class EndPoints:
 
     @classmethod
     def get_users_in_organization(cls, org_id, start: int = 0, limit: int = 50) -> Any:
+
         """This method returns all the users associated with an organization.
 
         Use this method where you want to provide a list of users for an organization
@@ -673,6 +699,7 @@ class EndPoints:
 
     @classmethod
     def add_users_to_organization(cls, org_id) -> Any:
+
         """This method adds users to an organization.
 
         :request:POST:
@@ -683,6 +710,7 @@ class EndPoints:
 
     @classmethod
     def remove_users_from_organization(cls, org_id) -> Any:
+
         """This method removes users from an organization.
 
         :request:DELETE:
@@ -693,6 +721,7 @@ class EndPoints:
 
     @classmethod
     def get_sd_organizations(cls, service_desk_id, start: int = 0, limit: int = 50, account_id: str = None):
+
         """This method returns a list of all organizations associated with a service desk.
 
         :param: service_desk_id required
@@ -712,6 +741,7 @@ class EndPoints:
 
     @classmethod
     def add_sd_organization(cls, service_desk_id):
+
         """This method adds an organization to a service desk.
 
         If the organization ID is already associated with the service desk,
@@ -724,6 +754,7 @@ class EndPoints:
 
     @classmethod
     def remove_sd_organization(cls, service_desk_id):
+
         """This method removes an organization from a service desk.
 
         If the organization ID does not match an organization associated with the service desk,
@@ -738,6 +769,7 @@ class EndPoints:
 
     @classmethod
     def get_customers(cls, service_desk_id, start: int = 0, limit: int = 50, query: str = None):
+
         """This method returns a list of the customers on a service desk.
 
         The returned list of customers can be filtered using the query parameter.
@@ -760,6 +792,7 @@ class EndPoints:
 
     @classmethod
     def add_customers(cls, service_desk_id):
+
         """Adds one or more customers to a service desk.
 
         If any of the passed customers are associated with the service desk,
@@ -772,6 +805,7 @@ class EndPoints:
 
     @classmethod
     def remove_customers(cls, service_desk_id):
+
         """This method removes one or more customers from a service desk.
 
         The service desk must have closed access. If any of the passed customers are not associated with
@@ -788,6 +822,7 @@ class EndPoints:
 
     @classmethod
     def jira_user(cls, account_id: str = None):
+
         """API for User creation, deletion and retrieval.
 
         :request:POST - Creates a user. This resource is retained for legacy compatibility.
@@ -809,6 +844,7 @@ class EndPoints:
 
     @classmethod
     def jira_group(cls, group_name: str = None, swap_group: str = None):
+
         """Used for Creation and deletion of Jira groups.
 
         :request: POST - Creates a group.
@@ -829,6 +865,7 @@ class EndPoints:
 
     @classmethod
     def group_jira_users(cls, group_name: str, account_id: str = None):
+
         """Used for addition and removal of users to and from groups.
 
         :request: POST - Adds a user to a group.
@@ -847,6 +884,7 @@ class EndPoints:
     @classmethod
     def projects(cls, id_or_key, query: Optional[str] = None, uri: Optional[str] = None,
                  enable_undo: bool = None) -> str:
+
         """Create, delete, update, archive, get status.
 
         :request: POST - for project creations.
@@ -896,6 +934,7 @@ class EndPoints:
     @classmethod
     def issues(cls, issue_key_or_id: Optional[Any] = None, query: Optional[Any] = None,
                uri: Optional[str] = None) -> str:
+
         """Creates issues, delete issues,  bulk create issue, transitions.
 
         A transition may be applied, to move the issue or subtask to a workflow step other than
