@@ -81,7 +81,7 @@ class Projects:
                             project()
                         elif "totalIssueCount" in insight and "lastIssueUpdateTime" not in insight:
                             raw = [keys, name, f"{insight['totalIssueCount']}",
-                                   f"No data available"]
+                                   "No data available"]
                             project()
                     else:
                         raw = [keys, name, "No data available", "No data available"]
