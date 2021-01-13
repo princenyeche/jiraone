@@ -27,10 +27,10 @@ links to classes and functions. The major ones to take note of are the below
     data = "hello world"
     echo(data)
     # prints //
-    # hello world
+    # 'hello world'
      ```
-* `add_log` -&gt; This is a function used log messages to a log file. it accepts two parameters `message` and `level`.
-the function uses the logging module and writes a log based on 3 levels, "debug", "info" or "error". The message part
+* `add_log` -&gt; This is function is used log messages to a log file. it accepts two parameters `message` and `level`.
+the function uses the logging module and writes a log, based on 3 levels. "debug", "info" or "error". The message part
 is a string used to denote what is written to the log.
   * example usage:
      ```python
