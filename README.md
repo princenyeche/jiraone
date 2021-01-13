@@ -17,9 +17,9 @@ links to classes and functions. The major ones to take note of are the below
   * password -&gt; string
   * url -&gt; string
   * example usage: LOGIN(user="username", password="token", url="http://example.com")
-* `endpoint` -&gt; This is an alias to the `EndPoints` class and has many methods that can be called directly
+* `endpoint` -&gt; This is an alias to the `EndPoints` class and it has many methods that can be called directly
   * example usage: `endpoint.myself()`, `endpoint.search_users()`
-* `echo` -&gt; A copy of the PrettyPrint Class used to nicely format a printed result. to call, simply use the function `echo`
+* `echo` -&gt; A copy of the PrettyPrint Class used to nicely format a represented printed result. to call, simply use the function `echo`
   * example usage: 
      ```python
     from jiraone import echo
@@ -27,10 +27,10 @@ links to classes and functions. The major ones to take note of are the below
     data = "hello world"
     echo(data)
     # prints //
-    # hello world
+    # 'hello world'
      ```
-* `add_log` -&gt; This is a function used log messages to a log file. it accepts two parameters `message` and `level`.
-the function uses the logging module and writes a log based on 3 levels, "debug", "info" or "error". The message part
+* `add_log` -&gt; This function is used to log messages to a log file. it accepts two parameters `message` and `level`.
+the function uses the logging module and writes a log, based on 3 levels. "debug", "info" or "error". The message part
 is a string used to denote what is written to the log.
   * example usage:
      ```python
@@ -48,7 +48,7 @@ desired report.
 * `csv_writer` -&gt; This function helps in creating a csv file. it comes with the below parameters 
   * `folder` -> string: a path to the name of the folder
   * `file_name` -> string: the name of the file being created
-  * `data` -> iterable: an iterable data of any sort.
+  * `data` -> iterable: an iterable data.
   * `mark` -> string: helps evaluates how data is created, available options ["single", "many"]
   * `mode` -> string: file mode, available options ["a", "w", "a+", "w+", "wb"]
 * `csv_reader`  -&gt; This function helps in reading a csv file and returning a list comprehension of the data. Accepted
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     USER.get_all_users_group(pull="active", user_type="atlassian")
 ```
-* generate a report get all project list and users within a project as well as their corresponding project role in the project.
+* generate a report, get all project list and users within a project as well as their corresponding project role in the project.
 ```python
 from jiraone import LOGIN, PROJECT
 
