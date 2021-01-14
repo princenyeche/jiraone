@@ -56,6 +56,7 @@ parameter include
   * `folder` -> string: a path to the name of the folder
   * `file_name` -> string: the name of the file being created
   * `mode` -> string: file mode, available options ["r", "rb"]
+  * `skip` -> bool: True allows you to skip the header if the file has any. otherwise defaults to False
 * `path_builder` -&gt; This function helps to build a directory path and file path then returns the file path in the directory.
 parameters include
   * `path` -> string: a path to declare absolute to where the script is executed.
@@ -169,6 +170,24 @@ LOGIN(user=user, password=password, url=link)
 if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     PROJECT.get_all_roles_for_projects(pull="active", user_type="atlassian")
+```
+
+* generate a report, get all attachments per issue on a project or search for projects and get all attachment urls
+
+```python
+from jiraone import LOGIN, PROJECT
+
+user = "email"
+password = "token"
+link = "https://yourinstance.atlassian.net"
+LOGIN(user=user, password=password, url=link)
+
+
+if __name__ == '__main__':
+    # the output of the file would be absolute to the directory where this python file is being executed from
+    # you can use any valid jql query
+    jql = "project%20in%20(COM%2C%20PYT)%20order%20by%20created%20DESC"
+    PROJECT.get_attachments_on_projects(query=jql)
 ```
 
 ## Support
