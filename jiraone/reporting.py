@@ -5,7 +5,7 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
-from typing import Any, Optional, List, Iterable, Tuple
+from typing import Any, Optional, List, Iterable, Tuple, Union
 from collections import deque
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
@@ -87,11 +87,11 @@ class Projects:
                         raw = [keys, name, "No data available", "No data available"]
                         project()
 
-                print("Project Reporting Completed")
-                print("File extraction completed. Your file is located at {}"
-                      .format(path_builder(path=project_folder, file_name=project_file_name)))
-                add_log("Project Reporting Completed", "info")
                 if count_start_at > results["total"]:
+                    print("Project Reporting Completed")
+                    print("File extraction completed. Your file is located at {}"
+                          .format(path_builder(path=project_folder, file_name=project_file_name)))
+                    add_log("Project Reporting Completed", "info")
                     break
             else:
                 sys.stderr.write("Unable to fetch data status {} ".format(load.status_code))
@@ -262,6 +262,135 @@ class Projects:
                                                                               file_name=roles_file_name)))
         add_log("File extraction completed", "info")
 
+    def get_attachments_on_projects(self, attachment_folder: str = "Attachment",
+                                    attachment_file_name: str = "attachment_file.csv",
+                                    **kwargs):
+        """Return all attachments on a Project or Projects
+
+        Get the size of attachments on an Issues, count those attachments collectively and return the total number
+        on all Projects searched. JQL is used as a means to search for the project.
+        """
+        import re
+        attach_list = deque()
+        count_start_at = 0
+        headers = ["Project Id", "Project Key", "Project Name", "Issue Key", "Attachment size",
+                   "Attachment Type", "Created on by user", "Attachment url"]
+        csv_writer(folder=attachment_folder, file_name=attachment_file_name, data=headers, **kwargs)
+
+        def pull_attachment_sequence() -> Optional:
+            nonlocal attach_list
+            for issues in result_data["issues"]:
+                keys = issues["key"]
+                get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=keys))
+                if get_issue_keys.status_code == 200:
+                    key_data = json.loads(get_issue_keys.content)
+                    data = key_data["fields"]
+                    if "project" or "attachment" in data:
+                        project_id = data["project"]["id"]
+                        project_name = data["project"]["name"]
+                        project_key = data["project"]["key"]
+                        attachment = data["attachment"]
+                        if attachment is not None:
+                            for attach in attachment:
+                                if "author" in attach:
+                                    display_name = attach["author"]["displayName"]
+
+                                def pull_attachment() -> Optional:
+                                    created = attach["created"]  # datetime need to convert it
+                                    attachment_size = attach["size"]  # in bytes, need to convert to mb
+                                    mime_type = attach["mimeType"]
+                                    attachment_url = attach["content"]
+
+                                    calc_size = self.byte_converter(attachment_size)
+
+                                    def date_converter(val) -> str:
+                                        """split the datetime value and output a string."""
+                                        get_date_time = val.split("T")
+                                        get_am_pm = get_date_time[1].split(".")
+                                        return f"Created on {get_date_time[0]} {get_am_pm[0]}"
+
+                                    calc_date = date_converter(created)
+                                    pull = [project_id, project_key, project_name, keys, calc_size, mime_type,
+                                            f"{calc_date} by {display_name}", attachment_url]
+                                    attach_list.append(pull)
+
+                                pull_attachment()
+
+            raw_data = [x for x in attach_list]
+            csv_writer(attachment_folder, attachment_file_name, data=raw_data, mark="many")
+            attach_list.clear()
+
+        while True:
+            get_issue = LOGIN.get(endpoint.search_issues_jql(start_at=count_start_at, **kwargs))
+            if get_issue.status_code == 200:
+                result_data = json.loads(get_issue.content)
+                if count_start_at > result_data["total"]:
+                    print("Attachment extraction completed")
+                    add_log("Attachment extraction completed", "info")
+                    break
+
+                print("Attachment extraction processing")
+                add_log("Attachment extraction processing", "info")
+                pull_attachment_sequence()
+
+            count_start_at += 50
+
+        def grade_and_sort() -> Union[float, int]:
+            for node in read_file:
+                pattern = re.compile(r"(\d*?[0-9]\.[0-9]*)", re.I)
+                if pattern is not None:
+                    if pattern.search(node[4]):
+                        attach_list.append(pattern.search(node[4]).group())
+
+            retain = [float(s) for s in attach_list]
+            calc_sum = sum(retain)
+            return calc_sum
+
+        def re_write():
+            calc_made = grade_and_sort()
+            attach_list.clear()
+            rd_file = read_file
+            # sort the file using the issue_key column
+            sorts = sorted(rd_file, key=lambda row: row[3], reverse=False)
+            for i in sorts:
+                _project_id = i[0]
+                _project_key = i[1]
+                _project_name = i[2]
+                _issue_key = i[3]
+                _attach_size = i[4]
+                _attach_type = i[5]
+                _created_by = i[6]
+                _attach_url = i[7]
+                raw_data_file = [_project_id, _project_key, _project_name, _issue_key,
+                                 _attach_size, _attach_type, _created_by, _attach_url]
+                csv_writer(attachment_folder, attachment_file_name, data=raw_data_file)
+
+            # lastly we want to append the total sum of attachment size.
+            raw_data_file = ["", "", "", "", "Total Size: {:.2f} MB".format(calc_made), "", "", ""]
+            csv_writer(attachment_folder, attachment_file_name, data=raw_data_file)
+
+        read_file = csv_reader(attachment_folder, attachment_file_name, skip=True)
+        csv_writer(attachment_folder, attachment_file_name, data=headers, mode="w")
+        re_write()
+
+        print("File extraction completed. Your file is located at {}".format(path_builder
+                                                                             (path=attachment_folder,
+                                                                              file_name=attachment_file_name)))
+        add_log("File extraction completed", "info")
+
+    @staticmethod
+    def byte_converter(val) -> str:
+        """1 Byte = 8 Bits.
+
+        using megabyte MB, value is 1000^2
+        mebibyte MiB, value is 1024^2
+        Therefore val = val / MB
+        """
+        byte_size = val
+        mega_byte = 1000 * 1000
+        visor = byte_size / mega_byte
+        return "Size: {:.2f} MB".format(visor)
+
 
 class Users:
     """
@@ -354,16 +483,6 @@ class Users:
         add_log("Get Users group Completed", "info")
 
 
-def call_users() -> Users:
-    """Should return an instance of Users class."""
-    return Users()
-
-
-def call_projects() -> Projects:
-    """Should return an instance of Projects class."""
-    return Projects()
-
-
 def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
     """Builds a dir path and file path in a directory."""
     base_dir = os.path.join(WORK_PATH, path)
@@ -388,16 +507,19 @@ def csv_writer(folder: str = Any, file_name: str = Any, data: Iterable = object,
             add_log(f"Writing to file {file_name}", "info")
 
 
-def csv_reader(folder: str = Any, file_name: str = Any, mode: str = "r", **kwargs) -> CsvData:
+def csv_reader(folder: str = Any, file_name: str = Any, mode: str = "r",
+               skip: bool = False, **kwargs) -> CsvData:
     """Reads a CSV file and returns a list comprehension of the data."""
     file = path_builder(path=folder, file_name=file_name)
     if mode:
         with open(file, mode) as f:
             read = csv.reader(f, delimiter=",")
+            if skip is True:
+                next(read, None)
             load = [d for d in read]
             add_log(f"Read file {file_name}", "info")
             return load
 
 
-USER = call_users()
-PROJECT = call_projects()
+USER = Users()
+PROJECT = Projects()
