@@ -244,13 +244,61 @@ class EndPoints:
                                                                                 start_at, max_results)
 
     @classmethod
-    def get_attachment_meta_data(cls, query: str):
+    def get_attachment_meta_data(cls, query: str, warning: Any = None):
         """Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
          :param: id of the attachment
          Use issue search endpoint in conjunction to grab the attachment id
          """
+        import warnings
+        message = "We will be removing this endpoint soon\n use endpoint.issue_attachments() instead."
+        if warning is None:
+            warnings.warn(message, DeprecationWarning, stacklevel=2)
+        else:
+            ...
         return "{}/rest/api/3/attachment/{}".format(LOGIN.base_url, query)
+
+    @classmethod
+    def issue_attachments(cls, id_or_key: str = None, attach_id: str = None, uri: Optional[str] = None,
+                          query: Optional[str] = None):
+        """Returns the attachment content.
+
+        :request: GET - Get Jira attachment settings
+        Returns the attachment settings, that is, whether attachments are enabled and the
+        maximum attachment size allowed.
+
+                 GET - Get attachment Meta data
+        Returns the metadata for an attachment. Note that the attachment itself is not returned.
+
+        :param: attach_id required (id of the attachment), datatype -> string
+                DELETE - Deletes an attachment from an issue.
+
+        param: attach_id required (id of the attachment), datatype -> string
+               GET - Get all metadata for an expanded attachment
+               :param: query, datatype -> string
+               available options
+                * expand/human -Returns the metadata for the contents of an attachment, if it is an archive,
+                     and metadata for the attachment itself. For example, if the attachment is a ZIP archive,
+                     then information about the files in the archive is returned and metadata for the ZIP archive.
+
+                * expand/raw - Returns the metadata for the contents of an attachment, if it is an archive.
+                     For example, if the attachment is a ZIP archive, then information about the files in the
+                     archive is returned. Currently, only the ZIP archive format is supported.
+
+               POST - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+        POST - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+        :param: id_or_key required, datatype -> string
+        The ID or key of the issue that attachments are added to.
+        """
+        if uri is not None:
+            return "{}/rest/api/3/attachment/{}".format(LOGIN.base_url, uri)
+        else:
+            if query is not None and attach_id is not None and id_or_key is None:
+                return "{}/rest/api/3/attachment/{}/{}".format(LOGIN.base_url, attach_id, query)
+            elif query is not None and attach_id is None and id_or_key is not None:
+                return "{}/rest/api/3/attachment/{}/{}".format(LOGIN.base_url, id_or_key, query)
+            else:
+                return "{}/rest/api/3/attachment/{}".format(LOGIN.base_url, attach_id)
 
     @classmethod
     def search_issues_jql(cls, query, start_at: int = 0, max_results: int = 50):
@@ -833,14 +881,14 @@ class EndPoints:
 
     @classmethod
     def projects(cls, id_or_key, query: Optional[str] = None, uri: Optional[str] = None,
-                 enable_undo: bool = None) -> str:
+                 enable_undo: Optional[bool] = None) -> str:
         """Create, delete, update, archive, get status.
 
         :request: POST - for project creations.
                          The project types are available according to the installed Jira features as follows:
         :param: id_or_key required
               : uri optional for accessing other project endpoints -> string
-                   endpoint: /rest/api/3/project/{archive}
+                   endpoint: /rest/api/3/project/{projectIdOrKey}/{archive}
                    available options [archive, delete, restore, statuses]
                          archive - Archives a project. Archived projects cannot be deleted.
                          delete - Deletes a project asynchronously.
