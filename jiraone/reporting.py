@@ -386,7 +386,7 @@ class Projects:
 
         using megabyte MB, value is 1000^2
         mebibyte MiB, value is 1024^2
-        Therefore val = val / MB
+        Therefore total = val / MB
         """
         byte_size = val
         mega_byte = 1000 * 1000
@@ -407,14 +407,14 @@ class Projects:
         * Issue key
         * file name
         * attachment url
-        we assumes you're getting this from `def get_attachments_on_project()`
+        we assume you're getting this from `def get_attachments_on_project()`
         :param: key, attach, file - integers to specify the index of the columns
         :param: last_cell is a boolean determines if the last cell should be counted.
               e.g key: 3,
                   attach: 8,
                 file: 6
               the above example corresponds with the index if using the `def get_attachments_on_project()`
-              otherwise, specify your value in each key args.
+              otherwise, specify your value in each keyword args when calling the method.
         """
         from copy import deepcopy
         read = file_reader(folder=attach_folder, file_name=attach_file, skip=True, **kwargs)
@@ -436,7 +436,7 @@ class Projects:
             run = LOGIN.post(endpoint.issue_attachments(keys, query="attachments"), files=payload)
             print("Attachment added to {}".format(keys), "Status code: {}".format(run.status_code))
             add_log("Attachment added to {}".format(keys), "info")
-            # remove the last column since it contains empty cells.
+            # remove the last column since if it contains empty cells.
             if last_cell is True:
                 if count >= (length - 1):
                     break
@@ -449,14 +449,12 @@ class Projects:
                              **kwargs):
         """Download the attachments to your local device read from a csv file.
 
-        we assumes you're getting this from `def get_attachments_on_project()` method.
-        :param: cols - list of integers to specify the index of the file columns
-              :param: key, attach, file - integers to specify the index of the columns
-              e.g key: 3,
-                  attach: 6,
-                file: 8
+        we assume you're getting this from `def get_attachments_on_project()` method.
+              :param: attach, file - integers to specify the index of the columns
+              e.g attach: 6,
+                  file: 8
               the above example corresponds with the index if using the `def get_attachments_on_project()`
-              otherwise, specify your value in each key args.
+              otherwise, specify your value in each keyword args when calling the method.
         """
         read = file_reader(folder=file_folder, file_name=file_name, **kwargs)
         add_log("Reading attachment {}".format(file_name), "info")
@@ -465,7 +463,6 @@ class Projects:
             _file_name = r[file]
             fetch = LOGIN.get(attachment).content
             file_writer(download_path, file_name=_file_name, mode="wb", content=fetch, mark="file")
-            file_reader(download_path, file_name=_file_name, content=True, mode="rb")
             print("Attachment downloaded to {}".format(download_path), "Status code: {}".format(fetch.status_code))
             add_log("Attachment downloaded to {}".format(download_path), "info")
 
