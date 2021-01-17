@@ -1,7 +1,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/86f1594e0ac3406aa9609c4cd7c70642)](https://www.codacy.com/gh/princenyeche/atlassian-cloud-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/atlassian-cloud-api&amp;utm_campaign=Badge_Grade)
 
 # Jira one
-A REST API Implementation to Jira Cloud APIs for creating reports
+A REST API Implementation to Jira Cloud APIs for creating reports and for performing other Jira queries.
 
 ## Configurations
 Install using `pip`. you have to be on python >= 3.6.x in order to utilize this script.
@@ -45,18 +45,20 @@ being called from.
 desired report.
 * `USER` -&gt; This is an alias to the `User` class and it includes other methods that helps in quickly generating a
 desired report.
-* `csv_writer` -&gt; This function helps in creating a csv file. it comes with the below parameters 
+* `file_writer` -&gt; This function helps in creating a csv file. it comes with the below parameters 
   * `folder` -> string: a path to the name of the folder
   * `file_name` -> string: the name of the file being created
   * `data` -> iterable: an iterable data of any sort.
-  * `mark` -> string: helps evaluates how data is created, available options ["single", "many"]
+  * `mark` -> string: helps evaluates how data is created, available options ["single", "many", "file"]
   * `mode` -> string: file mode, available options ["a", "w", "a+", "w+", "wb"]
-* `csv_reader`  -&gt; This function helps in reading a csv file and returning a list comprehension of the data. Accepted
+  * `content` -> string: outputs the file in bytes.
+* `file_reader`  -&gt; This function helps in reading a csv file and returning a list comprehension of the data. Accepted
 parameter include
   * `folder` -> string: a path to the name of the folder
   * `file_name` -> string: the name of the file being created
   * `mode` -> string: file mode, available options ["r", "rb"]
   * `skip` -> bool: True allows you to skip the header if the file has any. otherwise defaults to False
+  * `content` -> bool: True allows you to read a byte file.
 * `path_builder` -&gt; This function helps to build a directory path and file path then returns the file path in the directory.
 parameters include
   * `path` -> string: a path to declare absolute to where the script is executed.
@@ -189,6 +191,34 @@ if __name__ == '__main__':
     jql = "project%20in%20(COM%2C%20PYT)%20order%20by%20created%20DESC"
     PROJECT.get_attachments_on_projects(query=jql)
 ```
+
+* Transfer a file across instances or download a file to your local drive from an Instance
+
+```python
+from jiraone import LOGIN, PROJECT
+from threading import Thread
+
+
+user = "email"
+password = "token"
+link = "https://yourinstance.atlassian.net"
+LOGIN(user=user, password=password, url=link)
+
+
+if __name__ == '__main__':
+    # the output of the file would be absolute to the directory where this python file is being executed from
+    jql = "project%20in%20(COM%2C%20PYT)%20order%20by%20created%20DESC"
+    # the below method, helps you download a report of a list of files per issue on a project or on projects
+    Thread(target=PROJECT.get_attachments_on_projects(query=jql)).start()
+    # afterwards, you can use the below method to move attachments across instances without downloading it
+    PROJECT.move_attachments_across_instances()
+    # if you're using your own file structure say a csv file, you need to identify the index of the attachment
+    # for this, 3 keyword args are use key=0, attach=1,  and file=2 -> all requires an integer value.
+    # PROJECT.move_attachments_across_instances(attach_file="new.csv", key=0, attach=1, file=2)
+    # To download an attachment locally use
+    PROJECT.download_attachments(download_path="Download", attach=1, file=2)
+```
+
 
 ## Support
 * For any issues or feature request, feel free to create an issue on Github or email me at support@elfapp.website
