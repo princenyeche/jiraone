@@ -399,6 +399,7 @@ class Projects:
                                           key: int = 3,
                                           attach: int = 8,
                                           file: int = 6,
+                                          last_cell: bool = True,
                                           **kwargs):
         """Ability to post an attachment into another Instance.
 
@@ -408,13 +409,19 @@ class Projects:
         * attachment url
         we assumes you're getting this from `def get_attachments_on_project()`
         :param: key, attach, file - integers to specify the index of the columns
+        :param: last_cell is a boolean determines if the last cell should be counted.
               e.g key: 3,
                   attach: 8,
                 file: 6
               the above example corresponds with the index if using the `def get_attachments_on_project()`
               otherwise, specify your value in each key args.
         """
+        from copy import deepcopy
         read = file_reader(folder=attach_folder, file_name=attach_file, skip=True, **kwargs)
+        add_log("Reading attachment {}".format(attach_file), "info")
+        count = 0
+        cols = deepcopy(read)
+        length = len(cols)
         for r in read:
             keys = r[key]
             attachment = r[attach]
@@ -428,6 +435,11 @@ class Projects:
             LOGIN.headers = new_headers
             run = LOGIN.post(endpoint.issue_attachments(keys, query="attachments"), files=payload)
             print("Attachment added to {}".format(keys), "Status code: {}".format(run.status_code))
+            add_log("Attachment added to {}".format(keys), "info")
+            # remove the last column since it contains empty cells.
+            if last_cell is True:
+                if count >= (length - 1):
+                    break
 
     @staticmethod
     def download_attachments(file_folder: str = None, file_name: str = None,
@@ -447,6 +459,7 @@ class Projects:
               otherwise, specify your value in each key args.
         """
         read = file_reader(folder=file_folder, file_name=file_name, **kwargs)
+        add_log("Reading attachment {}".format(file_name), "info")
         for r in read:
             attachment = r[attach]
             _file_name = r[file]
@@ -454,6 +467,7 @@ class Projects:
             file_writer(download_path, file_name=_file_name, mode="wb", content=fetch, mark="file")
             file_reader(download_path, file_name=_file_name, content=True, mode="rb")
             print("Attachment downloaded to {}".format(download_path), "Status code: {}".format(fetch.status_code))
+            add_log("Attachment downloaded to {}".format(download_path), "info")
 
 
 class Users:
