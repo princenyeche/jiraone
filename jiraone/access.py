@@ -255,7 +255,7 @@ class EndPoints:
         if warning is None:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
         else:
-            ...
+            pass
         return "{}/rest/api/3/attachment/{}".format(LOGIN.base_url, query)
 
     @classmethod
@@ -290,13 +290,14 @@ class EndPoints:
         :param: id_or_key required, datatype -> string
         The ID or key of the issue that attachments are added to.
         """
+        # TODO: check this endpoint again
         if uri is not None:
             return "{}/rest/api/3/attachment/{}".format(LOGIN.base_url, uri)
         else:
             if query is not None and attach_id is not None and id_or_key is None:
                 return "{}/rest/api/3/attachment/{}/{}".format(LOGIN.base_url, attach_id, query)
             elif query is not None and attach_id is None and id_or_key is not None:
-                return "{}/rest/api/3/attachment/{}/{}".format(LOGIN.base_url, id_or_key, query)
+                return "{}/rest/api/3/issue/{}/{}".format(LOGIN.base_url, id_or_key, query)
             else:
                 return "{}/rest/api/3/attachment/{}".format(LOGIN.base_url, attach_id)
 

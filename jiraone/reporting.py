@@ -36,11 +36,11 @@ class Projects:
         """
         count_start_at = 0
         headers = ["Project Key", "Project Name", "Issue Count", "Last Issue Update"]
-        csv_writer(folder=project_folder, file_name=project_file_name, data=headers)
+        file_writer(folder=project_folder, file_name=project_file_name, data=headers)
 
         def project():
-            csv_writer(project_folder, project_file_name, data=raw)
-            read_users = csv_reader(folder=project_folder, file_name=file_name)
+            file_writer(project_folder, project_file_name, data=raw)
+            read_users = file_reader(folder=project_folder, file_name=file_name)
             for user in read_users:
                 account_id = user[0]
                 display_name = user[2]
@@ -51,7 +51,7 @@ class Projects:
                 if str(data) == "[]":
                     raw_vision = [display_name, f"Has {permission} Permission: False",
                                   f"Project: {name}", f"User Status: {active_status}"]
-                    csv_writer(project_folder, project_file_name, data=raw_vision)
+                    file_writer(project_folder, project_file_name, data=raw_vision)
                 else:
                     for d in data:
                         d_name = d["displayName"]
@@ -59,7 +59,7 @@ class Projects:
                         raw_vision = [d_name, f"Has {permission} Permission: {active}",
                                       f"Project: {name}", f"User Status: {active_status}"]
 
-                        csv_writer(project_folder, project_file_name, data=raw_vision)
+                        file_writer(project_folder, project_file_name, data=raw_vision)
 
         file_name = user_extraction_file
         USER.get_all_users(file=file_name, folder=project_folder, **kwargs)
@@ -113,7 +113,7 @@ class Projects:
         put_list = deque()  # arrange the different values associated with dashboard
         dump_list = deque()  # dump the results into our csv writer
         headers = ["Dashboard Id", "Dashboard Name", "Owner", "Shared Permission"]
-        csv_writer(folder=dashboard_folder, file_name=dashboard_file_name, data=headers, **kwargs)
+        file_writer(folder=dashboard_folder, file_name=dashboard_file_name, data=headers, **kwargs)
 
         while True:
             load = LOGIN.get(endpoint.search_for_dashboard(start_at=count_start_at))
@@ -160,7 +160,7 @@ class Projects:
                         dash_run()
                         put_list = deque()
 
-                csv_writer(dashboard_folder, dashboard_file_name, data=dump_list, mark="many")
+                file_writer(dashboard_folder, dashboard_file_name, data=dump_list, mark="many")
 
                 if count_start_at > results["total"]:
                     print("Dashboard Reporting Completed")
@@ -179,7 +179,7 @@ class Projects:
         count_start_at = 0
         headers = ["Project Id ", "Project Key", "Project Name", "Project roles", "User AccountId", "User DisplayName",
                    "User role in Project"]
-        csv_writer(folder=roles_folder, file_name=roles_file_name, data=headers, **kwargs)
+        file_writer(folder=roles_folder, file_name=roles_file_name, data=headers, **kwargs)
 
         # get extraction of projects data
         def role_on() -> Any:
@@ -235,7 +235,7 @@ class Projects:
                             project_roles = data[3]
                             raw_dump = [project_id, project_key, project_name, project_roles, account_id, display_name,
                                         role_puller]
-                            csv_writer(folder=roles_folder, file_name=roles_file_name, data=raw_dump)
+                            file_writer(folder=roles_folder, file_name=roles_file_name, data=raw_dump)
 
                         for data in role_list:
                             pull_data()
@@ -244,7 +244,7 @@ class Projects:
                     project_role_list = deque()
 
         USER.get_all_users(folder=roles_folder, file=user_extraction, **kwargs)
-        read_users = csv_reader(folder=roles_folder, file_name=user_extraction, **kwargs)
+        read_users = file_reader(folder=roles_folder, file_name=user_extraction, **kwargs)
         while True:
             init = LOGIN.get(endpoint.get_projects(start_at=count_start_at))
             if init.status_code == 200:
@@ -265,17 +265,17 @@ class Projects:
     def get_attachments_on_projects(self, attachment_folder: str = "Attachment",
                                     attachment_file_name: str = "attachment_file.csv",
                                     **kwargs):
-        """Return all attachments on a Project or Projects
+        """Return all attachments of a Project or Projects
 
-        Get the size of attachments on an Issues, count those attachments collectively and return the total number
+        Get the size of attachments on an Issue, count those attachments collectively and return the total number
         on all Projects searched. JQL is used as a means to search for the project.
         """
         import re
         attach_list = deque()
         count_start_at = 0
-        headers = ["Project Id", "Project Key", "Project Name", "Issue Key", "Attachment size",
-                   "Attachment Type", "Created on by user", "Attachment url"]
-        csv_writer(folder=attachment_folder, file_name=attachment_file_name, data=headers, **kwargs)
+        headers = ["Project id", "Project key", "Project name", "Issue key", "Attachment size",
+                   "Attachment type", "Name of file", "Created on by user", "Attachment url"]
+        file_writer(folder=attachment_folder, file_name=attachment_file_name, data=headers, **kwargs)
 
         def pull_attachment_sequence() -> Optional:
             nonlocal attach_list
@@ -296,6 +296,7 @@ class Projects:
                                     display_name = attach["author"]["displayName"]
 
                                 def pull_attachment() -> Optional:
+                                    file_name = attach["filename"]  # name of the file
                                     created = attach["created"]  # datetime need to convert it
                                     attachment_size = attach["size"]  # in bytes, need to convert to mb
                                     mime_type = attach["mimeType"]
@@ -311,13 +312,13 @@ class Projects:
 
                                     calc_date = date_converter(created)
                                     pull = [project_id, project_key, project_name, keys, calc_size, mime_type,
-                                            f"{calc_date} by {display_name}", attachment_url]
+                                            file_name, f"{calc_date} by {display_name}", attachment_url]
                                     attach_list.append(pull)
 
                                 pull_attachment()
 
             raw_data = [x for x in attach_list]
-            csv_writer(attachment_folder, attachment_file_name, data=raw_data, mark="many")
+            file_writer(attachment_folder, attachment_file_name, data=raw_data, mark="many")
             attach_list.clear()
 
         while True:
@@ -358,19 +359,20 @@ class Projects:
                 _project_name = i[2]
                 _issue_key = i[3]
                 _attach_size = i[4]
-                _attach_type = i[5]
-                _created_by = i[6]
-                _attach_url = i[7]
+                _file_name = i[5]
+                _attach_type = i[6]
+                _created_by = i[7]
+                _attach_url = i[8]
                 raw_data_file = [_project_id, _project_key, _project_name, _issue_key,
-                                 _attach_size, _attach_type, _created_by, _attach_url]
-                csv_writer(attachment_folder, attachment_file_name, data=raw_data_file)
+                                 _attach_size, _file_name, _attach_type, _created_by, _attach_url]
+                file_writer(attachment_folder, attachment_file_name, data=raw_data_file)
 
             # lastly we want to append the total sum of attachment size.
-            raw_data_file = ["", "", "", "", "Total Size: {:.2f} MB".format(calc_made), "", "", ""]
-            csv_writer(attachment_folder, attachment_file_name, data=raw_data_file)
+            raw_data_file = ["", "", "", "", "Total Size: {:.2f} MB".format(calc_made), "", "", "", ""]
+            file_writer(attachment_folder, attachment_file_name, data=raw_data_file)
 
-        read_file = csv_reader(attachment_folder, attachment_file_name, skip=True)
-        csv_writer(attachment_folder, attachment_file_name, data=headers, mode="w")
+        read_file = file_reader(attachment_folder, attachment_file_name, skip=True)
+        file_writer(attachment_folder, attachment_file_name, data=headers, mode="w")
         re_write()
 
         print("File extraction completed. Your file is located at {}".format(path_builder
@@ -390,6 +392,68 @@ class Projects:
         mega_byte = 1000 * 1000
         visor = byte_size / mega_byte
         return "Size: {:.2f} MB".format(visor)
+
+    @staticmethod
+    def move_attachments_across_instances(attach_folder: str = "Attachment",
+                                          attach_file: str = "attachment_file.csv",
+                                          key: int = 3,
+                                          attach: int = 6,
+                                          file: int = 8,
+                                          **kwargs):
+        """Ability to post an attachment into another Instance.
+
+        given the data is extracted from a csv file which contains the below information
+        * Issue key
+        * file name
+        * attachment url
+        we assumes you're getting this from `def get_attachments_on_project()`
+        :param: key, attach, file - integers to specify the index of the columns
+              e.g key: 3,
+                  attach: 6,
+                file: 8
+              the above example corresponds with the index if using the `def get_attachments_on_project()`
+              otherwise, specify your value in each key args.
+        """
+        read = file_reader(folder=attach_folder, file_name=attach_file, skip=True, **kwargs)
+        for r in read:
+            keys = r[key]
+            attachment = r[attach]
+            _file_name = r[file]
+            fetch = LOGIN.get(attachment).content
+            # use the files keyword args to send multipart/form-data in the post request of LOGIN.post
+            payload = {"file": (_file_name, fetch)}
+            # modified our initial headers to accept X-Atlassian-Token to avoid (CSRF/XSRF)
+            new_headers = {"Accept": "application/json",
+                           "X-Atlassian-Token": "no-check"}
+            LOGIN.headers = new_headers
+            run = LOGIN.post(endpoint.issue_attachments(keys, query="attachments"), files=payload)
+            print("Attachment added to {}".format(keys), "Status code: {}".format(run.status_code))
+
+    @staticmethod
+    def download_attachments(file_folder: str = None, file_name: str = None,
+                             download_path: str = "Downloads",
+                             attach: int = 6,
+                             file: int = 8,
+                             **kwargs):
+        """Download the attachments to your local device read from a csv file.
+
+        we assumes you're getting this from `def get_attachments_on_project()` method.
+        :param: cols - list of integers to specify the index of the file columns
+              :param: key, attach, file - integers to specify the index of the columns
+              e.g key: 3,
+                  attach: 6,
+                file: 8
+              the above example corresponds with the index if using the `def get_attachments_on_project()`
+              otherwise, specify your value in each key args.
+        """
+        read = file_reader(folder=file_folder, file_name=file_name, **kwargs)
+        for r in read:
+            attachment = r[attach]
+            _file_name = r[file]
+            fetch = LOGIN.get(attachment).content
+            file_writer(download_path, file_name=_file_name, mode="wb", content=fetch, mark="file")
+            file_reader(download_path, file_name=_file_name, content=True, mode="rb")
+            print("Attachment downloaded to {}".format(download_path), "Status code: {}".format(fetch.status_code))
 
 
 class Users:
@@ -437,7 +501,7 @@ class Users:
     def report(self, category: str = Any, filename: str = "users_report.csv") -> Optional:
         """Creates a user report file in CSV format."""
         read = [d for d in self.user_list]
-        csv_writer(folder=category, file_name=filename, data=read, mark="many")
+        file_writer(folder=category, file_name=filename, data=read, mark="many")
         add_log(f"Generating report file on {filename}", "info")
 
     def user_activity(self, status: str = Any, account_type: str = Any, results: List = Any) -> Any:
@@ -464,10 +528,10 @@ class Users:
                             user_extraction_file: str = "group_extraction.csv", **kwargs):
         """Get all users and the groups associated to them on the Instance."""
         headers = ["Name", "AccountId", "Groups", "User status"]
-        csv_writer(folder=group_folder, file_name=group_file_name, data=headers, **kwargs)
+        file_writer(folder=group_folder, file_name=group_file_name, data=headers, **kwargs)
         file_name = user_extraction_file
         self.get_all_users(file=file_name, folder=group_folder, **kwargs)
-        reader = csv_reader(file_name=file_name, folder=group_folder, **kwargs)
+        reader = file_reader(file_name=file_name, folder=group_folder, **kwargs)
         for user in reader:
             account_id = user[0]
             display_name = user[2]
@@ -476,7 +540,7 @@ class Users:
             results = json.loads(load.content)
             get_all = [d["name"] for d in results]
             raw = [display_name, account_id, get_all, active_status]
-            csv_writer(folder=group_folder, file_name=group_file_name, data=raw)
+            file_writer(folder=group_folder, file_name=group_file_name, data=raw)
 
         print("File extraction completed. Your file is located at {}"
               .format(path_builder(path=group_folder, file_name=group_file_name)))
@@ -493,9 +557,9 @@ def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
     return base_file
 
 
-def csv_writer(folder: str = Any, file_name: str = Any, data: Iterable = object,
-               mark: str = "single", mode: str = "a+", **kwargs) -> Any:
-    """Reads and writes to a file, single or multiple rows."""
+def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = object,
+                mark: str = "single", mode: str = "a+", content: str = Any, **kwargs) -> Any:
+    """Reads and writes to a file, single or multiple rows or write as byte files."""
     file = path_builder(path=folder, file_name=file_name)
     if mode:
         with open(file, mode) as f:
@@ -504,21 +568,25 @@ def csv_writer(folder: str = Any, file_name: str = Any, data: Iterable = object,
                 write.writerow(data)
             if mark == "many":
                 write.writerows(data)
+            if mark == "file":
+                f.write(content)
             add_log(f"Writing to file {file_name}", "info")
 
 
-def csv_reader(folder: str = Any, file_name: str = Any, mode: str = "r",
-               skip: bool = False, **kwargs) -> CsvData:
-    """Reads a CSV file and returns a list comprehension of the data."""
+def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
+                skip: bool = False, content: bool = False, **kwargs) -> Union[CsvData, str]:
+    """Reads a CSV file and returns a list comprehension of the data or reads a byte into strings."""
     file = path_builder(path=folder, file_name=file_name)
     if mode:
         with open(file, mode) as f:
             read = csv.reader(f, delimiter=",")
             if skip is True:
                 next(read, None)
+            if content is True:
+                feed = f.read()
             load = [d for d in read]
             add_log(f"Read file {file_name}", "info")
-            return load
+            return load if content is False else feed
 
 
 USER = Users()
