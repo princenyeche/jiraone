@@ -397,8 +397,8 @@ class Projects:
     def move_attachments_across_instances(attach_folder: str = "Attachment",
                                           attach_file: str = "attachment_file.csv",
                                           key: int = 3,
-                                          attach: int = 6,
-                                          file: int = 8,
+                                          attach: int = 8,
+                                          file: int = 6,
                                           **kwargs):
         """Ability to post an attachment into another Instance.
 
@@ -409,8 +409,8 @@ class Projects:
         we assumes you're getting this from `def get_attachments_on_project()`
         :param: key, attach, file - integers to specify the index of the columns
               e.g key: 3,
-                  attach: 6,
-                file: 8
+                  attach: 8,
+                file: 6
               the above example corresponds with the index if using the `def get_attachments_on_project()`
               otherwise, specify your value in each key args.
         """
@@ -432,8 +432,8 @@ class Projects:
     @staticmethod
     def download_attachments(file_folder: str = None, file_name: str = None,
                              download_path: str = "Downloads",
-                             attach: int = 6,
-                             file: int = 8,
+                             attach: int = 8,
+                             file: int = 6,
                              **kwargs):
         """Download the attachments to your local device read from a csv file.
 
