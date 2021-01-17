@@ -22,7 +22,7 @@ and many more depending on what you can come up with.
 """
 from jiraone.access import LOGIN, endpoint, echo
 from jiraone.jira_logs import add_log, WORK_PATH
-from jiraone.reporting import PROJECT, USER, csv_writer, csv_reader, path_builder
+from jiraone.reporting import PROJECT, USER, file_writer, file_reader, path_builder
 
 __all__ = ["LOGIN",
            "endpoint",
@@ -31,6 +31,6 @@ __all__ = ["LOGIN",
            "WORK_PATH",
            "PROJECT",
            "USER",
-           "csv_writer",
-           "csv_reader",
+           "file_writer",
+           "file_reader",
            "path_builder"]
