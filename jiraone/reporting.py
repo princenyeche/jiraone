@@ -423,6 +423,7 @@ class Projects:
         cols = deepcopy(read)
         length = len(cols)
         for r in read:
+            count += 1
             keys = r[key]
             attachment = r[attach]
             _file_name = r[file]
