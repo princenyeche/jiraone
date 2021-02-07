@@ -67,158 +67,18 @@ parameters include
 For further knowledge on how to use the classes, methods or functions. Open the jiraone package and read the docstring on the
 aforementioned methods or functions above to get further information.
 
-## Using the API
-Jiraone basically allows you to create a report based method using Atlassian REST API on your cloud infrastructure.
-it uses a class method on the Endpoint Class, so you can easily call the direct Atlassian API.
-In generating reports, you can create functions, classes or even methods to derive the desired results.
-```python
-from jiraone import LOGIN, endpoint
-
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
-
-
-def priorities():
-        load = LOGIN.get(endpoint.get_all_priorities())
-        if load.status_code == 200:
-             # some expression here
-             ...
-```
-The Script comes with a User and Project Classes which includes basic reporting examples. The User class has a user generator,
-which easily enables you to fetch all users on the instance without you programming such yourself.
-All these methods and functions are accessible directly from the jiraone package.
-
-## Basic Report Usage
-The script comes with some basic reporting Classes and methods which you can use to generate a report in CSV format.
-currently only CSV file output is supported. other format such as JSON might be available in future.
-* generate a report of all active users in your instance
-
-```python
-from jiraone import LOGIN, USER
-
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
-
-
-if __name__ == '__main__':
-    # the output of the file would be absolute to the directory where this python file is being executed from
-    USER.get_all_users(pull="active", user_type="atlassian", file="user_file.csv")
-```
-
-* generate a report of users in your instance, who has BROWSE access to the projects on the instance.
-
-```python
-from jiraone import LOGIN, PROJECT
-
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
-
-
-if __name__ == '__main__':
-    # the output of the file would be absolute to the directory where this python file is being executed from
-    PROJECT.projects_accessible_by_users("expand=insight,description", "searchBy=key,name", permission="BROWSE",
-                                        pull="active", user_type="atlassian")
-```
-
-* generate a report of the number of Dashboard on the Instance, who's the owner and who it is shared with.
-
-```python
-from jiraone import LOGIN, PROJECT
-
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
-
-
-if __name__ == '__main__':
-    # the output of the file would be absolute to the directory where this python file is being executed from
-    PROJECT.dashboards_shared_with()
-```
-
-* generate a report of all user in the instance and which group do they belong to
-
-```python
-from jiraone import LOGIN, USER
-
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
-
-
-if __name__ == '__main__':
-    # the output of the file would be absolute to the directory where this python file is being executed from
-    USER.get_all_users_group(pull="active", user_type="atlassian")
-```
-
-* generate a report, get all project list and users within a project as well as their corresponding project role in the project.
-
-```python
-from jiraone import LOGIN, PROJECT
-
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
-
-
-if __name__ == '__main__':
-    # the output of the file would be absolute to the directory where this python file is being executed from
-    PROJECT.get_all_roles_for_projects(pull="active", user_type="atlassian")
-```
-
-* generate a report, get all attachments per issue on a project or search for projects and get all attachment urls
-
-```python
-from jiraone import LOGIN, PROJECT
-
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
-
-
-if __name__ == '__main__':
-    # the output of the file would be absolute to the directory where this python file is being executed from
-    # you can use any valid jql query
-    jql = "project%20in%20(COM%2C%20PYT)%20order%20by%20created%20DESC"
-    PROJECT.get_attachments_on_projects(query=jql)
-```
-
-* Transfer a file across instances or download a file to your local drive from an Instance
-
-```python
-from jiraone import LOGIN, PROJECT
-from threading import Thread
-
-
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
-
-
-if __name__ == '__main__':
-    # the output of the file would be absolute to the directory where this python file is being executed from
-    jql = "project%20in%20(COM%2C%20PYT)%20order%20by%20created%20DESC"
-    # the below method, helps you download a report of a list of files per issue on a project or on projects
-    Thread(target=PROJECT.get_attachments_on_projects(query=jql)).start()
-    # afterwards, you can use the below method to move attachments across instances without downloading it
-    PROJECT.move_attachments_across_instances()
-    # if you're using your own file structure say a csv file, you need to identify the index of the attachment
-    # for this, 3 keyword args are use key=0, attach=1,  and file=2 -> all requires an integer value.
-    # PROJECT.move_attachments_across_instances(attach_file="new.csv", key=0, attach=1, file=2)
-    # To download an attachment locally use
-    PROJECT.download_attachments(download_path="Download", attach=1, file=2)
-```
-
-
-## Support
-* For any issues or feature request, feel free to create an issue on Github or email me at support@elfapp.website
+# Directory
+* [Using the API](https://princenyeche.github.io/atlassian-cloud-api/api/#using-the-api)
+  * [endpoint](https://princenyeche.github.io/atlassian-cloud-api/api/#endpoint)
+  * [LOGIN](https://princenyeche.github.io/atlassian-cloud-api/api/#login)
+  * [echo](https://princenyeche.github.io/atlassian-cloud-api/api/#echo)
+  * [add_log](https://princenyeche.github.io/atlassian-cloud-api/api/#add-log)
+  * [file_writer](https://princenyeche.github.io/atlassian-cloud-api/api/#file-writer)
+  * [file_reader](https://princenyeche.github.io/atlassian-cloud-api/api/#file-reader)
+  * [path_builder](https://princenyeche.github.io/atlassian-cloud-api/api/#path-builder)
+  * [For](https://princenyeche.github.io/atlassian-cloud-api/api/#for)
+  * [replacement_placeholder](https://princenyeche.github.io/atlassian-cloud-api/api/#replacement-placeholder)
+* [Basic report usage](https://github.com)
+  * [PROJECT API](https://princenyeche.github.io/atlassian-cloud-api/report/#poject-api)
+  * [USER API](https://princenyeche.github.io/atlassian-cloud-api/report/#user-api)
+  * [Support](https://princenyeche.github.io/atlassian-cloud-api/report/#support)
