@@ -167,7 +167,7 @@ dir_path = path_builder(path=path, file_name=file)
 
 The `For` Class is a Class to show the implementation of a 'for' loop. it calls the __iter__ magic method then the __next__ method
 and raises a StopIteration once it reaches the end of the loop. Datatype expected are list, dict, tuple, str, set or int.
-It contains one require parameter called `data` which it uses to receive the various datatype and translate them into a list of items, 
+It contains one required parameter called `data` which it uses to receive the various datatype and translate them into a list of items, 
 retaining their own unique datatype.
 
 It also contains a unique method called `__dictionary__()` which helps in indexing dict objects. It works the same way as any iteration.
