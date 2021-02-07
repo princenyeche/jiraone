@@ -79,6 +79,6 @@ aforementioned methods or functions above to get further information.
   * [For](https://princenyeche.github.io/atlassian-cloud-api/api/#for)
   * [replacement_placeholder](https://princenyeche.github.io/atlassian-cloud-api/api/#replacement-placeholder)
 * [Basic report usage](https://github.com)
-  * [PROJECT API](https://princenyeche.github.io/atlassian-cloud-api/report/#poject-api)
+  * [PROJECT API](https://princenyeche.github.io/atlassian-cloud-api/report/#project-api)
   * [USER API](https://princenyeche.github.io/atlassian-cloud-api/report/#user-api)
   * [Support](https://princenyeche.github.io/atlassian-cloud-api/report/#support)
