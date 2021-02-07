@@ -5,7 +5,7 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
-from typing import Any, Optional, List, Iterable, Tuple, Union
+from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict
 from collections import deque
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
@@ -29,9 +29,11 @@ class Projects:
 
         Multiple arguments separate by comma as the first argument in the function, all other arguments should
         be keyword args that follows. This API helps to generate full user accessibility to Projects on Jira.
-        It checks the users access and commits the finding to a report file. You can tweak the permission argument
-        with the options mention here
+        It checks the users access and commits the finding to a report file.
+
+        You can tweak the permission argument with the options mention here
         https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search
+
         for endpoint /rest/api/3/user/permission/search
         """
         count_start_at = 0
@@ -404,23 +406,31 @@ class Projects:
         """Ability to post an attachment into another Instance.
 
         given the data is extracted from a csv file which contains the below information
-        * Issue key
-        * file name
-        * attachment url
-        we assume you're getting this from `def get_attachments_on_project()`
-        :param: key, attach, file - integers to specify the index of the columns
-        :param: last_cell is a boolean determines if the last cell should be counted.
-              e.g key: 3,
-                  attach: 8,
-                file: 6
-              the above example corresponds with the index if using the `def get_attachments_on_project()`
-              otherwise, specify your value in each keyword args when calling the method.
+         * Issue key
+         * file name
+         * attachment url
+        we assume you're getting this from
+        `def get_attachments_on_project()`
+
+        :param attach_folder a folder or directory path
+        :param attach_file a file to a file name
+        :param key a row index of the column
+        :param attach a row index of the column
+        :param file - integers to specify the index of the columns
+        :param last_cell is a boolean determines if the last cell should be counted.
+             e.g
+                * key=3,
+                * attach=6,
+                * file=8
+
+        the above example corresponds with the index if using the
+         `def get_attachments_on_project()` otherwise, specify your value in each
+         keyword args when calling the method.
         """
-        from copy import deepcopy
         read = file_reader(folder=attach_folder, file_name=attach_file, skip=True, **kwargs)
         add_log("Reading attachment {}".format(attach_file), "info")
         count = 0
-        cols = deepcopy(read)
+        cols = read
         length = len(cols)
         for r in read:
             count += 1
@@ -435,8 +445,12 @@ class Projects:
                            "X-Atlassian-Token": "no-check"}
             LOGIN.headers = new_headers
             run = LOGIN.post(endpoint.issue_attachments(keys, query="attachments"), files=payload)
-            print("Attachment added to {}".format(keys), "Status code: {}".format(run.status_code))
-            add_log("Attachment added to {}".format(keys), "info")
+            if run.status_code != 200:
+                print("Attachment not added to {}".format(keys), "Status code: {}".format(run.status_code))
+                add_log("Attachment not added to {} due to {}".format(keys, run.reason), "error")
+            else:
+                print("Attachment added to {}".format(keys), "Status code: {}".format(run.status_code))
+                add_log("Attachment added to {}".format(keys), "info")
             # remove the last column since if it contains empty cells.
             if last_cell is True:
                 if count >= (length - 1):
@@ -450,10 +464,15 @@ class Projects:
                              **kwargs):
         """Download the attachments to your local device read from a csv file.
 
-        we assume you're getting this from `def get_attachments_on_project()` method.
-              :param: attach, file - integers to specify the index of the columns
-              e.g attach: 6,
-                  file: 8
+        we assume you're getting this from   `def get_attachments_on_project()` method.
+              :param attach, file - integers to specify the index of the columns
+              :param file_folder a folder or directory where the file
+              :param download_path a directory where files are stored
+              :param file a row to the index of the column
+              :param file_name a file name to a file
+                e.g
+                  * attach=6,
+                  * file=8
               the above example corresponds with the index if using the `def get_attachments_on_project()`
               otherwise, specify your value in each keyword args when calling the method.
         """
@@ -466,6 +485,43 @@ class Projects:
             file_writer(download_path, file_name=_file_name, mode="wb", content=fetch, mark="file")
             print("Attachment downloaded to {}".format(download_path), "Status code: {}".format(fetch.status_code))
             add_log("Attachment downloaded to {}".format(download_path), "info")
+
+    @staticmethod
+    def extract_jira_issues(*args, **kwargs):
+        """Returns all issues within an instance without the 1K limit.
+
+        Issue download contains all fields, fields can be specified as well
+        Issue history included as fields
+        Attachments url included as fields
+        All comments included
+        Sprint id and name included
+        User accountId included
+        """
+        # TODO: create this method
+        pass
+
+    def move_projects_across_instances(
+            self,
+            instance_a: str = Any,
+            instance_b: str = Any,
+            extracted_file: str = Any,
+            method_allowed: bool = False,
+            method_function: Callable = Any,
+            properties: Union[float, int] = Any,
+            classification: str = Ellipsis,
+            diagram: List[str] = Any,
+            probability: Dict[List[str], int] = Any,
+            status: Tuple[Union[List[str]]] = Any
+    ):
+        """Ability to move projects between instances.
+
+        Everything within the Project is maintained.
+        Full user permission required, in order to successful transfer and recreate
+        the issue between instances.
+        everything within Instance A project A into Instance B project B is retained.
+        """
+        # TODO: Create this method and its features. this is a work in progress.
+        pass
 
 
 class Users:
@@ -599,6 +655,46 @@ def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
             load = [d for d in read]
             add_log(f"Read file {file_name}", "info")
             return load if content is False else feed
+
+
+def replacement_placeholder(string: str = Any, data: list = Any,
+                            iterable: list = List,
+                            row: int = 2) -> Any:
+    """Return multiple string replacement.
+
+    :param string  a string that needs to be checked
+    :param data  a list of strings with one row in the string being checked.
+    :param iterable an iterable data that needs to be replaced with.
+    :param row an indicator of the column to check.
+
+    # Usage:
+    hold = ["Hello", "John doe", "Post mortem"]
+    text = ["<name> <name>, welcome to the <name> of what is to come"]
+    cb = replacement_placeholder("<name>", text, hold, 0)
+    print(cb)
+    """
+    result = None
+    count = 0
+    length = len(iterable)
+    for _ in iterable:
+        if count == 0:
+            if string in data[row]:
+                result = [lines.replace(string, iterable[count], 1) for lines in data]
+            else:
+                sys.stderr.write("Word {} cannot be found \n".format(string))
+                add_log("Word {} cannot be found".format(string), "error")
+                sys.exit(1)
+        if count > 0:
+            if string in result[row]:
+                result = [lines.replace(string, iterable[count], 1) for lines in result]
+            else:
+                sys.stderr.write("Word {} cannot be found \n".format(string))
+                add_log("Word {} cannot be found".format(string), "error")
+                sys.exit(1)
+        count += 1
+        if count > length:
+            break
+    return result
 
 
 USER = Users()

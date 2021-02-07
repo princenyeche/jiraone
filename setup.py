@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="jiraone",
-    version="0.1.9",
+    version="0.2.0",
     author="Prince Nyeche",
     author_email="support@elfapp.website",
     description="A REST API Implementation to Jira Cloud APIs for creating reports and "
