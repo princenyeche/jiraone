@@ -126,7 +126,7 @@ if __name__ == '__main__':
     # afterwards, you can use the below method to move attachments across instances without downloading it
     PROJECT.move_attachments_across_instances()
     # if you're using your own file structure say a csv file, you need to identify the index of the attachment
-    # for this, 3 keyword args are use key=0, attach=1,  and file=2 -> all requires an integer value.
+    # for this, 3 keyword args are used which are key=0, attach=1,  and file=2 -> all requires an integer value.
     # PROJECT.move_attachments_across_instances(attach_file="new.csv", key=0, attach=1, file=2)
     # To download an attachment locally use
     PROJECT.download_attachments(download_path="Download", attach=1, file=2)
