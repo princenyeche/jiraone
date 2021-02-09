@@ -132,6 +132,29 @@ if __name__ == '__main__':
     PROJECT.download_attachments(download_path="Download", attach=1, file=2)
 ```
 
+* Track the number of comments sent to a reporter on per issue and get the total sum sent by the reporter and by other users.
+
+```python
+from jiraone import LOGIN, PROJECT
+
+
+user = "email"
+password = "token"
+link = "https://yourinstance.atlassian.net"
+LOGIN(user=user, password=password, url=link)
+
+
+if __name__ == '__main__':
+    # the output of the file would be absolute to the directory where this python file is being executed from
+    # this method uses various keyword arguments:
+    # pull -> string - available options [active, inactive, both]
+    # user_type -> string - available options [atlassian, customer, app, unknown]
+    # find_user -> string - display name of the user you're searching for
+    # duration -> string - jql function to denote days of calendar e.g. startOfWeek(-1) or startOfMonth(-1)
+    # status -> string - statuses you want to check e.g Open or Closed or Open, Closed for multiple statuses check
+    # file -> string - a file name to use as place_holder for user search. if not it defaults to user_file.csv
+    PROJECT.get_total_comments_on_issues(find_user="Prince Nyeche", pull="active", user_type="atlassian")
+```
 
 ## Support
 * For any issues or feature request, feel free to create an issue on Github or email me at support@elfapp.website
