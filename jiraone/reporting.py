@@ -6,12 +6,13 @@ Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
 from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict
-from collections import deque
+from collections import deque, namedtuple
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
 import csv
 import sys
 import os
+import re
 
 CsvData = List[List[str]]
 
@@ -272,7 +273,6 @@ class Projects:
         Get the size of attachments on an Issue, count those attachments collectively and return the total number
         on all Projects searched. JQL is used as a means to search for the project.
         """
-        import re
         attach_list = deque()
         count_start_at = 0
         headers = ["Project id", "Project key", "Project name", "Issue key", "Attachment size",
@@ -305,14 +305,8 @@ class Projects:
                                     attachment_url = attach["content"]
 
                                     calc_size = self.byte_converter(attachment_size)
+                                    calc_date = self.date_converter(created)
 
-                                    def date_converter(val) -> str:
-                                        """split the datetime value and output a string."""
-                                        get_date_time = val.split("T")
-                                        get_am_pm = get_date_time[1].split(".")
-                                        return f"Created on {get_date_time[0]} {get_am_pm[0]}"
-
-                                    calc_date = date_converter(created)
                                     pull = [project_id, project_key, project_name, keys, calc_size, mime_type,
                                             file_name, f"{calc_date} by {display_name}", attachment_url]
                                     attach_list.append(pull)
@@ -338,19 +332,8 @@ class Projects:
 
             count_start_at += 50
 
-        def grade_and_sort() -> Union[float, int]:
-            for node in read_file:
-                pattern = re.compile(r"(\d*?[0-9]\.[0-9]*)", re.I)
-                if pattern is not None:
-                    if pattern.search(node[4]):
-                        attach_list.append(pattern.search(node[4]).group())
-
-            retain = [float(s) for s in attach_list]
-            calc_sum = sum(retain)
-            return calc_sum
-
         def re_write():
-            calc_made = grade_and_sort()
+            calc_made = self.grade_and_sort(attach_list, read_file)
             attach_list.clear()
             rd_file = read_file
             # sort the file using the issue_key column
@@ -394,6 +377,25 @@ class Projects:
         mega_byte = 1000 * 1000
         visor = byte_size / mega_byte
         return "Size: {:.2f} MB".format(visor)
+
+    @staticmethod
+    def date_converter(val) -> str:
+        """split the datetime value and output a string."""
+        get_date_time = val.split("T")
+        get_am_pm = get_date_time[1].split(".")
+        return f"Created on {get_date_time[0]} {get_am_pm[0]}"
+
+    @staticmethod
+    def grade_and_sort(attach_list, read_file) -> Union[float, int]:
+        for node in read_file:
+            pattern = re.compile(r"(\d*?[0-9]\.[0-9]*)")
+            if pattern is not None:
+                if pattern.search(node[4]):
+                    attach_list.append(pattern.search(node[4]).group())
+
+        retain = [float(s) for s in attach_list]
+        calc_sum = sum(retain)
+        return calc_sum
 
     @staticmethod
     def move_attachments_across_instances(attach_folder: str = "Attachment",
@@ -511,7 +513,8 @@ class Projects:
             classification: str = Ellipsis,
             diagram: List[str] = Any,
             probability: Dict[List[str], int] = Any,
-            status: Tuple[Union[List[str]]] = Any
+            status: Tuple[Union[List[str]]] = Any,
+            **kwargs
     ):
         """Ability to move projects between instances.
 
@@ -522,6 +525,155 @@ class Projects:
         """
         # TODO: Create this method and its features. this is a work in progress.
         pass
+
+    @staticmethod
+    def get_total_comments_on_issues(folder: str = "Comment", file_name: str = "comment_file.csv",
+                                     **kwargs):
+        """Return a report with the number of comments sent to or by a reporter (if any).
+
+        This api will return comment count, the total comment sent by a reporter
+        per issue and collectively sum up a total.
+        It also shows how many comments other users sent on the issue.
+        """
+        comment_list = deque()
+        pull = "active" if "pull" not in kwargs else kwargs["pull"]
+        user_type = "atlassian" if "user_type" not in kwargs else kwargs["user_type"]
+        file = "user_file.csv" if "file" not in kwargs else kwargs["file"]
+        find_user = "test user" if "find_user" not in kwargs else kwargs["find_user"]
+        duration = "startOfWeek(-1)" if "duration" not in kwargs else kwargs["duration"]
+        status = None if "status" not in kwargs else kwargs["status"]
+        get_user = ""
+        headers = ["Project Id", "Project Key", "Project Name", "Issue Key", "Total Comment",
+                   "Reporter accountId", "Display name of Reporter", "Comment by Reporter",
+                   "Comment by others"]
+        file_writer(folder, file_name, data=headers)
+        USER.get_all_users(pull=pull,
+                           user_type=user_type,
+                           file=file, folder=folder)
+        CheckUser = namedtuple("CheckUser", ["accountId", "account_type", "display_name", "active"])
+        read = file_reader(folder=folder, file_name=file)
+        for _ in read:
+            f = CheckUser._make(_)
+            if find_user in f._asdict().values():
+                get_user = f.accountId
+                print("User {} found - accountId: {}".format(find_user, get_user))
+
+        if get_user == "":
+            print("User: {}, not found exiting search...".format(find_user))
+            sys.exit(1)
+        search_issues = "reporter = {} AND updated <= {}".format(get_user, duration) if "status" not in kwargs \
+            or status is None \
+            else "reporter = {} AND updated <= {} AND status in ({})".format(get_user, duration, status)
+        print("Searching with JQL:", search_issues)
+        count_start_at = 0
+
+        def extract_issue():
+            """Find the comment in each issue and count it."""
+            comment_by_users = 0
+            comment_by_others = 0
+            for issues in result_data["issues"]:
+                keys = issues["key"]
+                get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=keys))
+                if get_issue_keys.status_code == 200:
+                    key_data = json.loads(get_issue_keys.content)
+                    data = key_data["fields"]
+                    if "project" or "comment" in data:
+                        project_id = data["project"]["id"]
+                        project_name = data["project"]["name"]
+                        project_key = data["project"]["key"]
+                        comments = data["comment"]
+                        if comments is not None:
+                            comment_total = comments["total"]
+                            comment_self = comments["self"]
+                            get_comment = LOGIN.get(comment_self)
+                            if get_comment.status_code == 200:
+                                comment_data = json.loads(get_comment.content)
+                                reporter_name = ""
+                                reporter_aid = ""
+                                for comment in comment_data["comments"]:
+                                    if "author" in comment:
+                                        display_name = comment["author"]["displayName"]
+                                        account_id = comment["author"]["accountId"]
+                                        if account_id == get_user:
+                                            reporter_name = display_name
+                                            reporter_aid = account_id
+                                            comment_by_users += 1
+                                        if account_id != get_user:
+                                            comment_by_others += 1
+
+                                def pull_comments() -> Optional:
+                                    raw_dump = [project_id, project_key, project_name, keys,
+                                                comment_total, reporter_aid, reporter_name,
+                                                comment_by_users, comment_by_others]
+                                    comment_list.append(raw_dump)
+
+                                pull_comments()
+                                comment_by_users = 0
+                                comment_by_others = 0
+
+            raw_data = [z for z in comment_list]
+            file_writer(folder, file_name, data=raw_data, mark="many")
+            comment_list.clear()
+
+        while True:
+            get_issues = LOGIN.get(endpoint.search_issues_jql(query=search_issues, start_at=count_start_at))
+            if get_issues.status_code == 200:
+                result_data = json.loads(get_issues.content)
+                if count_start_at > result_data["total"]:
+                    print("Issues extraction completed")
+                    add_log("Issue extraction completed", "info")
+                    break
+
+                print("Extracting Issues...")
+                extract_issue()
+
+            count_start_at += 50
+
+        def count_and_total() -> Tuple[int, int, int]:
+            for row in read_file:
+                comment_list.append(row)
+
+            wid_list = [int(s[4]) for s in comment_list]
+            row_list = [int(s[7]) for s in comment_list]
+            col_list = [int(s[8]) for s in comment_list]
+            calc_list_zero = sum(wid_list)
+            calc_list_one = sum(row_list)
+            calc_list_two = sum(col_list)
+            return calc_list_zero, calc_list_one, calc_list_two
+
+        def write_result():
+            list_data = count_and_total()
+            comment_list.clear()
+            sorts = sorted(read_file, key=lambda rows: rows[3], reverse=False)
+            for c in sorts:
+                _project_id = c[0]
+                _project_key = c[1]
+                _project_name = c[2]
+                _issue_key = c[3]
+                _comment_total = c[4]
+                _get_user = c[5]
+                _reporter_name = c[6]
+                _comm_by_reporter = c[7]
+                _comm_by_others = c[8]
+
+                raw_data_file = [_project_id, _project_key, _project_name, _issue_key, _comment_total,
+                                 _get_user, _reporter_name, _comm_by_reporter, _comm_by_others]
+                file_writer(folder, file_name, data=raw_data_file)
+
+            # arranging the file last row
+            raw_data_file = ["", "", "", "", "Total comments: {}".format(list_data[0]),
+                             "", "", "Total comments by Reporter: {}".format(list_data[1]),
+                             "Total comments by others: {}".format(list_data[2])]
+            file_writer(folder, file_name, data=raw_data_file)
+
+        read_file = file_reader(folder, file_name, skip=True)
+        file_writer(folder, file_name, mode="w", data=headers)
+        write_result()
+
+        print("File extraction for comments completed. Your file is located at {}".format(path_builder
+                                                                                          (path=folder,
+                                                                                           file_name=file_name)))
+        add_log("File extraction for comments completed", "info")
 
 
 class Users:

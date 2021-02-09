@@ -11,7 +11,7 @@ pip install jiraone
 
 ## Classes, functions and methods
 Jiraone comes with various classes, functions and methods. Aliases as well, are used to represent
-links to classes and functions. The major ones to take note of are the below.
+links to classes and functions. The major ones to take note of are the ones show on the directory link below.
 
 For further knowledge on how to use the classes, methods or functions. Open the jiraone package and read the docstring on the
 aforementioned methods or functions above to get further information.
