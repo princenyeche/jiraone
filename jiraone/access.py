@@ -1315,7 +1315,7 @@ class Field(object):
 
         """
         search = None
-        options = None if "labels" not in kwargs else kwargs["options"]
+        options = None if "options" not in kwargs else kwargs["options"]
         query = None if "query" not in kwargs else kwargs["query"]
         if field_type == "custom":
             search = self.search_field(find_field)
