@@ -20,7 +20,7 @@ You can dynamically generate a report of
 12. Total no of attachments on the project and on the instance
 and many more depending on what you can come up with.
 """
-from jiraone.access import LOGIN, endpoint, echo, For
+from jiraone.access import LOGIN, endpoint, echo, For, field
 from jiraone.jira_logs import add_log, WORK_PATH
 from jiraone.reporting import PROJECT, USER, file_writer, file_reader, path_builder, replacement_placeholder
 
@@ -35,4 +35,5 @@ __all__ = ["LOGIN",
            "file_reader",
            "path_builder",
            "replacement_placeholder",
-           "For"]
+           "For",
+           "field"]
