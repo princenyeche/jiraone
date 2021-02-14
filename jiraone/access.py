@@ -109,6 +109,7 @@ class EndPoints:
         How to use this endpoint /rest/api/3/project/search  is mentioned here
         https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/
            #api-rest-api-3-project-search-get
+
         :param args
              Query Parameters that are useful mostly.
            a) query, example: query=key,name {caseInsensitive}
@@ -121,6 +122,7 @@ class EndPoints:
                  i. available options [insight, description, projectKeys, url, issueTypes, lead]
 
         :param start_at  defaults as keyword args,example startAt=0
+
         :param max_results defaults as keyword args, example maxResults=50
         """
         param = []
@@ -139,10 +141,10 @@ class EndPoints:
                         param.append(cut)
                         break
                 print("Project Search Query Parameter:", param[0])
-                return "{}/rest/api/3/project/search?{}&startAt={}&maxResults={}"\
+                return "{}/rest/api/3/project/search?{}&startAt={}&maxResults={}" \
                     .format(LOGIN.base_url, param[0], start_at, max_results)
         else:
-            return "{}/rest/api/3/project/search?startAt={}&maxResults={}"\
+            return "{}/rest/api/3/project/search?startAt={}&maxResults={}" \
                 .format(LOGIN.base_url, start_at, max_results)
 
     @classmethod
@@ -197,8 +199,9 @@ class EndPoints:
     def get_all_issue_types(cls):
         """Returns all issue types.
 
-        if the user has the Administer Jira global permission, all issue types are returned.
-        if the user has the Browse projects project permission for one or more projects,
+        If the user has the Administer Jira global permission, all issue types are returned.
+
+        If the user has the Browse projects project permission for one or more projects,
         the issue types associated with the projects the user has permission to browse are returned.
         """
         return "{}/rest/api/3/issuetype".format(LOGIN.base_url)
@@ -218,7 +221,9 @@ class EndPoints:
         """Returns a paginated list of notification schemes ordered by display name.
 
         :param query  1st String value for expand= {all, field, group, user, projectRole, notificationSchemeEvents}
+
         :param start_at has default value of 0
+
         :param max_results has default value of 50
         """
         if query is not None:
@@ -229,18 +234,38 @@ class EndPoints:
                                                                                       start_at, max_results)
 
     @classmethod
-    def get_field(cls, query: Optional[str] = None, start_at: int = 0, max_results: int = 50):
+    def get_field(cls, query: Optional[str] = None, start_at: int = 0, max_results: int = 50, system: str = None):
         """Returns a paginated list of fields for Classic Jira projects. The list can include:
+
+        :param query accepted options -> string type=custom (use to search for custom fields)
+
+        :param start_at defaults to 0
+
+        :param max_results defaults to 50
+
+        :param system string accepts any string e.g. field (use any string to denote as system)
 
         *  all fields.
         *  specific fields, by defining id.
         *  fields that contain a string in the field name or description, by defining query.
         *  specific fields that contain a string in the field name or description, by defining id and query.
         Only custom fields can be queried, type must be set to custom.
+
+        **Find system fields**
+
+        *  Fields that cannot be added to the issue navigator are always returned.
+        *  Fields that cannot be placed on an issue screen are always returned.
+        *  Fields that depend on global Jira settings are only returned if the setting is enabled.
+           That is, timetracking fields, subtasks, votes, and watches.
+
+        *  For all other fields, this operation only returns the fields that the user has permission to view
+        (that is, the field is used in at least one project that the user has Browse Projects project permission for.)
          """
-        if query is not None:
+        if query is not None and system is None:
             return "{}/rest/api/3/field/search?{}&startAt={}&maxResults={}".format(LOGIN.base_url, query,
                                                                                    start_at, max_results)
+        elif query is None and system is not None:
+            return "{}/rest/api/3/field".format(LOGIN.base_url)
         else:
             return "{}/rest/api/3/field/search?startAt={}&maxResults={}".format(LOGIN.base_url,
                                                                                 start_at, max_results)
@@ -250,7 +275,9 @@ class EndPoints:
         """Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
          :param query of the attachment
+
          :param warning deprecation notice
+
          Use issue search endpoint in conjunction to grab the attachment id
          """
         import warnings
@@ -277,8 +304,11 @@ class EndPoints:
                 :request DELETE - Deletes an attachment from an issue.
 
         :param attach_id required (id of the attachment), datatype -> string
+
                :request GET - Get all metadata for an expanded attachment
+
                :param query, datatype -> string
+
                available options
                 * expand/human -Returns the metadata for the contents of an attachment, if it is an archive,
                      and metadata for the attachment itself. For example, if the attachment is a ZIP archive,
@@ -289,9 +319,13 @@ class EndPoints:
                      archive is returned. Currently, only the ZIP archive format is supported.
 
                :request POST - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+
         :request POST - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+
         :param id_or_key required, datatype -> string
+
         :param uri various endpoint to attachment
+
         The ID or key of the issue that attachments are added to.
         """
         # TODO: check this endpoint again
@@ -316,11 +350,16 @@ class EndPoints:
         """Returns a paginated list of filters. Use this operation to get:
 
         *  specific filters, by defining id only.
+
         *  filters that match all of the specified attributes. For example, all filters
+
            for a user with a particular word in their name. When multiple attributes are
            specified only filters matching all attributes are returned.
+
         :param query 1st String value filterName, accountId, owner, groupname, projectId
+
         :param start_at  has default value of 0
+
         :param: filled - maxResults=50 (default)
          """
         if query is not None:
@@ -336,8 +375,11 @@ class EndPoints:
         have specific attributes. For example, dashboards with a particular name.
         When multiple attributes are specified only filters matching all attributes
         are returned.
+
         :param query 1st String value dashboardName, accountId, owner, groupname, projectId
+
         :param start_at  has default value of 0
+
         :param: filled - maxResult=20 (default)
         """
         if query is not None:
@@ -365,7 +407,9 @@ class EndPoints:
 
         details of those workflows are returned. Otherwise, all published classic workflows are returned.
         This operation does not return next-gen workflows.
+
         :param query  has default value of 0
+
         :param: filled - maxResults=50 (default)
         """
         return "{}/rest/api/3/workflow/search?startAt={}&maxResults=50".format(LOGIN.base_url, query)
@@ -375,6 +419,7 @@ class EndPoints:
         """Returns a paginated list of all workflow schemes, not including draft workflow schemes.
 
         :param query has default value of 0
+
         :param: filled - maxResults=50 (default)
         """
         return "{}/rest/api/3/workflowscheme?startAt={}&maxResults=50".format(LOGIN.base_url, query)
@@ -384,6 +429,7 @@ class EndPoints:
         """Returns a paginated list of all screens or those specified by one or more screen IDs.
 
         :param query has default value of 0
+
         :param: maxResults=100 (default)
         """
         return "{}/rest/api/3/screens?startAt={}&maxResults=100".format(LOGIN.base_url, query)
@@ -392,8 +438,10 @@ class EndPoints:
     def search_for_screen_schemes(cls, query: int = 0):
         """Returns a paginated list of screen schemes.
 
-            Only screen schemes used in classic projects are returned.
+        Only screen schemes used in classic projects are returned.
+
         :param query has default value of 0
+
         :param: maxResults=25 (default)
         """
         return "{}/rest/api/3/screenscheme?startAt={}&maxResults=25".format(LOGIN.base_url, query)
@@ -402,8 +450,8 @@ class EndPoints:
     def get_project_component(cls, id_or_key):
         """Returns all components in a project. See the Get project components paginated
 
-            resource if you want to get a full list of components with pagination.
-            The project ID or project key (case sensitive).
+        resource if you want to get a full list of components with pagination.
+        The project ID or project key (case sensitive).
         """
         return "{}/rest/api/3/project/{}/components".format(LOGIN.base_url, id_or_key)
 
@@ -438,7 +486,9 @@ class EndPoints:
         into the backlog from the board. At most 50 issues may be moved at once.
 
         :request POST:
+
         :param board_id required
+
         :body param: issues, datatype -> Array<string>,
                    : rankBeforeIssue, rankAfterIssue, type -> string
                    : rankCustomFieldId, type -> integer
@@ -452,6 +502,7 @@ class EndPoints:
         """Creates a new board. Board name, type and filter ID is required.
 
         :request POST:
+
         :body param: name, type, datatype -> string
                    : filterId, datatype -> integer
                    : location, datatype -> object
@@ -466,13 +517,15 @@ class EndPoints:
         in order to find which boards are using a particular filter.
 
         :param filter_id  required
+
         Filters results to boards that are relevant to a filter.
         Not supported for next-gen boards.
 
         :param start_at defaults to 0
+
         :param max_results defaults to 50
         """
-        return "{}/rest/agile/1.0/board/filter/{}?startAt={}&maxResults={}"\
+        return "{}/rest/agile/1.0/board/filter/{}?startAt={}&maxResults={}" \
             .format(LOGIN.base_url, filter_id, start_at, max_results)
 
     @classmethod
@@ -493,9 +546,13 @@ class EndPoints:
         The backlog contains incomplete issues that are not assigned to any future or active sprint.
 
         :param board_id required
+
         :param start_at defaults to 0,
+
                     :param max_results defaults to 50
+
                     :param query -> includes other query parameters such as
+
                          Query           Datatypes
                         ----------------------------
                          jql           | string
@@ -504,10 +561,10 @@ class EndPoints:
                          expand        | string
         """
         if query is not None:
-            return "{}/rest/agile/1.0/board/{}/backlog?{}&startAt={}&maxResults={}"\
+            return "{}/rest/agile/1.0/board/{}/backlog?{}&startAt={}&maxResults={}" \
                 .format(LOGIN.base_url, board_id, query, start_at, max_results)
         else:
-            return "{}/rest/agile/1.0/board/{}/backlog?startAt={}&maxResults={}"\
+            return "{}/rest/agile/1.0/board/{}/backlog?startAt={}&maxResults={}" \
                 .format(LOGIN.base_url, board_id, start_at, max_results)
 
     @classmethod
@@ -518,9 +575,13 @@ class EndPoints:
         An issue belongs to the board if its status is mapped to the board's column.
 
         :param board_id required
+
         :param start_at defaults to 0,
+
                     :param max_results defaults to 50
+
                     :param query -> includes other query parameters such as
+
                          Query           Datatypes
                         ----------------------------
                          jql           | string
@@ -529,10 +590,10 @@ class EndPoints:
                          expand        | string
         """
         if query is not None:
-            return "{}/rest/agile/1.0/board/{}/issue?{}&startAt={}&maxResults={}"\
+            return "{}/rest/agile/1.0/board/{}/issue?{}&startAt={}&maxResults={}" \
                 .format(LOGIN.base_url, board_id, query, start_at, max_results)
         else:
-            return "{}/rest/agile/1.0/board/{}/issue?startAt={}&maxResults={}"\
+            return "{}/rest/agile/1.0/board/{}/issue?startAt={}&maxResults={}" \
                 .format(LOGIN.base_url, board_id, start_at, max_results)
 
     @classmethod
@@ -543,7 +604,9 @@ class EndPoints:
         for the board) Or transitions the issue(s) to the first column for a kanban board with backlog.
 
         :request POST:
+
         :param board_id required
+
         :body param: rankBeforeIssue, rankAfterIssue, datatype -> string
                    : rankCustomFieldId, datatype -> integer
                    : issues, datatype -> Array<string>
@@ -558,10 +621,12 @@ class EndPoints:
          Returned projects are ordered by the name.
 
          :param board_id required
+
          :param start_at defaults 0
-                     :param max_results defaults 50
+
+         :param max_results defaults 50
         """
-        return "{}/rest/agile/1.0/board/{}/project?startAt={}&maxResults={}"\
+        return "{}/rest/agile/1.0/board/{}/project?startAt={}&maxResults={}" \
             .format(LOGIN.base_url, board_id, start_at, max_results)
 
     @classmethod
@@ -569,10 +634,12 @@ class EndPoints:
         """Returns all quick filters from a board, for a given board ID.
 
         :param board_id required
+
         :param start_at defaults 0
-                     :param max_results defaults 50
+
+        :param max_results defaults 50
         """
-        return "{}/rest/agile/1.0/board/{}/quickfilter?startAt={}&maxResults={}"\
+        return "{}/rest/agile/1.0/board/{}/quickfilter?startAt={}&maxResults={}" \
             .format(LOGIN.base_url, board_id, start_at, max_results)
 
     @classmethod
@@ -583,7 +650,8 @@ class EndPoints:
         quick filter belongs to.
 
         :param board_id required,
-                :param quick_filter_id required
+
+        :param quick_filter_id required
         """
         return "{}/rest/agile/1.0/board/{}/quickfilter/{}".format(LOGIN.base_url, board_id, quick_filter_id)
 
@@ -591,10 +659,10 @@ class EndPoints:
     def get_all_sprints(cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50) -> str:
         """Get all Sprint on a Board."""
         if query is not None:
-            return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}"\
+            return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}" \
                 .format(LOGIN.base_url, board_id, query, start_at, max_results)
         else:
-            return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}"\
+            return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}" \
                 .format(LOGIN.base_url, board_id, start_at, max_results)
 
     # SPRINT -> API for Sprints
@@ -604,6 +672,7 @@ class EndPoints:
 
         Start date, end date, and goal are optional.
         :request POST:
+
         :body param: name, startDate, endDate, goal, datatype -> string
                    : originBoardId, datatype -> integer
         """
@@ -651,7 +720,9 @@ class EndPoints:
         """This method adds a customer to the Jira Service Management.
 
         instance by passing a JSON file including an email address and display name.
+
         :request POST
+
         :body param: email, displayName, datatype -> string
         """
         return "{}/rest/servicedeskapi/customer".format(LOGIN.base_url)
@@ -668,12 +739,15 @@ class EndPoints:
         """This method returns a list of organizations in the Jira Service Management instance.
 
         Use this method when you want to present a list of organizations or want to locate an organization by name.
+
         :param start defaults to 0
+
                     :param limit defaults to 50
+
                     :param account_id, datatype string. e.g. 5b10ac8d82e05b22cc7d4ef5
         """
         if account_id is not None:
-            return "{}/rest/servicedeskapi/organization?{}&start={}&limit={}"\
+            return "{}/rest/servicedeskapi/organization?{}&start={}&limit={}" \
                 .format(LOGIN.base_url, account_id, start, limit)
         else:
             return "{}/rest/servicedeskapi/organization?start={}&limit={}".format(LOGIN.base_url, start, limit)
@@ -683,6 +757,7 @@ class EndPoints:
         """This method creates an organization by passing the name of the organization.
 
         :request POST:
+
         :body param: name, datatype -> string
         """
         return "{}/rest/servicedeskapi/organization".format(LOGIN.base_url)
@@ -693,6 +768,7 @@ class EndPoints:
 
         Use this method to get organization details whenever your application component is passed an organization ID
         but needs to display other organization details.
+
         :param org_id required
         """
         return "{}/rest/servicedeskapi/organization/{}".format(LOGIN.base_url, org_id)
@@ -703,7 +779,9 @@ class EndPoints:
 
         Note that the organization is deleted regardless of other associations it may have.
         For example, associations with service desks.
+
         :request DELETE:
+
         :param org_id required
         """
         return "{}/rest/servicedeskapi/organization/{}".format(LOGIN.base_url, org_id)
@@ -714,7 +792,12 @@ class EndPoints:
 
         Use this method where you want to provide a list of users for an organization
         or determine if a user is associated with an organization.
+
         :param org_id required
+
+        :param start datatype integer
+
+        :param limit datatype integer
         """
         return "{}/rest/servicedeskapi/organization/{}/user?start={}&limit={}".format(LOGIN.base_url, org_id,
                                                                                       start, limit)
@@ -724,7 +807,9 @@ class EndPoints:
         """This method adds users to an organization.
 
         :request POST:
+
         :param org_id required
+
         :body param: usernames, accountIds, datatypes -> Array<string>
         """
         return "{}/rest/servicedeskapi/organization/{}/user".format(LOGIN.base_url, org_id)
@@ -734,7 +819,9 @@ class EndPoints:
         """This method removes users from an organization.
 
         :request DELETE:
+
         :param org_id required
+
         :body param: usernames, accountIds, datatypes -> Array<string>
         """
         return "{}/rest/servicedeskapi/organization/{}/user".format(LOGIN.base_url, org_id)
@@ -744,15 +831,18 @@ class EndPoints:
         """This method returns a list of all organizations associated with a service desk.
 
         :param service_desk_id required
-        :param: start defaults to 0
+
+        :param start defaults to 0
+
                     :param limit defaults to 50
+
                     :param account_id, datatype string. e.g. 5b10ac8d82e05b22cc7d4ef5
         """
         if account_id is not None:
-            return "{}/rest/servicedeskapi/servicedesk/{}/organization?{}&start={}&limit={}"\
+            return "{}/rest/servicedeskapi/servicedesk/{}/organization?{}&start={}&limit={}" \
                 .format(LOGIN.base_url, account_id, service_desk_id, start, limit)
         else:
-            return "{}/rest/servicedeskapi/servicedesk/{}/organization?start={}&limit={}"\
+            return "{}/rest/servicedeskapi/servicedesk/{}/organization?start={}&limit={}" \
                 .format(LOGIN.base_url, service_desk_id, start, limit)
 
     @classmethod
@@ -761,8 +851,11 @@ class EndPoints:
 
         If the organization ID is already associated with the service desk,
         no change is made and the resource returns a 204 success code.
+
         :request POST:
+
         :param service_desk_id required
+
         :body param: organizationId, datatype -> integer
         """
         return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(LOGIN.base_url, service_desk_id)
@@ -773,8 +866,11 @@ class EndPoints:
 
         If the organization ID does not match an organization associated with the service desk,
         no change is made and the resource returns a 204 success code.
+
         :request DELETE:
+
         :param service_desk_id required
+
         :body param: organizationId, datatype -> integer
         """
         return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(LOGIN.base_url, service_desk_id)
@@ -787,16 +883,20 @@ class EndPoints:
         The returned list of customers can be filtered using the query parameter.
         The parameter is matched against customers' displayName, name, or email.
         This API is experimental
+
         :param service_desk_id required
+
         :param start defaults to 0
+
                     :param limit defaults to 50
+
                     :param query, datatype string.
         """
         if query is not None:
-            return "{}/rest/servicedeskapi/servicedesk/{}/customer?{}&start={}&limit={}"\
+            return "{}/rest/servicedeskapi/servicedesk/{}/customer?{}&start={}&limit={}" \
                 .format(LOGIN.base_url, query, service_desk_id, start, limit)
         else:
-            return "{}/rest/servicedeskapi/servicedesk/{}/customer?start={}&limit={}"\
+            return "{}/rest/servicedeskapi/servicedesk/{}/customer?start={}&limit={}" \
                 .format(LOGIN.base_url, service_desk_id, start, limit)
 
     @classmethod
@@ -805,8 +905,11 @@ class EndPoints:
 
         If any of the passed customers are associated with the service desk,
         no changes will be made for those customers and the resource returns a 204 success code.
+
         :request POST:
+
         :param service_desk_id required
+
         :body param: usernames, accountIds,  datatype -> Array<string>
                 """
         return "{}/rest/servicedeskapi/servicedesk/{}/customer".format(LOGIN.base_url, service_desk_id)
@@ -817,8 +920,11 @@ class EndPoints:
 
         The service desk must have closed access. If any of the passed customers are not associated with
         the service desk, no changes will be made for those customers and the resource returns a 204 success code.
+
         :request DELETE:
+
         :param service_desk_id required
+
         :body param: usernames, accountIds,  datatype -> Array<string>
                 """
         return "{}/rest/servicedeskapi/servicedesk/{}/customer".format(LOGIN.base_url, service_desk_id)
@@ -832,15 +938,20 @@ class EndPoints:
 
         :request POST - Creates a user. This resource is retained for legacy compatibility.
                         As soon as a more suitable alternative is available this resource will be deprecated
+
                         :body param: key, name, password, emailAddress, displayName, notification, datatypes -> string
                                     : applicationKeys, datatype -> Array<string>
                                     : Additional Properties, datatypes -> Any
                         returns 201 for successful creation
+
                 :DELETE - Deletes a user.
                           :body param: accountId, datatype -> string required
                           returns 204 for successful deletion
+
                 :GET - Returns a user.
+
                        :body param: accountId, expand, datatypes -> string
+
                 :param account_id - string for a user account
         """
         if account_id is not None:
@@ -855,12 +966,16 @@ class EndPoints:
         :request  POST - Creates a group.
                      :body param: name required, datatype -> string
                      returns 201 if successful
+
                 : DELETE - Deletes a group.
                      The group to transfer restrictions to. Only comments and worklogs are transferred.
                      If restrictions are not transferred, comments and worklogs are inaccessible after the deletion.
+
                      :query param: group_name required, swap_group,  datatype -> string
                      returns 200 if successful
+
                     :param group_name name of group
+
                     :param swap_group group name to swap
         """
         if group_name is not None and swap_group is None:
@@ -878,10 +993,13 @@ class EndPoints:
                      :query param: groupname required, datatype -> string
                      :body param: name, accountId, datatype -> string
                      returns 201 if successful
+
                 : DELETE - Removes a user from a group.
                      :query param: group_name required, account_id required,  datatype -> string
                      returns 200 if successful
+
                     :param group_name name of group
+
                     :param account_id string of a user account
         """
         if account_id is not None:
@@ -896,14 +1014,18 @@ class EndPoints:
 
         :request: POST - for project creations.
                          The project types are available according to the installed Jira features as follows:
+
         :param id_or_key required
+
               :param uri optional for accessing other project endpoints -> string
+
                    endpoint: /rest/api/3/project/{projectIdOrKey}/{archive}
                    available options [archive, delete, restore, statuses]
-                         archive - Archives a project. Archived projects cannot be deleted.
-                         delete - Deletes a project asynchronously.
-                         restore - Restores a project from the Jira recycle bin.
-                         statuses - Returns the valid statuses for a project.
+
+                         * archive - Archives a project. Archived projects cannot be deleted.
+                         * delete - Deletes a project asynchronously.
+                         * restore - Restores a project from the Jira recycle bin.
+                         * statuses - Returns the valid statuses for a project.
 
         see:https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post
 
@@ -911,19 +1033,25 @@ class EndPoints:
                              : name, key, description, leadAccountId, url, assigneeType, datatype -> string
                              : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
                               datatype -> integer
+
                 : GET - Returns the project details for a project.
                 This operation can be accessed anonymously.
+
                      :query param: expand, datatype -> string
+
                                  : properties, datatype -> Array<string>
 
                : PUT - Updates the project details for a project.
+
                   :param query  expand, datatype -> string
+
                   :body param: projectTypeKey and projectTemplateKey required, datatype -> string
                              : name, key, description, leadAccountId, url, assigneeType, datatype -> string
                              : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
                               datatype -> integer
 
               : DELETE - Deletes a project.
+
                    :param enable_undo, datatype -> boolean
 
         """
@@ -947,32 +1075,46 @@ class EndPoints:
         the default start step, and issue properties set.
 
         :request POST - Creates an issue or, where the option to create subtasks is enabled in Jira, a subtask.
+
         :param uri, datatype -> string
+
+                   * available options [bulk, createmeta]
+                   * e.g. endpoint: /rest/api/3/issue/bulk
+                   * e.g. endpoint /rest/api/3/issue/createmeta
+
         :param query, datatype -> string
+
+                 * use the query keyword argument and structure a parameter
+                 * e.g. query="notifyUsers=false"
+
         :param issue_key_or_id -> string or integer
-                available options [bulk, createmeta]
-                e.g. endpoint: /rest/api/3/issue/bulk
-                e.g. endpoint /rest/api/3/issue/createmeta
+
+                 * The body parameter has to be a bundled data that should be posted to the desired endpoint.
+
 
                    :query param: updateHistory, datatype -> boolean
+
                    :body param: transition, fields, update, historyMetadata, datatype -> object
                               : properties, datatype -> Array<EntityProperty>
                               : Additional Properties, datatype -> Any
 
                   POST - Bulk create issue
                       Creates issues and, where the option to create subtasks is enabled in Jira, subtasks.
+
                       :body param: issueUpdates, datatype -> Array<IssueUpdateDetails>
                                  : Additional Properties, datatype -> Any
 
                   GET - Create issue metadata
                   Returns details of projects, issue types within projects, and, when requested,
                   the create screen fields for each issue type for the user.
+
                   :query param: projectIds, projectKeys, issuetypeIds, issuetypeNames, datatype -> Array<string>
                               : expand, datatype -> string
 
                   GET - Get issue
                   Return the details of an issue
                   endpoint  /rest/api/3/issue/{issueIdOrKey}
+
                   :query param: issue_key_or_id required
                               : fields, properties, datatype -> Array<string>
                               : fieldsByKeys, updateHistory,  datatype -> boolean
@@ -980,13 +1122,16 @@ class EndPoints:
 
                   PUT - Edits an issue. A transition may be applied and issue properties updated as part of the edit.
                   endpoint  /rest/api/3/issue/{issueIdOrKey}
+
                   :query param: issue_key_or_id required
                               : notifyUsers, overrideScreenSecurity, overrideEditableFlag, datatype -> boolean
+
                   :body param: transition, fields, update, historyMetadata, properties, Additional Properties,
                               datatype -> object
 
                   DELETE - Deletes an issue.
                   endpoint  /rest/api/3/issue/{issueIdOrKey}
+
                   :query param: issue_key_or_id required
                               : deleteSubtasks, datatype -> string, values = (true | false)
         """
@@ -1010,6 +1155,7 @@ class For(object):
     and raises a StopIteration once it reaches the end of the loop.
     Datatype expected are list, dict, tuple, str, set or int.
     """
+
     def __init__(self, data: Union[list, tuple, dict, set, str, int], limit: int = 0) -> None:
         self.data = data
         if isinstance(self.data, int):
@@ -1037,6 +1183,374 @@ class For(object):
         return {list(keys)[index]: list(values)[index]}
 
 
+class Field(object):
+    """Field class helps with Jira fields.
+
+    It helps with posting, putting and getting various fields or field type.
+    """
+    """
+    *****************************************
+                 field type listing
+    *****************************************
+    """
+    field_type = {
+        "cascadingselect": "com.atlassian.jira.plugin.system.customfieldtypes:cascadingselect",
+        "datepicker": "com.atlassian.jira.plugin.system.customfieldtypes:datepicker",
+        "datetime": "com.atlassian.jira.plugin.system.customfieldtypes:datetime",
+        "float": "com.atlassian.jira.plugin.system.customfieldtypes:float",
+        "grouppicker": "com.atlassian.jira.plugin.system.customfieldtypes:grouppicker",
+        "importid": "com.atlassian.jira.plugin.system.customfieldtypes:importid",
+        "labels": "com.atlassian.jira.plugin.system.customfieldtypes:labels",
+        "multicheckboxes": "com.atlassian.jira.plugin.system.customfieldtypes:multicheckboxes",
+        "multigrouppicker": "com.atlassian.jira.plugin.system.customfieldtypes:multigrouppicker",
+        "multiselect": "com.atlassian.jira.plugin.system.customfieldtypes:multiselect",
+        "multiuserpicker": "com.atlassian.jira.plugin.system.customfieldtypes:multiuserpicker",
+        "multiversion": "com.atlassian.jira.plugin.system.customfieldtypes:multiversion",
+        "project": "com.atlassian.jira.plugin.system.customfieldtypes:project",
+        "radiobuttons": "com.atlassian.jira.plugin.system.customfieldtypes:radiobuttons",
+        "readonlyfield": "com.atlassian.jira.plugin.system.customfieldtypes:readonlyfield",
+        "select": "com.atlassian.jira.plugin.system.customfieldtypes:select",
+        "textarea": "com.atlassian.jira.plugin.system.customfieldtypes:textarea",
+        "textfield": "com.atlassian.jira.plugin.system.customfieldtypes:textfield",
+        "url": "com.atlassian.jira.plugin.system.customfieldtypes:url",
+        "userpicker": "com.atlassian.jira.plugin.system.customfieldtypes:userpicker",
+        "version": "com.atlassian.jira.plugin.system.customfieldtypes:version",
+        "sprint": "com.pyxis.greenhopper.jira:gh-sprint",
+        "epiclink": "com.pyxis.greenhopper.jira:gh-epic-link",
+        "components": "components",
+        "fixversions": "fixVersions",
+        "originalestimate": "timeoriginalestimate",
+        "timetracking": "timetracking",
+        "reporter": "reporter",
+        "assignee": "assignee",
+        "description": "description"
+    }
+    """
+    *****************************************
+            field search key listing
+    *****************************************
+    """
+    field_search_key = {
+        "cascadingselectsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:cascadingselectsearcher",
+        "daterange": "com.atlassian.jira.plugin.system.customfieldtypes:daterange",
+        "datetimerange": "com.atlassian.jira.plugin.system.customfieldtypes:datetimerange",
+        "exactnumber": "com.atlassian.jira.plugin.system.customfieldtypes:exactnumber",
+        "exacttextsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:exacttextsearcher",
+        "grouppickersearcher": "com.atlassian.jira.plugin.system.customfieldtypes:grouppickersearcher",
+        "labelsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:labelsearcher",
+        "multiselectsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:multiselectsearcher",
+        "numberrange": "com.atlassian.jira.plugin.system.customfieldtypes:numberrange",
+        "projectsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:projectsearcher",
+        "textsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
+        "userpickergroupsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:userpickergroupsearcher",
+        "versionsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:versionsearcher"
+    }
+
+    @staticmethod
+    def search_field(find_field: Any = None):
+        """Search for custom fields"""
+        fields = find_field
+        count_start_at = 0
+        while True:
+            load = LOGIN.get(endpoint.get_field(query="type=custom", start_at=count_start_at))
+            data = load.json()
+            if load.status_code == 200:
+                for a in data["values"]:
+                    if a["name"] == fields:
+                        return {
+                            "id": a["id"], "name": a["name"],
+                            "custom": a["schema"]["custom"], "customId": a["schema"]["customId"],
+                            "type": a["schema"]["type"]
+                        }
+
+                count_start_at += 50
+                if count_start_at > data["total"]:
+                    break
+
+    @staticmethod
+    def get_field(find_field: Any = None):
+        """Search for system fields or custom fields"""
+        fields = find_field
+        load = LOGIN.get(endpoint.get_field(system="type=system"))
+        data = load.json()
+        if load.status_code == 200:
+            for a in list(data):
+                if fields in a["name"]:
+                    if a["schema"] is not None:
+                        if "customId" not in a["schema"]:
+                            return {
+                                "name": a["name"], "id": a["id"], "custom": a["custom"], "key": a["key"],
+                                "searchable": a["searchable"],
+                                "type": a["schema"]["type"]
+                            }
+                        return {
+                            "name": a["name"], "id": a["id"], "key": a["key"],
+                            "searchable": a["searchable"], "custom": a["schema"]["custom"],
+                            "customId": a["schema"]["customId"], "type": a["schema"]["type"]
+                        }
+
+    def update_field_data(self, data: Any = None, find_field: str = None, field_type: str = "custom",
+                          key_or_id: Union[str, int] = None, show: bool = True, **kwargs):
+        """Field works for.
+
+        All field types mentioned on the Field class attributes.
+
+        :request PUT
+
+        :param data datatype[Any] the data you're trying to process, depending on what field it could be any object.
+
+        :param find_field datatype[String] name of the custom field or system field to find in strings.
+
+        :param field_type datatype[String] available options - system or custom.
+
+        :param key_or_id datatype[String or Integer] issue key or id of an issue.
+
+        :param show datatype[Bool] allows you to print out a formatted field that was searched.
+
+        :param kwargs datatype[String] perform other operations with keyword args
+
+                   * options arg is a string and has two values "add" or "remove".
+                   * query arg is a string and it can have any value that is stated on the endpoint.issue() method
+                         e.g. query="notifyUsers=false"
+
+        """
+        search = None
+        options = None if "labels" not in kwargs else kwargs["options"]
+        query = None if "query" not in kwargs else kwargs["query"]
+        if field_type == "custom":
+            search = self.search_field(find_field)
+        elif field_type == "system":
+            search = self.get_field(find_field)
+        echo({"Field data returned": search}) if show is True else ""
+        response = None
+        if data == "" or data is None:
+            payload = None
+            if search["custom"] in [self.field_type["multicheckboxes"], self.field_type["multiselect"],
+                                    self.field_type["labels"], self.field_type["version"]]:
+                attr = {
+                    search["id"]: []
+                }
+                payload = self.data_load(attr)
+            elif search["custom"] in [self.field_type["select"], self.field_type["cascadingselect"],
+                                      self.field_type["radiobuttons"]]:
+                attr = {
+                    search["id"]: None
+                }
+                payload = self.data_load(attr)
+            elif search["key"] in [self.field_type["components"], self.field_type['fixversions']]:
+                attr = {
+                    search["id"]: []
+                }
+                payload = self.data_load(attr)
+            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+        elif search["custom"] in [self.field_type["multiselect"], self.field_type["multicheckboxes"]]:
+            if options is None:
+                attr = {
+                    search["id"]: self.multi_field(data)
+                }
+                payload = self.data_load(attr)
+            elif options == "add" or options == "remove":
+                get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
+                                                            amend=options, data=data, field_type="custom")
+                concat = ",".join(get_data)
+                attr = {
+                    search["id"]:
+                        self.multi_field(concat)
+                }
+                payload = self.data_load(attr)
+            else:
+                raise ValueError("Excepting string value as \"add\" or \"remove\" from the labels keyword argument "
+                                 "got value: \"{}\" instead.".format(options))
+            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+        elif search["custom"] == self.field_type["cascadingselect"]:
+            cass = self.cascading(data)
+            if len(cass) > 3:
+                attr = {
+                    search["id"]:
+                        {
+                            "value": cass.__getitem__(1).lstrip(),
+                            "child": {
+                                "value": cass.__getitem__(3).lstrip()
+                            }
+                        }
+
+                }
+                payload = self.data_load(attr)
+                response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+            elif len(cass) <= 3:
+                attr = {
+                    search["id"]:
+                        {
+                            "value": cass.__getitem__(1).lstrip()
+                        }
+
+                }
+                payload = self.data_load(attr)
+                response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+        elif search["custom"] in [self.field_type["radiobuttons"], self.field_type["select"]]:
+            attr = {
+                search["id"]:
+                    {
+                        "value": data
+                    }
+
+            }
+            payload = self.data_load(attr)
+            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+        elif search["custom"] in [self.field_type["labels"], self.field_type["version"]]:
+            # add a list of values in the form of a list or string for single value
+            if options is None:
+                attr = {
+                    search["id"]:
+                        data
+                }
+                payload = self.data_load(attr)
+            elif options == "add" or options == "remove":  # update the field with the desired value
+                attr = {
+                    search["id"]:
+                        [
+                            {
+                                options: data
+                            }
+                        ]
+
+                }
+                payload = self.data_load(attr, s="update")
+            else:
+                raise ValueError("Excepting string value as \"add\" or \"remove\" from the labels keyword argument "
+                                 "got value: \"{}\" instead.".format(options))
+            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+        elif search["key"] in [self.field_type["components"], self.field_type['fixversions']]:
+            # add a list of values in the form of a list or string for single value
+            if options is None:
+                attr = {
+                    search["id"]:
+                        self.multi_field(data, s="name")
+                }
+                payload = self.data_load(attr)
+            elif options == "add" or options == "remove":
+                # update the field with the desired value
+                get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
+                                                            amend=options, data=data)
+                concat = ",".join(get_data)
+                attr = {
+                    search["id"]:
+                        self.multi_field(concat, s="name")
+                }
+                payload = self.data_load(attr)
+            else:
+                raise ValueError("Excepting string value as \"add\" or \"remove\" "
+                                 "from the labels keyword argument got value: \"{}\" instead.".format(options))
+            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+        else:
+            raise NameError("The field name: {} is not among the list of supported field type for this function."
+                            .format(find_field))
+        return response
+
+    @staticmethod
+    def data_load(data: Any = Any, s: Any = None):
+        """Process the received data into a dict.
+
+        :param s any object that makes it not None.
+
+        :param data any object
+        """
+        if s is None:
+            payload = {
+                "fields": data
+            }
+        else:
+            payload = {
+                "update": data
+            }
+        return payload
+
+    @staticmethod
+    def multi_field(data: str = Any, s: str = "value"):
+        """Transform any given string separated by comma into an acceptable multi value string.
+
+        :param data any string object data.
+
+        :param s is a placeholder to determine the object key.
+
+               * e.g. required output [{"value": "hello"}] -> for Multicheckboxes type of field.
+               * e.g. required output [{"name": "hello"}] -> for Components or Fix versions type of field.
+        """
+        m = data
+        f = s
+        c = []
+        if m.split(",").__len__() == 1:
+            k = [{f: m}]
+            return k
+        elif m.split(",").__len__() > 1:
+            for u in m.split(","):
+                r = {f: u}
+                c.append(r)
+            return c
+
+    @staticmethod
+    def cascading(data: Any = Any):
+        """Transform a string or a list into a cascading select type."""
+        m = str(data)
+        if isinstance(data, list):
+            if len(data) == 1:
+                m = f"Parent values: {data[0]}(10059)"
+            elif 1 < len(data) < 2:
+                m = f"Parent values: {data[0]}(10059)Level 1 values: {data[1]}(10060)"
+            elif len(data) > 2:
+                raise ValueError("Too many values received, expecting 2 only.")
+        if m.__len__() > 0:
+            k = m.split(")", maxsplit=5)
+            d = m.split(")", maxsplit=5)
+            z = k.__getitem__(0).split("(")
+            e = d.__getitem__(1).split("(")
+            b = z.__getitem__(0).split(":")
+            i = e.__getitem__(0).split(":")
+            vec = [b, i]
+            var = [val for elem in vec for val in elem]
+            return var
+
+    @staticmethod
+    def extract_issue_field_options(key_or_id: Union[str, int] = None, search: Any = None,
+                                    amend: str = None, data: Any = Any, field_type: str = "system"):
+        """Get the option from an issue.
+
+        Use this method to extract and amend changes to system fields such as
+        Components or fix versions or custom fields such a multicheckboxes or multiselect.
+
+        :param key_or_id datatype[String, Integer] issue key or id of an issue.
+
+        :param search datatype[Dict] issue data of an issue or issue payload.
+
+        :param amend datatype[String] available option "add" or "remove" condition to decide action for appending.
+
+        :param data datatype[string] our object data that will be processed.
+
+        :param field_type datatype[String] provides decision for search parameter.Available option "system" or "custom".
+        """
+        collect = []
+        load = LOGIN.get(endpoint.issues(issue_key_or_id=key_or_id)).json()
+        if field_type == "system":
+            if search["key"] in load["fields"]:
+                init = load["fields"]
+                for i in init[search["key"]]:
+                    collect.append(i["name"])
+        elif field_type == "custom":
+            if search["id"] in load["fields"]:
+                init = load["fields"]
+                for i in init[search["id"]]:
+                    collect.append(i["value"])
+
+        if amend == "add":
+            collect.append(data)
+            return collect
+        elif amend == "remove":
+            collect.remove(data)
+            return collect
+        else:
+            raise NameError("The data received cannot be processed.Please check your input.")
+
+
 def echo(obj):
     """A Call to the Echo Class."""
     e = Echo()
@@ -1044,3 +1558,4 @@ def echo(obj):
 
 
 endpoint = EndPoints()
+field = Field()
