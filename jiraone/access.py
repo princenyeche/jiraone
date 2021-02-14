@@ -1359,7 +1359,7 @@ class Field(object):
                 }
                 payload = self.data_load(attr)
             else:
-                raise ValueError("Excepting string value as \"add\" or \"remove\" from the labels keyword argument "
+                raise ValueError("Excepting string value as \"add\" or \"remove\" from the options keyword argument "
                                  "got value: \"{}\" instead.".format(options))
             response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
         elif search["custom"] == self.field_type["cascadingselect"]:
@@ -1417,7 +1417,7 @@ class Field(object):
                 }
                 payload = self.data_load(attr, s="update")
             else:
-                raise ValueError("Excepting string value as \"add\" or \"remove\" from the labels keyword argument "
+                raise ValueError("Excepting string value as \"add\" or \"remove\" from the options keyword argument "
                                  "got value: \"{}\" instead.".format(options))
             response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
         elif search["key"] in [self.field_type["components"], self.field_type['fixversions']]:
@@ -1440,7 +1440,7 @@ class Field(object):
                 payload = self.data_load(attr)
             else:
                 raise ValueError("Excepting string value as \"add\" or \"remove\" "
-                                 "from the labels keyword argument got value: \"{}\" instead.".format(options))
+                                 "from the options keyword argument got value: \"{}\" instead.".format(options))
             response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
         else:
             raise NameError("The field name: {} is not among the list of supported field type for this function."
