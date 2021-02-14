@@ -245,8 +245,8 @@ This method helps with updating fields. Performs a `put` request, with the below
   * e.g. required output [{"value": "hello"}] -> for Multicheckboxes type of field.
   * e.g. required output [{"name": "hello"}] -> for Components or Fix versions type of field.
 
-***field.cascading(data="string")*** <br />
-* `data` any string object data.
+***field.cascading(data=[String,List])*** <br />
+* `data` any string or list object data.
 
 ***field.extract_issue_field_options(key_or_id=Union[string, integer], search=None, amend=None, data=Any, field_type="system")*** <br />
 * `key_or_id` datatype[String, Integer] issue key or id of an issue.
