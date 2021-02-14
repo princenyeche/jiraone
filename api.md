@@ -210,7 +210,7 @@ print(cb)
 ## field
 Alias to the `Field` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. <br />
 
-**Attributes** You have access two vital attributes. <br />
+**Attributes** You have access to two vital attributes. <br />
 * `field.field_type` > A dictionary of Jira's field properties.
 * `field.field_search_key` > A dictionary of Jira's field search key.
 <br />
