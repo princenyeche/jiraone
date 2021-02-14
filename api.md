@@ -1,6 +1,6 @@
 # Using the API
 Jiraone basically allows you to create a report based method using Atlassian REST API on your cloud infrastructure.
-it uses a class method on the Endpoint Class, so you can easily call the direct Atlassian API.
+It uses a class method on the Endpoint class, so you can easily call the direct Atlassian API.
 In generating reports, you can create functions, classes or even methods to derive the desired results.
 
 
@@ -21,7 +21,7 @@ def priorities():
 ```
 
 
-The Script comes with a User and Project Classes which includes basic reporting examples. The User class has a user generator,
+The script comes with a "User" and "Project" classes which includes basic reporting examples. The User class has a user generator,
 which easily enables you to fetch all users on the instance without you programming such yourself.
 All these methods and functions are accessible directly from the jiraone package.
 
@@ -58,7 +58,7 @@ LOGIN(user=user, password=password, url=link)
 
 **Methods**, available to the LOGIN alias, it returns a response object. <br />
 The keyword argument of payload can be any object you want to pass to the method. Subsequently, you can pass other keyword arguments
-such as `json`, `files`, `data` etc.
+such as `files`, `data` etc.
 * LOGIN.get(url, *args, payload=None, **kwargs)
 * LOGIN.post(url, *args, payload=None, **kwargs)
 * LOGIN.delete(url, **kwargs)
@@ -165,7 +165,7 @@ dir_path = path_builder(path=path, file_name=file)
 * ***For(string)***
 * ***For(int)***
 
-The `For` Class is a Class to show the implementation of a 'for' loop. it calls the __iter__ magic method then the __next__ method
+The `For` class is a class to show the implementation of a 'for' loop. it calls the **__iter__** magic method then the **__next__** method
 and raises a StopIteration once it reaches the end of the loop. Datatype expected are list, dict, tuple, str, set or int.
 It contains one required parameter called `data` which it uses to receive the various datatype and translate them into a list of items, 
 retaining their own unique datatype.
@@ -206,6 +206,39 @@ print(cb)
 # ["Hello John doe, welcome to the Post mortem of what is to come"]
 
 ```
+
+## field
+Alias to the `Field` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. <br />
+
+**Attributes** You have access two vital attributes. <br />
+* `field.field_type` > A dictionary of Jira's field properties.
+* `field.field_search_key` > A dictionary of Jira's field search key.
+<br />
+
+***field.search_field(find_field=None)*** <br />
+This helps to search for a custom field. The paramater needed `find_field` which should be a string.
+
+***field.get_field(find_field=None)*** <br />
+This helps to search for system fields or custom fields. The paramater needed `find_field` which should be a string.
+
+***field.update_field_data(data=Any, find_field="string", field_type="string",
+                          key_or_id=Union[string, integer], show=[Bool] **kwargs=[Any])*** <br />
+
+This method helps with updating fields. Performs a `put` request, with the below parameters. <br />
+* `data` datatype[Any] the data you're trying to process, depending on what field it could be any object.
+* `find_field` datatype[String] name of the custom field or system field to find in strings.
+* `field_type` datatype[String] available options - system or custom.
+* `key_or_id` datatype[String or Integer] issue key or id of an issue.
+* `show` datatype[Bool] allows you to print out a formatted field that was searched.
+* `kwargs` datatype[String] perform other operations with keyword args
+  * options arg is a string and has two values "add" or "remove".
+  * query arg is a string and it can have any value that is stated on the endpoint.issue() method e.g. query="notifyUsers=false"
+
+
+***field.data_load(data=[Any], s=None)*** <br />
+* `data` any object
+* `s` any object that makes it not None.
+
 
 ### Other variables
 * `WORK_PATH`: This is a direct link to the present directory in which you're calling the script. How it works, is that it uses the present working directory of where the script you're initializing. Use this variable, if you want to create your own pathway.
