@@ -215,29 +215,65 @@ Alias to the `Field` class and it basically helps to update custom or system fie
 * `field.field_search_key` > A dictionary of Jira's field search key.
 <br />
 
-***field.search_field(find_field=None)*** <br />
+**Methods** The below are the various methods that can be used. <br />
+***field.search_field(find_field="string")*** <br />
 This helps to search for a custom field. The paramater needed `find_field` which should be a string.
 
-***field.get_field(find_field=None)*** <br />
+***field.get_field(find_field="string")*** <br />
 This helps to search for system fields or custom fields. The paramater needed `find_field` which should be a string.
 
-***field.update_field_data(data=Any, find_field="string", field_type="string",
-                          key_or_id=Union[string, integer], show=[Bool] **kwargs=[Any])*** <br />
+***field.update_field_data(data=[Any], find_field="string", field_type="string", key_or_id=Union[string, integer], show=[Bool], kwargs=[Any])*** <br />
 
 This method helps with updating fields. Performs a `put` request, with the below parameters. <br />
 * `data` datatype[Any] the data you're trying to process, depending on what field it could be any object.
 * `find_field` datatype[String] name of the custom field or system field to find in strings.
 * `field_type` datatype[String] available options - system or custom.
 * `key_or_id` datatype[String or Integer] issue key or id of an issue.
-* `show` datatype[Bool] allows you to print out a formatted field that was searched.
+* `show` datatype[Bool] allows you to print out a formatted field that was searched. Set to false, if you don't want the field data shown.
 * `kwargs` datatype[String] perform other operations with keyword args
   * options arg is a string and has two values "add" or "remove".
   * query arg is a string and it can have any value that is stated on the endpoint.issue() method e.g. query="notifyUsers=false"
 
 
-***field.data_load(data=[Any], s=None)*** <br />
+***field.data_load(data=[Any], s=[Any])*** <br />
 * `data` any object
 * `s` any object that makes it not None.
+
+***field.multi_field(data=[Any], s="string")*** <br />
+* `data` any string object data.
+* `s` is a placeholder to determine the object key. Value can be "value" or "name"
+  * e.g. required output [{"value": "hello"}] -> for Multicheckboxes type of field.
+  * e.g. required output [{"name": "hello"}] -> for Components or Fix versions type of field.
+
+***field.cascading(data="string")*** <br />
+* `data` any string object data.
+
+***field.extract_issue_field_options(key_or_id=Union[string, integer], search=None, amend=None, data=Any, field_type="system")*** <br />
+* `key_or_id` datatype[String, Integer] issue key or id of an issue.
+* `search` datatype[Dict] issue data of an issue or issue payload.
+* `amend` datatype[String] available option "add" or "remove" condition to decide action for appending.
+* `data` datatype[string] our object data that will be processed.
+* `field_type` datatype[String] provides decision for search parameter.Available options are "system" or "custom".
+
+Example usage: <br />
+```python
+from jiraone import field, echo, LOGIN
+
+user = "email"
+password = "token"
+link = "https://yourinstance.atlassian.net"
+LOGIN(user=user, password=password, url=link)
+
+issue = "T6-75"
+fields = "Multiple files" # a multiselect custom field
+case_value = ["COM Row 1", "Thanos"]
+for value in case_value:
+    c = field.update_field_data(data=value, find_field=fields, key_or_id=issue, options="add", show=False)
+    echo(c)
+
+# output
+# < Response[204] >
+```
 
 
 ### Other variables
