@@ -483,8 +483,8 @@ class Projects:
         for r in read:
             attachment = r[attach]
             _file_name = r[file]
-            fetch = LOGIN.get(attachment).content
-            file_writer(download_path, file_name=_file_name, mode="wb", content=fetch, mark="file")
+            fetch = LOGIN.get(attachment)
+            file_writer(download_path, file_name=_file_name, mode="wb", content=fetch.content, mark="file")
             print("Attachment downloaded to {}".format(download_path), "Status code: {}".format(fetch.status_code))
             add_log("Attachment downloaded to {}".format(download_path), "info")
 
