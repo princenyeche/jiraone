@@ -1545,7 +1545,7 @@ class Field(object):
         elif amend == "remove":
             collect.remove(data)
         else:
-            raise ValueError("The amend option cannot be processed because the value \"{}\" doesn't exit."
+            raise ValueError("The amend option cannot be processed because the value \"{}\" doesn't exist."
                              "Please check your input.".format(amend))
 
         return collect
