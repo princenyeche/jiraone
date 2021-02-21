@@ -210,12 +210,12 @@ print(cb)
 ## field
 Alias to the `Field` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. <br />
 
-**Attributes** You have access to two vital attributes. <br />
+**Attributes** - You have access to two vital attributes. <br />
 * `field.field_type` > A dictionary of Jira's field properties.
 * `field.field_search_key` > A dictionary of Jira's field search key.
 <br />
 
-**Methods** The below are the various methods that can be used. <br />
+**Methods** - Below are the various methods that can be used. <br />
 ***field.search_field(find_field="string")*** <br />
 This helps to search for a custom field. The paramater needed `find_field` which should be a string.
 
@@ -248,12 +248,11 @@ This method helps with updating fields. Performs a `put` request, with the below
 ***field.cascading(data=[String,List])*** <br />
 * `data` any string or list object data.
 
-***field.extract_issue_field_options(key_or_id=Union[string, integer], search=None, amend=None, data=Any, field_type="system")*** <br />
+***field.extract_issue_field_options(key_or_id=Union[string, integer], search=None, amend=None, data=Any)*** <br />
 * `key_or_id` datatype[String, Integer] issue key or id of an issue.
 * `search` datatype[Dict] issue data of an issue or issue payload.
 * `amend` datatype[String] available option "add" or "remove" condition to decide action for appending.
 * `data` datatype[string] our object data that will be processed.
-* `field_type` datatype[String] provides decision for search parameter.Available options are "system" or "custom".
 
 Example usage: <br />
 ```python
