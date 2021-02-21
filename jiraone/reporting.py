@@ -14,8 +14,6 @@ import sys
 import os
 import re
 
-CsvData = List[List[str]]
-
 
 class Projects:
     """Get report on a Project based on user or user's attributes or groups."""
@@ -794,7 +792,7 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
 
 
 def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
-                skip: bool = False, content: bool = False, **kwargs) -> Union[CsvData, str]:
+                skip: bool = False, content: bool = False, **kwargs) -> Union[List[List[str]], str]:
     """Reads a CSV file and returns a list comprehension of the data or reads a byte into strings."""
     file = path_builder(path=folder, file_name=file_name)
     if mode:
@@ -833,16 +831,14 @@ def replacement_placeholder(string: str = Any, data: list = Any,
             if string in data[row]:
                 result = [lines.replace(string, iterable[count], 1) for lines in data]
             else:
-                sys.stderr.write("Word {} cannot be found \n".format(string))
                 add_log("Word {} cannot be found".format(string), "error")
-                sys.exit(1)
+                sys.exit("Word {} cannot be found \n".format(string))
         if count > 0:
             if string in result[row]:
                 result = [lines.replace(string, iterable[count], 1) for lines in result]
             else:
-                sys.stderr.write("Word {} cannot be found \n".format(string))
                 add_log("Word {} cannot be found".format(string), "error")
-                sys.exit(1)
+                sys.exit("Word {} cannot be found \n".format(string))
         count += 1
         if count > length:
             break

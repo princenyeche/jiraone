@@ -11,6 +11,7 @@ from requests.auth import HTTPBasicAuth
 from typing import Any, Optional, Union, Dict
 from pprint import PrettyPrinter
 import requests
+import sys
 
 
 class Credentials(object):
@@ -125,24 +126,13 @@ class EndPoints:
 
         :param max_results defaults as keyword args, example maxResults=50
         """
-        param = []
-        amp = "&"
-        num_list = 0
         if args:
             nos = len(args)
             if nos > 0:
-                for v in args:
-                    param.append(f"{v}{amp}")
-                    num_list += 1
-                    if num_list >= nos:
-                        # cut the last ampersand and clear the list
-                        cut = "".join(param).rstrip("&")
-                        param.clear()
-                        param.append(cut)
-                        break
-                print("Project Search Query Parameter:", param[0])
+                param = "&".join(args)
+                print("Project Search Query Parameter:", param)
                 return "{}/rest/api/3/project/search?{}&startAt={}&maxResults={}" \
-                    .format(LOGIN.base_url, param[0], start_at, max_results)
+                    .format(LOGIN.base_url, param, start_at, max_results)
         else:
             return "{}/rest/api/3/project/search?startAt={}&maxResults={}" \
                 .format(LOGIN.base_url, start_at, max_results)
@@ -510,7 +500,7 @@ class EndPoints:
         return "{}/rest/agile/1.0/board".format(LOGIN.base_url)
 
     @classmethod
-    def get_board_by_filter_id(cls, filter_id, start_at: int = 0, max_results: int = 50) -> Any:
+    def get_board_by_filter_id(cls, filter_id, start_at: int = 0, max_results: int = 50) -> str:
         """Returns any boards which use the provided filter id.
 
         This method can be executed by users without a valid software license
@@ -787,7 +777,7 @@ class EndPoints:
         return "{}/rest/servicedeskapi/organization/{}".format(LOGIN.base_url, org_id)
 
     @classmethod
-    def get_users_in_organization(cls, org_id, start: int = 0, limit: int = 50) -> Any:
+    def get_users_in_organization(cls, org_id, start: int = 0, limit: int = 50) -> str:
         """This method returns all the users associated with an organization.
 
         Use this method where you want to provide a list of users for an organization
@@ -803,7 +793,7 @@ class EndPoints:
                                                                                       start, limit)
 
     @classmethod
-    def add_users_to_organization(cls, org_id) -> Any:
+    def add_users_to_organization(cls, org_id) -> str:
         """This method adds users to an organization.
 
         :request POST:
@@ -815,7 +805,7 @@ class EndPoints:
         return "{}/rest/servicedeskapi/organization/{}/user".format(LOGIN.base_url, org_id)
 
     @classmethod
-    def remove_users_from_organization(cls, org_id) -> Any:
+    def remove_users_from_organization(cls, org_id) -> str:
         """This method removes users from an organization.
 
         :request DELETE:
@@ -1224,6 +1214,7 @@ class Field(object):
         "reporter": "reporter",
         "assignee": "assignee",
         "description": "description"
+
     }
     """
     *****************************************
@@ -1247,9 +1238,9 @@ class Field(object):
     }
 
     @staticmethod
-    def search_field(find_field: Any = None):
+    def search_field(find_field: str = None):
         """Search for custom fields"""
-        fields = find_field
+        fields = find_field if find_field is not None else sys.exit("You must enter a field name")
         count_start_at = 0
         while True:
             load = LOGIN.get(endpoint.get_field(query="type=custom", start_at=count_start_at))
@@ -1268,9 +1259,9 @@ class Field(object):
                     break
 
     @staticmethod
-    def get_field(find_field: Any = None):
+    def get_field(find_field: str = None):
         """Search for system fields or custom fields"""
-        fields = find_field
+        fields = find_field if find_field is not None else sys.exit("You must enter a field name")
         load = LOGIN.get(endpoint.get_field(system="type=system"))
         data = load.json()
         if load.status_code == 200:
@@ -1351,7 +1342,7 @@ class Field(object):
                 payload = self.data_load(attr)
             elif options == "add" or options == "remove":
                 get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
-                                                            amend=options, data=data, field_type="custom")
+                                                            amend=options, data=data)
                 concat = ",".join(get_data)
                 attr = {
                     search["id"]:
@@ -1511,12 +1502,12 @@ class Field(object):
             return var
 
     @staticmethod
-    def extract_issue_field_options(key_or_id: Union[str, int] = None, search: Any = None,
-                                    amend: str = None, data: Any = Any, field_type: str = "system"):
+    def extract_issue_field_options(key_or_id: Union[str, int] = None, search: Dict = None,
+                                    amend: str = None, data: Any = Any):
         """Get the option from an issue.
 
         Use this method to extract and amend changes to system fields such as
-        Components or fix versions or custom fields such a multicheckboxes or multiselect.
+        Components or fix versions, labels or custom fields such a multicheckboxes or multiselect.
 
         :param key_or_id datatype[String, Integer] issue key or id of an issue.
 
@@ -1525,30 +1516,39 @@ class Field(object):
         :param amend datatype[String] available option "add" or "remove" condition to decide action for appending.
 
         :param data datatype[string] our object data that will be processed.
-
-        :param field_type datatype[String] provides decision for search parameter.Available option "system" or "custom".
         """
         collect = []
+        field_type = False if isinstance(search["custom"], bool) else True
         load = LOGIN.get(endpoint.issues(issue_key_or_id=key_or_id)).json()
-        if field_type == "system":
+        if field_type is False:
             if search["key"] in load["fields"]:
                 init = load["fields"]
                 for i in init[search["key"]]:
-                    collect.append(i["name"])
-        elif field_type == "custom":
+                    if search["key"] in ["labels"]:
+                        collect.append(i)
+                    else:
+                        collect.append(i["name"])
+        elif field_type is True:
             if search["id"] in load["fields"]:
                 init = load["fields"]
+                if search["type"] == "option-with-child":
+                    sys.exit("Use the `field.update_field_data()` method instead to update values to a cascading select"
+                             " field. Exiting...")
                 for i in init[search["id"]]:
                     collect.append(i["value"])
 
         if amend == "add":
-            collect.append(data)
-            return collect
+            if data in collect:
+                raise NameError("Value \"{}\" already exist in list".format(data))
+            else:
+                collect.append(data)
         elif amend == "remove":
             collect.remove(data)
-            return collect
         else:
-            raise NameError("The data received cannot be processed.Please check your input.")
+            raise ValueError("The amend option cannot be processed because the value \"{}\" doesn't exit."
+                             "Please check your input.".format(amend))
+
+        return collect
 
 
 def echo(obj):
