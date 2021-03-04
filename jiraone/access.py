@@ -19,6 +19,7 @@ class Credentials(object):
 
     auth_request = None
     headers = None
+    api = True
 
     def __init__(self, user: str, password: str, url: str = Any) -> Optional:
         """Instantiate the login."""
@@ -85,7 +86,7 @@ class EndPoints:
     @classmethod
     def myself(cls):
         """Return data on your own user."""
-        return "{}/rest/api/3/myself".format(LOGIN.base_url)
+        return "{}/rest/api/{}/myself".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
     def search_users(cls, query: int = 0):
@@ -93,7 +94,9 @@ class EndPoints:
 
         :param query
         """
-        return "{}/rest/api/3/users/search?startAt={}&maxResults=50".format(LOGIN.base_url, query)
+        return "{}/rest/api/{}/users/search?startAt={}&maxResults=50".format(LOGIN.base_url,
+                                                                             "3" if LOGIN.api is True else "latest",
+                                                                             query)
 
     @classmethod
     def get_user_group(cls, account_id: Any):
@@ -101,7 +104,7 @@ class EndPoints:
 
         :param account_id required
         """
-        return f"{LOGIN.base_url}/rest/api/3/user/groups?accountId={account_id}"
+        return f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/user/groups?accountId={account_id}"
 
     @classmethod
     def get_projects(cls, *args: Any, start_at=0, max_results=50):
@@ -131,11 +134,11 @@ class EndPoints:
             if nos > 0:
                 param = "&".join(args)
                 print("Project Search Query Parameter:", param)
-                return "{}/rest/api/3/project/search?{}&startAt={}&maxResults={}" \
-                    .format(LOGIN.base_url, param, start_at, max_results)
+                return "{}/rest/api/{}/project/search?{}&startAt={}&maxResults={}" \
+                    .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", param, start_at, max_results)
         else:
-            return "{}/rest/api/3/project/search?startAt={}&maxResults={}" \
-                .format(LOGIN.base_url, start_at, max_results)
+            return "{}/rest/api/{}/project/search?startAt={}&maxResults={}" \
+                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", start_at, max_results)
 
     @classmethod
     def find_users_with_permission(cls, *args):
@@ -145,8 +148,8 @@ class EndPoints:
         2nd projectKey
         3rd permissions that needs checking all in caps e.g "BROWSE", "CREATE_ISSUE" etc
         """
-        return "{}/rest/api/3/user/permission/search?accountId={}&projectKey={}&permissions={}" \
-            .format(LOGIN.base_url, *args)
+        return "{}/rest/api/{}/user/permission/search?accountId={}&projectKey={}&permissions={}" \
+            .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", *args)
 
     @classmethod
     def get_roles_for_project(cls, id_or_key: Any):
@@ -154,7 +157,8 @@ class EndPoints:
 
         :param id_or_key
         """
-        return "{}/rest/api/3/project/{}/role".format(LOGIN.base_url, id_or_key)
+        return "{}/rest/api/{}/project/{}/role".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                       id_or_key)
 
     @classmethod
     def get_project_role(cls, *args):
@@ -163,15 +167,16 @@ class EndPoints:
         :param args projectKey or Id of the Project
         id of the role
         """
-        return "{}/rest/api/3/project/{}/role/{}".format(LOGIN.base_url, *args)
+        return "{}/rest/api/{}/project/{}/role/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", *args)
 
     @classmethod
     def get_all_permission_scheme(cls, query: str = None):
         """Returns all permission schemes."""
         if query is not None:
-            return "{}/rest/api/3/permissionscheme?{}".format(LOGIN.base_url, query)
+            return "{}/rest/api/{}/permissionscheme?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                               query)
         else:
-            return "{}/rest/api/3/permissionscheme".format(LOGIN.base_url)
+            return "{}/rest/api/{}/permissionscheme".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
     def get_all_issue_type_schemes(cls, query: Optional[str] = None, start_at=0, max_results=50):
@@ -179,11 +184,15 @@ class EndPoints:
 
         Only issue type schemes used in classic projects are returned"""
         if query is not None:
-            return "{}/rest/api/3/issuetypescheme?{}&startAt={}&maxResults={}".format(LOGIN.base_url, query,
-                                                                                      start_at, max_results)
+            return "{}/rest/api/{}/issuetypescheme?{}&startAt={}&maxResults={}".format(LOGIN.base_url,
+                                                                                       "3" if LOGIN.api is True
+                                                                                       else "latest",
+                                                                                       query, start_at, max_results)
         else:
-            return "{}/rest/api/3/issuetypescheme?startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                                   start_at, max_results)
+            return "{}/rest/api/{}/issuetypescheme?startAt={}&maxResults={}".format(LOGIN.base_url,
+                                                                                    "3" if LOGIN.api is True
+                                                                                    else "latest",
+                                                                                    start_at, max_results)
 
     @classmethod
     def get_all_issue_types(cls):
@@ -194,17 +203,17 @@ class EndPoints:
         If the user has the Browse projects project permission for one or more projects,
         the issue types associated with the projects the user has permission to browse are returned.
         """
-        return "{}/rest/api/3/issuetype".format(LOGIN.base_url)
+        return "{}/rest/api/{}/issuetype".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
     def get_all_issue_security_scheme(cls):
         """Returns all issue security schemes."""
-        return "{}/rest/api/3/issuesecurityschemes".format(LOGIN.base_url)
+        return "{}/rest/api/{}/issuesecurityschemes".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
     def get_all_priorities(cls):
         """Returns the list of all issue priorities."""
-        return "{}/rest/api/3/priority".format(LOGIN.base_url)
+        return "{}/rest/api/{}/priority".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
     def search_all_notification_schemes(cls, query: Optional[str] = None, start_at=0, max_results=50):
@@ -217,11 +226,15 @@ class EndPoints:
         :param max_results has default value of 50
         """
         if query is not None:
-            return "{}/rest/api/3/notificationscheme?{}&startAt={}&maxResults={}".format(LOGIN.base_url, query,
-                                                                                         start_at, max_results)
+            return "{}/rest/api/{}/notificationscheme?{}&startAt={}&maxResults={}".format(LOGIN.base_url,
+                                                                                          "3" if LOGIN.api is True
+                                                                                          else "latest", query,
+                                                                                          start_at, max_results)
         else:
-            return "{}/rest/api/3/notificationscheme?startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                                      start_at, max_results)
+            return "{}/rest/api/{}/notificationscheme?startAt={}&maxResults={}".format(LOGIN.base_url,
+                                                                                       "3" if LOGIN.api is True
+                                                                                       else "latest",
+                                                                                       start_at, max_results)
 
     @classmethod
     def get_field(cls, query: Optional[str] = None, start_at: int = 0, max_results: int = 50, system: str = None):
@@ -252,13 +265,17 @@ class EndPoints:
         (that is, the field is used in at least one project that the user has Browse Projects project permission for.)
          """
         if query is not None and system is None:
-            return "{}/rest/api/3/field/search?{}&startAt={}&maxResults={}".format(LOGIN.base_url, query,
-                                                                                   start_at, max_results)
+            return "{}/rest/api/{}/field/search?{}&startAt={}&maxResults={}".format(LOGIN.base_url,
+                                                                                    "3" if LOGIN.api is True
+                                                                                    else "latest", query,
+                                                                                    start_at, max_results)
         elif query is None and system is not None:
-            return "{}/rest/api/3/field".format(LOGIN.base_url)
+            return "{}/rest/api/{}/field".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
         else:
-            return "{}/rest/api/3/field/search?startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                                start_at, max_results)
+            return "{}/rest/api/{}/field/search?startAt={}&maxResults={}".format(LOGIN.base_url,
+                                                                                 "3" if LOGIN.api is True
+                                                                                 else "latest",
+                                                                                 start_at, max_results)
 
     @classmethod
     def get_attachment_meta_data(cls, query: str, warning: Any = None):
@@ -276,7 +293,7 @@ class EndPoints:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
         else:
             pass
-        return "{}/rest/api/3/attachment/{}".format(LOGIN.base_url, query)
+        return "{}/rest/api/{}/attachment/{}".format(LOGIN.base_url, query, "3" if LOGIN.api is True else "latest")
 
     @classmethod
     def issue_attachments(cls, id_or_key: str = None, attach_id: str = None, uri: Optional[str] = None,
@@ -320,20 +337,26 @@ class EndPoints:
         """
         # TODO: check this endpoint again
         if uri is not None:
-            return "{}/rest/api/3/attachment/{}".format(LOGIN.base_url, uri)
+            return "{}/rest/api/{}/attachment/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri)
         else:
             if query is not None and attach_id is not None and id_or_key is None:
-                return "{}/rest/api/3/attachment/{}/{}".format(LOGIN.base_url, attach_id, query)
+                return "{}/rest/api/{}/attachment/{}/{}".format(LOGIN.base_url,
+                                                                "3" if LOGIN.api is True else "latest",
+                                                                attach_id, query)
             elif query is not None and attach_id is None and id_or_key is not None:
-                return "{}/rest/api/3/issue/{}/{}".format(LOGIN.base_url, id_or_key, query)
+                return "{}/rest/api/{}/issue/{}/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                           id_or_key, query)
             else:
-                return "{}/rest/api/3/attachment/{}".format(LOGIN.base_url, attach_id)
+                return "{}/rest/api/{}/attachment/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                             attach_id)
 
     @classmethod
     def search_issues_jql(cls, query, start_at: int = 0, max_results: int = 50):
         """Searches for issues using JQL."""
-        return "{}/rest/api/3/search?jql={}&startAt={}&maxResults={}".format(LOGIN.base_url, query,
-                                                                             start_at, max_results)
+        return "{}/rest/api/{}/search?jql={}&startAt={}&maxResults={}".format(LOGIN.base_url,
+                                                                              "3" if LOGIN.api is True
+                                                                              else "latest", query,
+                                                                              start_at, max_results)
 
     @classmethod
     def search_for_filters(cls, query: Optional[str] = None, start_at: int = 0):
@@ -353,9 +376,13 @@ class EndPoints:
         :param: filled - maxResults=50 (default)
          """
         if query is not None:
-            return "{}/rest/api/3/filter/search?{}&startAt={}&maxResults=50".format(LOGIN.base_url, query, start_at)
+            return "{}/rest/api/{}/filter/search?{}&startAt={}&maxResults=50".format(LOGIN.base_url,
+                                                                                     "3" if LOGIN.api is True
+                                                                                     else "latest", query, start_at)
         else:
-            return "{}/rest/api/3/filter/search?startAt={}&maxResults=50".format(LOGIN.base_url, start_at)
+            return "{}/rest/api/{}/filter/search?startAt={}&maxResults=50".format(LOGIN.base_url,
+                                                                                  "3" if LOGIN.api is True
+                                                                                  else "latest", start_at)
 
     @classmethod
     def search_for_dashboard(cls, query: Optional[str] = None, start_at: int = 0):
@@ -373,14 +400,19 @@ class EndPoints:
         :param: filled - maxResult=20 (default)
         """
         if query is not None:
-            return "{}/rest/api/3/dashboard/search?{}&startAt={}&maxResults=20".format(LOGIN.base_url, query, start_at)
+            return "{}/rest/api/{}/dashboard/search?{}&startAt={}&maxResults=20".format(LOGIN.base_url,
+                                                                                        "3" if LOGIN.api is True
+                                                                                        else "latest", query, start_at)
         else:
-            return "{}/rest/api/3/dashboard/search?startAt={}&maxResults=20".format(LOGIN.base_url, start_at)
+            return "{}/rest/api/{}/dashboard/search?startAt={}&maxResults=20".format(LOGIN.base_url,
+                                                                                     "3" if LOGIN.api is True
+                                                                                     else "latest", start_at)
 
     @classmethod
     def get_dashboard(cls, dashboard_id: int):
         """Gets the dashboard."""
-        return "{}/rest/api/3/dashboard/{}".format(LOGIN.base_url, dashboard_id)
+        return "{}/rest/api/{}/dashboard/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                    dashboard_id)
 
     @classmethod
     def get_all_application_role(cls):
@@ -388,7 +420,7 @@ class EndPoints:
         Returns all application roles.
 
         In Jira, application roles are managed using the Application access configuration page."""
-        return "{}/rest/api/3/applicationrole".format(LOGIN.base_url)
+        return "{}/rest/api/{}/applicationrole".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
     def search_all_workflows(cls, query: int = 0):
@@ -402,7 +434,9 @@ class EndPoints:
 
         :param: filled - maxResults=50 (default)
         """
-        return "{}/rest/api/3/workflow/search?startAt={}&maxResults=50".format(LOGIN.base_url, query)
+        return "{}/rest/api/{}/workflow/search?startAt={}&maxResults=50".format(LOGIN.base_url,
+                                                                                "3" if LOGIN.api is True
+                                                                                else "latest", query)
 
     @classmethod
     def search_all_workflow_schemes(cls, query: int = 0):
@@ -412,7 +446,9 @@ class EndPoints:
 
         :param: filled - maxResults=50 (default)
         """
-        return "{}/rest/api/3/workflowscheme?startAt={}&maxResults=50".format(LOGIN.base_url, query)
+        return "{}/rest/api/{}/workflowscheme?startAt={}&maxResults=50".format(LOGIN.base_url,
+                                                                               "3" if LOGIN.api is True
+                                                                               else "latest", query)
 
     @classmethod
     def search_all_screens(cls, query: int = 0):
@@ -422,7 +458,8 @@ class EndPoints:
 
         :param: maxResults=100 (default)
         """
-        return "{}/rest/api/3/screens?startAt={}&maxResults=100".format(LOGIN.base_url, query)
+        return "{}/rest/api/{}/screens?startAt={}&maxResults=100".format(LOGIN.base_url,
+                                                                         "3" if LOGIN.api is True else "latest", query)
 
     @classmethod
     def search_for_screen_schemes(cls, query: int = 0):
@@ -434,7 +471,9 @@ class EndPoints:
 
         :param: maxResults=25 (default)
         """
-        return "{}/rest/api/3/screenscheme?startAt={}&maxResults=25".format(LOGIN.base_url, query)
+        return "{}/rest/api/{}/screenscheme?startAt={}&maxResults=25".format(LOGIN.base_url,
+                                                                             "3" if LOGIN.api is True
+                                                                             else "latest", query)
 
     @classmethod
     def get_project_component(cls, id_or_key):
@@ -443,12 +482,13 @@ class EndPoints:
         resource if you want to get a full list of components with pagination.
         The project ID or project key (case sensitive).
         """
-        return "{}/rest/api/3/project/{}/components".format(LOGIN.base_url, id_or_key)
+        return "{}/rest/api/{}/project/{}/components".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                             id_or_key)
 
     @classmethod
     def get_resolutions(cls):
         """Returns a list of all issue resolution values."""
-        return "{}/rest/api/3/resolution".format(LOGIN.base_url)
+        return "{}/rest/api/{}/resolution".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     ################################################
     # Jira Software Specifics API endpoints
@@ -945,9 +985,10 @@ class EndPoints:
                 :param account_id - string for a user account
         """
         if account_id is not None:
-            return "{}/rest/api/3/user?accountId={}".format(LOGIN.base_url, account_id)
+            return "{}/rest/api/{}/user?accountId={}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                             account_id)
         else:
-            return "{}/rest/api/3/user".format(LOGIN.base_url)
+            return "{}/rest/api/{}/user".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
     def jira_group(cls, group_name: str = None, swap_group: str = None):
@@ -969,11 +1010,14 @@ class EndPoints:
                     :param swap_group group name to swap
         """
         if group_name is not None and swap_group is None:
-            return "{}/rest/api/3/group?groupname={}".format(LOGIN.base_url, group_name)
+            return "{}/rest/api/{}/group?groupname={}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                              group_name)
         elif group_name is not None and swap_group is not None:
-            return "{}/rest/api/3/group?groupname={}&swapGroup={}".format(LOGIN.base_url, group_name, swap_group)
+            return "{}/rest/api/{}/group?groupname={}&swapGroup={}".format(LOGIN.base_url,
+                                                                           "3" if LOGIN.api is True else "latest",
+                                                                           group_name, swap_group)
         else:
-            return "{}/rest/api/3/group".format(LOGIN.base_url)
+            return "{}/rest/api/{}/group".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
     def group_jira_users(cls, group_name: str, account_id: str = None):
@@ -993,9 +1037,12 @@ class EndPoints:
                     :param account_id string of a user account
         """
         if account_id is not None:
-            return "{}/rest/api/3/group/user?groupname={}&accountId={}".format(LOGIN.base_url, group_name, account_id)
+            return "{}/rest/api/{}/group/user?groupname={}&accountId={}".format(LOGIN.base_url,
+                                                                                "3" if LOGIN.api is True
+                                                                                else "latest", group_name, account_id)
         else:
-            return "{}/rest/api/3/group/user?groupname={}".format(LOGIN.base_url, group_name)
+            return "{}/rest/api/{}/group/user?groupname={}".format(LOGIN.base_url,
+                                                                   "3" if LOGIN.api is True else "latest", group_name)
 
     @classmethod
     def projects(cls, id_or_key, query: Optional[str] = None, uri: Optional[str] = None,
@@ -1046,15 +1093,20 @@ class EndPoints:
 
         """
         if uri is not None:
-            return "{}/rest/api/3/project/{}/{}".format(LOGIN.base_url, id_or_key, uri)
+            return "{}/rest/api/{}/project/{}/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                         id_or_key, uri)
         else:
             if query is not None:
-                return "{}/rest/api/3/project/{}?{}".format(LOGIN.base_url, id_or_key, query)
+                return "{}/rest/api/{}/project/{}?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                             id_or_key, query)
             else:
                 if enable_undo is not None:
-                    return "{}/rest/api/3/project/{}?enableUndo={}".format(LOGIN.base_url, id_or_key, enable_undo)
+                    return "{}/rest/api/{}/project/{}?enableUndo={}".format(LOGIN.base_url,
+                                                                            "3" if LOGIN.api is True
+                                                                            else "latest", id_or_key, enable_undo)
                 else:
-                    return "{}/rest/api/3/project/{}".format(LOGIN.base_url, id_or_key)
+                    return "{}/rest/api/{}/project/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                              id_or_key)
 
     @classmethod
     def issues(cls, issue_key_or_id: Optional[Any] = None, query: Optional[Any] = None,
@@ -1126,16 +1178,19 @@ class EndPoints:
                               : deleteSubtasks, datatype -> string, values = (true | false)
         """
         if uri is not None and query is None:
-            return "{}/rest/api/3/issue/{}".format(LOGIN.base_url, uri)
+            return "{}/rest/api/{}/issue/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri)
         elif uri is not None and query is not None:
-            return "{}/rest/api/3/issue/{}?{}".format(LOGIN.base_url, uri, query)
+            return "{}/rest/api/{}/issue/{}?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                       uri, query)
         else:
             if issue_key_or_id is not None and query is None:
-                return "{}/rest/api/3/issue/{}".format(LOGIN.base_url, issue_key_or_id)
+                return "{}/rest/api/{}/issue/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                        issue_key_or_id)
             elif issue_key_or_id is not None and query is not None:
-                return "{}/rest/api/3/issue/{}?{}".format(LOGIN.base_url, issue_key_or_id, query)
+                return "{}/rest/api/{}/issue/{}?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                           issue_key_or_id, query)
             else:
-                return "{}/rest/api/3/issue".format(LOGIN.base_url)
+                return "{}/rest/api/{}/issue".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
 
 class For(object):
