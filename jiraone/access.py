@@ -335,7 +335,6 @@ class EndPoints:
 
         The ID or key of the issue that attachments are added to.
         """
-        # TODO: check this endpoint again
         if uri is not None:
             return "{}/rest/api/{}/attachment/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri)
         else:
@@ -1110,7 +1109,7 @@ class EndPoints:
 
     @classmethod
     def issues(cls, issue_key_or_id: Optional[Any] = None, query: Optional[Any] = None,
-               uri: Optional[str] = None) -> str:
+               uri: Optional[str] = None, event: bool = False) -> str:
         """Creates issues, delete issues,  bulk create issue, transitions.
 
         A transition may be applied, to move the issue or subtask to a workflow step other than
@@ -1128,6 +1127,15 @@ class EndPoints:
 
                  * use the query keyword argument and structure a parameter
                  * e.g. query="notifyUsers=false"
+                 OR in the case of changelog the endpoint of "changelog"
+
+        :param event, datatype -> boolean
+
+                 * determine if you can get a changelog from the issue. default is false
+                 if True required parameters are:
+                 :param issue_key_or_id:
+                 :param query:
+                    /rest/api/3/issue/{issueIdOrKey}/changelog
 
         :param issue_key_or_id -> string or integer
 
@@ -1162,6 +1170,7 @@ class EndPoints:
                               : fieldsByKeys, updateHistory,  datatype -> boolean
                               : expand, datatype -> string
 
+
                   PUT - Edits an issue. A transition may be applied and issue properties updated as part of the edit.
                   endpoint  /rest/api/3/issue/{issueIdOrKey}
 
@@ -1186,11 +1195,91 @@ class EndPoints:
             if issue_key_or_id is not None and query is None:
                 return "{}/rest/api/{}/issue/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                                                         issue_key_or_id)
+
             elif issue_key_or_id is not None and query is not None:
                 return "{}/rest/api/{}/issue/{}?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                           issue_key_or_id, query)
+                                                           issue_key_or_id, query) if event is False else \
+                    "{}/rest/api/{}/issue/{}/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                        issue_key_or_id, query)
             else:
                 return "{}/rest/api/{}/issue".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+
+    @classmethod
+    def comment(cls, query: str = None, key_or_id: str = None, start_at: int = 0, max_results: int = 50,
+                ids: int = None, event: bool = False) -> str:
+        """Create, update, delete or get a comment.
+
+        :request POST - Returns a paginated list of just the comments for a list of comments specified by comment IDs.
+           :param query datatype -> string
+
+            :query param: expand datatype -> string
+
+               available options below
+
+               renderedBody Returns the comment body rendered in HTML.
+
+               properties Returns the comment's properties.
+
+           :body param - ids: datatype -> Array<integer>
+
+              The list of comment IDs. A maximum of 1000 IDs can be specified.
+
+        :request GET - Returns all comments for an issue.
+
+             :param key_or_id datatype -> string required
+             :param start_at datatype -> integer defaults to 0
+             :param max_results datatyoe -> integer defaults to 50
+             :query param: orderBy datatype -> string
+                   Valid values: created, -created, +created
+
+        :request POST - Adds a comment to an issue.
+              key_or_id required
+              :param event datatype -> boolean
+                     defaults to false, set to true to add a comment to an issue.
+
+              :query param: expand
+
+              :body param:
+                   body datatype -> Anything
+                   visibility -> The group or role to which this comment is visible. Optional on create and update.
+                   properties datatype -> Array<EntityProperty>
+                         A list of comment properties. Optional on create and update.
+                  Additional Properties datatype ->anything
+
+        :request GET - Returns a comment.
+                :param ids datatype integers - The ID of the comment.
+                :query param: expand
+
+        :request PUT - Updates a comment.
+               key_or_id required
+               ids The ID of the comment.
+               :query param: expand
+
+               :body param:
+                   body datatype -> Anything
+                   visibility -> The group or role to which this comment is visible. Optional on create and update.
+                   properties datatype -> Array<EntityProperty>
+                         A list of comment properties. Optional on create and update.
+                   Additional Properties datatype ->anything
+
+        :request DELETE - Deletes a comment.
+                key_or_id required
+                ids required
+
+
+        """
+        if key_or_id is not None and ids is None:
+            return f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment" \
+                if event is False else \
+                f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment?" \
+                f"startAt={start_at}&maxResults={max_results}&{query}"
+
+        elif key_or_id is not None and ids is not None:
+            return "{}/rest/api/{}/issue/{}/comment/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                               key_or_id, ids)
+        else:
+            return "{}/rest/api/{}/comment/list?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                                                           query)
 
 
 class For(object):
@@ -1594,7 +1683,7 @@ class Field(object):
 
         if amend == "add":
             if data in collect:
-                raise NameError("Value \"{}\" already exist in list".format(data))
+                raise ValueError("Value \"{}\" already exist in list".format(data))
             else:
                 collect.append(data)
         elif amend == "remove":
@@ -1605,6 +1694,36 @@ class Field(object):
 
         return collect
 
+    @staticmethod
+    def comment_on(key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs):
+        """Comment on a ticket or write on a description field.
+
+        GET comments
+        POST comments by id
+        PUT update a comment
+        POST add a comment
+        DELETE delete a comment
+        Do the same thing you do via the UI.
+        """
+        # TODO: work in progress
+        start_at = kwargs["start_at"] if "start_at" in kwargs else 0
+        max_results = kwargs["max_results"] if "max_results" in kwargs else 50
+        event = kwargs["event"] if "event" in kwargs else False
+        query = kwargs["query"] if "query" in kwargs else None
+        data = None
+        if method.upper() == "GET":
+            load = LOGIN.get(endpoint.comment(key_or_id=key_or_id, ids=comment_id,
+                                              start_at=start_at, max_results=max_results,
+                                              event=event, query=query))
+            data = load.json()
+        # if method.upper() == "POST":
+        #     ...
+        # if method.upper() == "PUT":
+        #     ...
+        # if method.upper() == "DELETE":
+        #    ...
+        return data
+
 
 def echo(obj):
     """A Call to the Echo Class."""
@@ -1614,3 +1733,4 @@ def echo(obj):
 
 endpoint = EndPoints()
 field = Field()
+comment = field.comment_on
