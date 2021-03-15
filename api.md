@@ -255,6 +255,15 @@ This method helps with updating fields. Performs a `put` request, with the below
 * `amend` datatype[String] available option "add" or "remove" condition to decide action for appending.
 * `data` datatype[string] our object data that will be processed.
 
+
+***field.comment_on(key_or_id=String, comment_id=Integer, method=String["GET", "PUT", "DELETE", "POST"], kwargs)*** <br />
+* `key_or_id` any string
+* `commend_id` integer
+*  `method` string with options ["GET", "PUT", "DELETE", "POST"]
+*  `kwargs` Any options start_at, max_results - datatype -> integers
+        *  query - datatype -> string
+        *  event - datatype -> boolean
+
 Example usage: <br />
 ```python
 from jiraone import field, echo, LOGIN
