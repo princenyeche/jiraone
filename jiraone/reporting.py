@@ -397,7 +397,6 @@ class Projects:
 
     @staticmethod
     def bytes_converter(val) -> str:
-        # TODO: added this change on 14 Mar 2021
         """Returns unit in KB or MB.
 
         1 Byte = 8 Bits.
@@ -483,7 +482,6 @@ class Projects:
                              attach: int = 8,
                              file: int = 6,
                              **kwargs):
-        # TODO: added change on 8 Mar 2021
         """Download the attachments to your local device read from a csv file.
 
         we assume you're getting this from   `def get_attachments_on_project()` method.
@@ -706,12 +704,12 @@ class Projects:
     @staticmethod
     def change_log(folder: str = "ChangeLog", file: str = "change_log.csv", **kwargs) -> NoReturn:
         """Extract the issue history of an issue.
-        
+
         Query the changelog endpoint if using cloud instance or straight away define access to it on server.
         Extract the histories and export it to a CSV file.
-        
+
         :param: jql required A valid JQL query for projects or issues  datatype -> String
-        
+
         :param folder - A name of a folder datatype String
         :param file - A name of a file datatype String
         """
@@ -990,6 +988,7 @@ def replacement_placeholder(string: str = Any, data: list = Any,
     cb = replacement_placeholder("<name>", text, hold, 0)
     print(cb)
     """
+    # TODO: this function is experimental 
     result = None
     count = 0
     length = len(iterable)
@@ -997,15 +996,15 @@ def replacement_placeholder(string: str = Any, data: list = Any,
         if count == 0:
             if string in data[row]:
                 result = [lines.replace(string, iterable[count], 1) for lines in data]
-            # else:
-            #     add_log("Word {} cannot be found".format(string), "error")
-            #     sys.exit("Word {} cannot be found \n".format(string))
+            else:
+                add_log("Word {} cannot be found".format(string), "error")
+                sys.exit("Word {} cannot be found \n".format(string))
         if count > 0:
             if string in result[row]:
                 result = [lines.replace(string, iterable[count], 1) for lines in result]
-            # else:
-            #     add_log("Word {} cannot be found".format(string), "error")
-            #     sys.exit("Word {} cannot be found \n".format(string))
+            else:
+                add_log("Word {} cannot be found".format(string), "error")
+                sys.exit("Word {} cannot be found \n".format(string))
         count += 1
         if count > length:
             break
