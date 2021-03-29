@@ -934,6 +934,8 @@ class Users:
         user_type = kwargs["user_type"] if "user_type" in kwargs else "atlassian"
         file = kwargs["file"] if "file" in kwargs else "user_file.csv"
         build = path_builder(folder, file)
+        if not os.path.isfile(build):
+            open(build, mode="a").close()
         if os.stat(build).st_size != 0:
             print(f"The file \"{file}\" exist...", end="")
             os.remove(build)
