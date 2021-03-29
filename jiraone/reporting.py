@@ -987,7 +987,6 @@ def replacement_placeholder(string: str = Any, data: list = Any,
     cb = replacement_placeholder("<name>", text, hold, 0)
     print(cb)
     """
-    # TODO: this function is experimental
     result = None
     count = 0
     length = len(iterable)
