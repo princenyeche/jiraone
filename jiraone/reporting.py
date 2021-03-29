@@ -928,6 +928,34 @@ class Users:
               .format(path_builder(path=group_folder, file_name=group_file_name)))
         add_log("Get Users group Completed", "info")
 
+    def search_user(self, find_user: str = None, _file: str = None, folder: str = "Users", **kwargs) -> deque:
+        """Get a list of all cloud users and search for them by using the displayName."""
+        pull = kwargs["pull"] if "pull" in kwargs else "both"
+        user_type = kwargs["user_type"] if "user_type" in kwargs else "atlassian"
+        file = kwargs["file"] if "file" in kwargs else "user_file.csv"
+        build = path_builder(folder, file)
+        if os.stat(build).st_size != 0:
+            print(f"The file \"{file}\" exist...", end="")
+            os.remove(build)
+            print("Updating extracted user...\n", end="")
+            self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
+        else:
+            self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
+            print("Extracting users...")
+        CheckUser = namedtuple("CheckUser", ["accountId", "account_type", "display_name", "active"])
+        list_user = file_reader(file_name=file, folder=folder)
+        self.user_list.clear()
+        for _ in list_user:
+            f = CheckUser._make(_)
+            if find_user in f._asdict().values():
+                get_user = f.accountId
+                display_name = f.display_name
+                status = f.active
+                self.user_list.append({"accountId": get_user, "displayName": display_name, "active": status})
+                return self.user_list
+
+        return exit(f"\n User: {find_user} not found.")
+
 
 def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
     """Builds a dir path and file path in a directory."""
