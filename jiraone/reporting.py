@@ -5,7 +5,7 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
-from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict
+from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict, NoReturn
 from collections import deque, namedtuple
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
@@ -373,7 +373,7 @@ class Projects:
         """
         byte_size = val
         mega_byte = 1000 * 1000
-        visor = byte_size / mega_byte
+        visor = byte_size / mega_byte  # MB converter
         return "Size: {:.2f} MB".format(visor)
 
     @staticmethod
@@ -394,6 +394,27 @@ class Projects:
         retain = [float(s) for s in attach_list]
         calc_sum = sum(retain)
         return calc_sum
+
+    @staticmethod
+    def bytes_converter(val) -> str:
+        # TODO: added this change on 14 Mar 2021
+        """Returns unit in KB or MB.
+
+        1 Byte = 8 Bits.
+        using megabyte MB, value is 1000^2
+        mebibyte MiB, value is 1024^2
+        Therefore total = val / MB
+        """
+        byte_size = val
+        kilo_byte = 1000
+        mega_byte = 1000 * 1000
+        if byte_size > mega_byte:
+            visor = byte_size / mega_byte  # MB converter
+            unit = "MB"
+        else:
+            visor = byte_size / kilo_byte  # KB converter
+            unit = "KB"
+        return "Size: {:.2f} {}".format(visor, unit)
 
     @staticmethod
     def move_attachments_across_instances(attach_folder: str = "Attachment",
@@ -462,6 +483,7 @@ class Projects:
                              attach: int = 8,
                              file: int = 6,
                              **kwargs):
+        # TODO: added change on 8 Mar 2021
         """Download the attachments to your local device read from a csv file.
 
         we assume you're getting this from   `def get_attachments_on_project()` method.
@@ -478,13 +500,21 @@ class Projects:
         """
         read = file_reader(folder=file_folder, file_name=file_name, **kwargs)
         add_log("Reading attachment {}".format(file_name), "info")
+        count = 0
+        cols = read
+        length = len(cols)
+        last_cell = kwargs["last_cell"] if "last_cell" in kwargs else False
         for r in read:
+            count += 1
             attachment = r[attach]
             _file_name = r[file]
             fetch = LOGIN.get(attachment)
             file_writer(download_path, file_name=_file_name, mode="wb", content=fetch.content, mark="file")
             print("Attachment downloaded to {}".format(download_path), "Status code: {}".format(fetch.status_code))
             add_log("Attachment downloaded to {}".format(download_path), "info")
+            if last_cell is True:
+                if count >= (length - 1):
+                    break
 
     @staticmethod
     def extract_jira_issues(*args, **kwargs):
@@ -560,7 +590,7 @@ class Projects:
             print("User: {}, not found exiting search...".format(find_user))
             sys.exit(1)
         search_issues = "reporter = {} AND updated <= {}".format(get_user, duration) if "status" not in kwargs \
-            or status is None \
+                                                                                        or status is None \
             else "reporter = {} AND updated <= {} AND status in ({})".format(get_user, duration, status)
         print("Searching with JQL:", search_issues)
         count_start_at = 0
@@ -672,6 +702,143 @@ class Projects:
                                                                                           (path=folder,
                                                                                            file_name=file_name)))
         add_log("File extraction for comments completed", "info")
+
+    @staticmethod
+    def change_log(folder: str = "ChangeLog", file: str = "change_log.csv", **kwargs) -> NoReturn:
+        """Extract the issue history of an issue.
+        
+        Query the changelog endpoint if using cloud instance or straight away define access to it on server.
+        Extract the histories and export it to a CSV file.
+        
+        :param: jql required A valid JQL query for projects or issues  datatype -> String
+        
+        :param folder - A name of a folder datatype String
+        :param file - A name of a file datatype String
+        """
+        changes = deque()
+        item_list = deque()
+        jql = kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
+        print("Extracting issue histories...")
+        add_log("Extracting issue histories...", "info")
+
+        def changelog_search() -> NoReturn:
+            """Search the change history endpoint and extract data if exist."""
+            for issue in data["issues"]:
+                keys = issue["key"]
+                project_key = keys.split("-")[0]
+                # reach the changelog endpoint and extract the data of history for servers.
+                # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
+                get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=keys,
+                                                           query="expand=renderedFields,names,schema,operations,"
+                                                                 "editmeta,changelog,versionedRepresentations"))
+                if get_issue_keys.status_code == 200:
+                    key_data = json.loads(get_issue_keys.content)
+                    load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=keys)).json()
+                    _summary = load_summary["fields"]["summary"]
+                    if LOGIN.api is False:
+                        if "changelog" in key_data:
+                            _data = key_data["changelog"]
+                            # grab the change_histories on an issue
+                            print(f"Getting history from issue: {keys}")
+                            add_log(f"Getting history from issue: {keys}", "info")
+                            changelog_history(_data, proj=(keys, project_key, _summary))
+                            print("*" * 120)
+                    else:
+                        starter = 0
+                        while True:
+                            key_data = LOGIN.get(endpoint.issues(issue_key_or_id=keys,
+                                                                 query="changelog?startAt{}".format(starter),
+                                                                 event=True))
+                            loads = json.loads(key_data.content)
+                            if starter >= loads["total"]:
+                                break
+                            print(f"Getting history from issue: {keys}")
+                            add_log(f"Getting history from issue: {keys}", "info")
+                            changelog_history(loads, proj=(keys, project_key, _summary))
+                            print("*" * 120)
+                            starter += 100
+
+        def changelog_history(history: Any = Any, proj: tuple = (Any, Any, Any)) -> NoReturn:
+            """Structure the change history data after being retrieved."""
+            _keys = proj[0]
+            _project_key = proj[1]
+            _summary = proj[2]
+            created = ""
+            name = ""
+
+            def render_history(past):
+                if "author" in past:
+                    name = past["author"]["name"] if "name" in past["author"] else past["author"]["displayName"]
+                if "created" in past:
+                    created = past["created"]
+                if "items" in past:
+                    items = past["items"]
+                    for item in items:
+                        _field_id = ""
+                        _tmpFromAccountId = ""
+                        _tmpToAccountId = ""
+                        if LOGIN.api is False:
+                            _field_id = item.get("fieldId")
+                            _tmpFromAccountId = item.get("tmpFromAccountId")
+                            _tmpToAccountId = item.get("tmpToAccountId")
+                        _field = item.get("field")
+                        _field_type = item.get("fieldtype")
+                        _from = item.get("from")
+                        _fromString = item.get("fromString")
+                        _to = item.get("to")
+                        _toString = item.get("toString")
+                        raw = [_field, _field_type, _from, _fromString, _to, _toString] if LOGIN.api is False \
+                            else [_field, _field_type, _field_id, _from, _fromString, _to, _toString,
+                                  _tmpFromAccountId, _tmpToAccountId]
+                        item_list.append(raw)
+
+                        ItemList = namedtuple("ItemList", ["field", "field_type", "from_", "fromString",
+                                                           "to", "toString"]) if LOGIN.api is False else \
+                            namedtuple("ItemList", ["field", "field_type", "field_id", "from_", "fromString",
+                                                    "to", "toString", "tmpFromAccountId", "tmpToAccountId"])
+                        for _ in item_list:
+                            issue = ItemList._make(_)
+                            raw_vision = [_keys, _summary, name, created, issue.field_type, issue.field,
+                                          issue.from_, issue.fromString, issue.to, issue.toString] if LOGIN.api is \
+                                                                                                      False else [
+                                _keys, _summary, name, created, issue.field_type, issue.field,
+                                issue.field_id, issue.from_, issue.fromString, issue.to, issue.toString,
+                                issue.tmpFromAccountId, issue.tmpToAccountId]
+                            changes.append(raw_vision)
+                        item_list.clear()
+
+                for case in changes:
+                    file_writer(folder, file, data=case, mode="a+")
+                changes.clear()
+                add_log(f"Clearing history from queue: {_keys}", "info")
+
+            if "histories" in history:
+                for change in history["histories"]:
+                    render_history(change)
+            else:
+                if "values" in history:
+                    if history["values"] is not None:
+                        for change in history["values"]:
+                            render_history(change)
+
+        count = 0  # get a counter of the issue record
+        headers = ["Issue Key", "Summary", "Author", "Created", "Field Type",
+                   "Field", "From", "From String", "To", "To String"] if LOGIN.api is False else \
+            ["Issue Key", "Summary", "Author", "Created", "Field Type",
+             "Field", "Field Id", "From", "From String", "To", "To String", "From AccountId", "To AccountId"]
+        file_writer(folder=folder, file_name=file, data=headers)
+        while True:
+            load = LOGIN.get(endpoint.search_issues_jql(query=jql, start_at=count))
+            if load.status_code == 200:
+                data = json.loads(load.content)
+                if count > data["total"]:
+                    break
+                changelog_search()
+            count += 50
+
+        print("A CSV file has been written to disk, find it here {}".format(
+            path_builder(folder, file_name=file)))
+        add_log("File extraction for change log completed", "info")
 
 
 class Users:
@@ -830,15 +997,15 @@ def replacement_placeholder(string: str = Any, data: list = Any,
         if count == 0:
             if string in data[row]:
                 result = [lines.replace(string, iterable[count], 1) for lines in data]
-            else:
-                add_log("Word {} cannot be found".format(string), "error")
-                sys.exit("Word {} cannot be found \n".format(string))
+            # else:
+            #     add_log("Word {} cannot be found".format(string), "error")
+            #     sys.exit("Word {} cannot be found \n".format(string))
         if count > 0:
             if string in result[row]:
                 result = [lines.replace(string, iterable[count], 1) for lines in result]
-            else:
-                add_log("Word {} cannot be found".format(string), "error")
-                sys.exit("Word {} cannot be found \n".format(string))
+            # else:
+            #     add_log("Word {} cannot be found".format(string), "error")
+            #     sys.exit("Word {} cannot be found \n".format(string))
         count += 1
         if count > length:
             break
