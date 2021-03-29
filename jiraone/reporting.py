@@ -928,7 +928,7 @@ class Users:
               .format(path_builder(path=group_folder, file_name=group_file_name)))
         add_log("Get Users group Completed", "info")
 
-    def search_user(self, find_user: str = None, _file: str = None, folder: str = "Users", **kwargs) -> deque:
+    def search_user(self, find_user: str = None, folder: str = "Users", **kwargs) -> deque:
         """Get a list of all cloud users and search for them by using the displayName."""
         pull = kwargs["pull"] if "pull" in kwargs else "both"
         user_type = kwargs["user_type"] if "user_type" in kwargs else "atlassian"
