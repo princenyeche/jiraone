@@ -952,9 +952,8 @@ class Users:
                 display_name = f.display_name
                 status = f.active
                 self.user_list.append({"accountId": get_user, "displayName": display_name, "active": status})
-                return self.user_list
 
-        return exit(f"\n User: {find_user} not found.")
+        return self.user_list if self.user_list.__len__() != 0 else exit(f"\n User: {find_user} not found.")
 
 
 def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
