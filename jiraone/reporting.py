@@ -759,12 +759,11 @@ class Projects:
         def changelog_history(history: Any = Any, proj: tuple = (Any, Any, Any)) -> NoReturn:
             """Structure the change history data after being retrieved."""
             _keys = proj[0]
-            _project_key = proj[1]
             _summary = proj[2]
-            created = ""
-            name = ""
 
             def render_history(past):
+                created = ""
+                name = ""
                 if "author" in past:
                     name = past["author"]["name"] if "name" in past["author"] else past["author"]["displayName"]
                 if "created" in past:
@@ -988,7 +987,7 @@ def replacement_placeholder(string: str = Any, data: list = Any,
     cb = replacement_placeholder("<name>", text, hold, 0)
     print(cb)
     """
-    # TODO: this function is experimental 
+    # TODO: this function is experimental
     result = None
     count = 0
     length = len(iterable)
