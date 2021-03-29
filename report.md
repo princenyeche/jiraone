@@ -35,6 +35,23 @@ if __name__ == '__main__':
     USER.get_all_users_group(pull="active", user_type="atlassian")
 ```
 
+* Search and find users within your cloud instance.
+
+```python
+from jiraone import LOGIN, USER
+
+user = "email"
+password = "token"
+link = "https://yourinstance.atlassian.net"
+LOGIN(user=user, password=password, url=link)
+
+
+if __name__ == '__main__':
+    # the output of the file would be absolute to the directory where this python file is being executed from
+    name = "Prince Nyeche"  # displayName of a user
+    USER.search_user(pull="active", user_type="atlassian", find_user=name)
+```
+
 ## PROJECT API
 
 * generate a report of users in your instance, who has BROWSE access to the projects on the instance.
@@ -154,6 +171,25 @@ if __name__ == '__main__':
     # status -> string - statuses you want to check e.g Open or Closed or Open, Closed for multiple statuses check
     # file -> string - a file name to use as place_holder for user search. if not it defaults to user_file.csv
     PROJECT.get_total_comments_on_issues(find_user="Prince Nyeche", pull="active", user_type="atlassian")
+```
+
+* generate a report of all the issue history within a project or projects
+
+Use `LOGIN.api = False` if you want to extract the issue history from a Server instance.
+
+```python
+from jiraone import LOGIN, PROJECT
+
+user = "email"
+password = "token"
+link = "https://yourinstance.atlassian.net"
+# use {LOGIN.api = False} if you want to extract the issue history from a Server instance
+LOGIN(user=user, password=password, url=link)
+
+if __name__ == '__main__':
+    # the output of the file would be absolute to the directory where this python file is being executed from
+    jql = "project in (PYT) ORDER BY Rank DESC"  # A valid JQL query
+    PROJECT.change_log(jql=jql)
 ```
 
 ## Support
