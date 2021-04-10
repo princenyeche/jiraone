@@ -945,7 +945,7 @@ class Users:
             self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
             print("Extracting users...")
         CheckUser = namedtuple("CheckUser", ["accountId", "account_type", "display_name", "active"])
-        list_user = file_reader(file_name=file, folder=folder)
+        list_user = file_reader(file_name=file, folder=folder, **kwargs)
         self.user_list.clear()
         for _ in list_user:
             f = CheckUser._make(_)
