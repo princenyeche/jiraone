@@ -58,7 +58,7 @@ LOGIN(user=user, password=password, url=link)
 * LOGIN.auth_requests <br />
 
 **Methods**, available to the LOGIN alias, it returns a response object. <br />
-The keyword argument of payload can be any object you want to pass to the method. Subsequently, you can pass other keyword arguments
+The keyword argument of payload can be any json object you want to pass to the method. Subsequently, you can pass other keyword arguments
 such as `files`, `data` etc.
 * LOGIN.get(url, *args, payload=None, **kwargs)
 * LOGIN.post(url, *args, payload=None, **kwargs)
