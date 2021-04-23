@@ -6,7 +6,7 @@ Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
 from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict, NoReturn
-from collections import deque, namedtuple
+from collections import deque, namedtuple, OrderedDict
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
 import csv
@@ -745,7 +745,7 @@ class Projects:
                         starter = 0
                         while True:
                             key_data = LOGIN.get(endpoint.issues(issue_key_or_id=keys,
-                                                                 query="changelog?startAt{}".format(starter),
+                                                                 query="changelog?startAt={}".format(starter),
                                                                  event=True))
                             loads = json.loads(key_data.content)
                             if starter >= loads["total"]:
@@ -836,6 +836,234 @@ class Projects:
         print("A CSV file has been written to disk, find it here {}".format(
             path_builder(folder, file_name=file)))
         add_log("File extraction for change log completed", "info")
+
+    def comment_on(self, key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs):
+        """Comment on a ticket or write on a description field.
+
+        GET comments
+        POST comments by id
+        PUT update a comment
+        POST add a comment
+        DELETE delete a comment
+        Do the same thing you do via the UI.
+        """
+        result_data = deque()
+        start_at = kwargs["start_at"] if "start_at" in kwargs else 0
+        max_results = kwargs["max_results"] if "max_results" in kwargs else 50
+        event = kwargs["event"] if "event" in kwargs else False
+        query = kwargs["query"] if "query" in kwargs else None
+        mention = kwargs["mention"] if "mention" in kwargs else None
+        text_block = kwargs["text_block"] if "text_block" in kwargs else None
+        placer = kwargs["placer"] if "placer" in kwargs else None
+        visible = kwargs["visible"] if "visible" in kwargs else None
+        if method.upper() == "GET":
+            load = LOGIN.get(endpoint.comment(key_or_id=key_or_id, ids=comment_id,
+                                              start_at=start_at, max_results=max_results,
+                                              event=event, query=query))
+            data = load.json()
+
+            class ReturnCommentData:
+                """Get a list of the data in one chuck."""
+
+                def __init__(self, results) -> None:
+                    """Get all data from a comment field.
+
+                    :param results A dict object that loads the result of comments.
+
+                This calls the comment endpoint and returns a list of the data.
+                Depending on what method you're calling. It is either you call the
+                method `comment()` or you call a property within the method.
+                Example:
+                    iss_key = "COM-42"
+                    get_com = comment(iss_key).comment("body").result
+                    echo(get_com)
+                    # This will return the data of the body content
+                OR
+                Example:
+                    iss_key = "COM-42"
+                    get_com = comment(iss_key).data
+                    echo(get_com)
+                    # This will simply return the comment endpoint data
+
+                @properties that can be called
+                i) body - returns the body content of the comment.
+                ii) mention - returns the users mentioned on a comment.
+                iii) text - returns a Array of strings of the text in the comment.
+                iv) author - returns the author who triggered the comment.
+
+                Example:
+                    iss_key = "COM-42"
+                    get_com = comment(iss_key).comment("body").text
+                    echo(get_com)
+                    # This will simply return the comment text separated by comma
+                """
+                    self.data = results
+                    self._author = None
+                    self._body = None
+                    self._update_author = None
+                    self._other_fields = None
+
+                def comment(self, type_field: str) -> Any:
+                    """Return a comment field data.
+
+                    :param type_field A string used to determine which data to pull
+                    options available
+                     i) author - the user which triggered the comment
+                     ii) body - a comment body
+                     iii) updateAuthor - gets the updated author details
+                    """
+                    for f in self.data["comments"]:
+                        if type_field in f:
+                            if type_field == "author":
+                                self._author = f.get("author")
+                                self._other_fields = {"created": f.get("created"), "id": f.get("id"),
+                                                      "jsdPublic": f.get("jsdPublic"), "self": f.get("self"),
+                                                      "updated": f.get("updated")}
+                                result_data.append({"author": self._author, "fieldset": self._other_fields})
+
+                            if type_field == "body":
+                                self._body = f.get("body")
+                                self._other_fields = {"created": f.get("created"), "id": f.get("id"),
+                                                      "jsdPublic": f.get("jsdPublic"), "self": f.get("self"),
+                                                      "updated": f.get("updated")}
+                                result_data.append({"body": self._body, "fieldset": self._other_fields})
+
+                            if type_field == "updateAuthor":
+                                self._update_author = f.get("updateAuthor")
+                                self._other_fields = {"created": f.get("created"), "id": f.get("id"),
+                                                      "jsdPublic": f.get("jsdPublic"), "self": f.get("self"),
+                                                      "updated": f.get("updated")}
+                                result_data.append(
+                                    {"updateAuthor": self._update_author, "fieldset": self._other_fields})
+
+                    class Text:
+                        """Return the text of data."""
+                        pull = deque()
+
+                        def __init__(self):
+                            """Return the data value when a property is used."""
+                            self.result = result_data
+                            self._body_ = None
+                            self._author_ = None
+                            self._text_ = None
+                            self._mention_ = None
+                            for d in self.result:
+                                if "author" in d:
+                                    if self._author_ is None:
+                                        self.author = [{"author": j["author"]["displayName"],
+                                                        "accountId": j["author"]["accountId"],
+                                                        "active": j["author"]["active"],
+                                                        "accountType": j["author"]["accountType"]} for j in
+                                                       self.result]
+                                if "body" in d:
+                                    if self._body_ is None:
+                                        self.body = [j.get("body") for j in self.result]
+
+                        @property
+                        def author(self):
+                            """Property of author field.
+
+                            Returns some data set of the author, extracted from the comment.
+                            """
+                            return self._author_
+
+                        @author.setter
+                        def author(self, user):
+                            """Sets the author field of an object with the dataset."""
+                            self._author_ = user
+
+                        @property
+                        def body(self):
+                            """Property of body field.
+
+                            Returns some data set of the body, extracted from the comment.
+                            """
+                            return self._body_
+
+                        @body.setter
+                        def body(self, content):
+                            """Sets the body field of an object with the dataset."""
+                            self._body_ = content
+                            for enter in self._body_:
+                                if "content" in enter:
+                                    for context in enter["content"]:
+                                        if "content" in context:
+                                            for value in context["content"]:
+                                                if self._text_ is None:
+                                                    if "text" in value:
+                                                        if value["type"] == "mention":
+                                                            self.pull.append({"mention": value["attrs"],
+                                                                              "type": value["type"],
+                                                                              "text_type": value["text"]})
+                                                        self.pull.append({"text": value["text"], "type": value["type"]})
+
+                                                if self._mention_ is None:
+                                                    if "type" in value:
+                                                        if value["type"] == "mention":
+                                                            self.pull.append({"mention": value["attrs"],
+                                                                              "type": value["type"]})
+                            self.text = [OrderedDict({"text": a.get("text"), "type": a.get("type")})
+                                         for a in self.pull if "text" in a]
+                            self.mention = [OrderedDict({"mention": a.get("mention"),
+                                                         "type": a.get("type")}) for a in self.pull if "mention" in a]
+
+                        @property
+                        def text(self):
+                            """Property of text field.
+
+                            Returns some data set of the body text, extracted from the comment.
+                            """
+                            return self._text_
+
+                        @text.setter
+                        def text(self, content):
+                            """Sets the text field of a body comment with the dataset."""
+                            self._text_ = content
+
+                        @property
+                        def mention(self):
+                            """Property of mention field.
+
+                            Returns some data set of the body @mention of a user, extracted from the comment.
+                            """
+                            return self._mention_
+
+                        @mention.setter
+                        def mention(self, content):
+                            """Sets the text field of a body comment with @mention user with the dataset."""
+                            self._mention_ = content
+
+                    comm = Text()
+                    return comm
+
+            row = ReturnCommentData(data)
+            return row
+
+        if method.upper() == "POST":
+            block = [text_block]
+            text = None
+            if block is not None:
+                if len(mention) == 1:
+                    text = replacement_placeholder(placer, block, mention, 0)
+                elif len(mention) > 1:
+                    text = replacement_placeholder(placer, block, mention, 0)
+            field_text = {
+                    "body": text[0]
+                } if visible is None else {
+                "visibility": {
+                    "type": "role",
+                    "value": visible
+                },
+                    "body": text[0]
+                }
+            # change REST endpoint from 3 to latest, so we can easily post a comment.
+            LOGIN.api = kwargs["api"] if "api" in kwargs else False
+            result = LOGIN.post(endpoint.comment(key_or_id=key_or_id, event=event), payload=field_text)
+            if result.status_code < 300:
+                print("Comment added to {}".format(key_or_id))
+            else:
+                print("Comment not added to {}, error: {}".format(key_or_id, result.status_code))
+            block.clear()
 
 
 class Users:
@@ -928,7 +1156,7 @@ class Users:
               .format(path_builder(path=group_folder, file_name=group_file_name)))
         add_log("Get Users group Completed", "info")
 
-    def search_user(self, find_user: str = None, folder: str = "Users", **kwargs) -> deque:
+    def search_user(self, find_user: Any = None, folder: str = "Users", **kwargs) -> deque:
         """Get a list of all cloud users and search for them by using the displayName."""
         pull = kwargs["pull"] if "pull" in kwargs else "both"
         user_type = kwargs["user_type"] if "user_type" in kwargs else "atlassian"
@@ -949,13 +1177,44 @@ class Users:
         self.user_list.clear()
         for _ in list_user:
             f = CheckUser._make(_)
-            if find_user in f._asdict().values():
-                get_user = f.accountId
-                display_name = f.display_name
-                status = f.active
-                self.user_list.append({"accountId": get_user, "displayName": display_name, "active": status})
+            if isinstance(find_user, str):
+                if find_user in f._asdict().values():
+                    get_user = f.accountId
+                    display_name = f.display_name
+                    status = f.active
+                    self.user_list.append({"accountId": get_user, "displayName": display_name, "active": status})
+            if isinstance(find_user, list):
+                for i in find_user:
+                    if i in f._asdict().values():
+                        get_user = f.accountId
+                        display_name = f.display_name
+                        status = f.active
+                        self.user_list.append({"accountId": get_user, "displayName": display_name, "active": status})
 
         return self.user_list if self.user_list.__len__() != 0 else exit(f"\n User: {find_user} not found.")
+
+    def mention_user(self, name):
+        """Return a format that you can use to mention users on cloud."""
+        data = []
+        if "," in name:
+            s = name.split(",")
+        else:
+            s = name
+        for u in self.search_user(s):
+            data.append(f"[~accountId:{u.get('accountId')}]")
+
+        return data
+
+
+class NextGen(object):
+    """An API made to operate on next-gen projects.
+
+    Recently Atlassian changed next-gen projects to "team-managed projects".
+    """
+
+    def __init__(self):
+        """A constructor for the NextGen class object."""
+        print("Hello")
 
 
 def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
@@ -972,8 +1231,9 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
                 mark: str = "single", mode: str = "a+", content: str = Any, **kwargs) -> Any:
     """Reads and writes to a file, single or multiple rows or write as byte files."""
     file = path_builder(path=folder, file_name=file_name)
+    encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
     if mode:
-        with open(file, mode) as f:
+        with open(file, mode, encoding=encoding) as f:
             write = csv.writer(f, delimiter=",")
             if mark == "single":
                 write.writerow(data)
@@ -988,13 +1248,14 @@ def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
                 skip: bool = False, content: bool = False, **kwargs) -> Union[List[List[str]], str]:
     """Reads a CSV file and returns a list comprehension of the data or reads a byte into strings."""
     file = path_builder(path=folder, file_name=file_name)
+    encoding = kwargs["encoding"] if "encoding" in kwargs else None
     if mode:
         with open(file, mode) as f:
             read = csv.reader(f, delimiter=",")
             if skip is True:
                 next(read, None)
             if content is True:
-                feed = f.read()
+                feed = f.read() if "encoding" not in kwargs else f.read().encode(encoding)
             load = [d for d in read]
             add_log(f"Read file {file_name}", "info")
             return load if content is False else feed
@@ -1023,15 +1284,9 @@ def replacement_placeholder(string: str = Any, data: list = Any,
         if count == 0:
             if string in data[row]:
                 result = [lines.replace(string, iterable[count], 1) for lines in data]
-            else:
-                add_log("Word {} cannot be found".format(string), "error")
-                sys.exit("Word {} cannot be found \n".format(string))
         if count > 0:
             if string in result[row]:
                 result = [lines.replace(string, iterable[count], 1) for lines in result]
-            else:
-                add_log("Word {} cannot be found".format(string), "error")
-                sys.exit("Word {} cannot be found \n".format(string))
         count += 1
         if count > length:
             break
@@ -1040,3 +1295,4 @@ def replacement_placeholder(string: str = Any, data: list = Any,
 
 USER = Users()
 PROJECT = Projects()
+comment = PROJECT.comment_on
