@@ -285,25 +285,25 @@ for value in case_value:
 *  `method` string with options ["GET", "PUT", "DELETE", "POST"]
 *  `kwargs` Any options start_at, max_results - datatype -> integers
 
-        *  query - datatype -> string
+     *  query - datatype -> string
         
-        *  event - datatype -> boolean
+      *  event - datatype -> boolean
         
-        *  text_block - datatype -> string A block of string used to capture data for comments.
+      *  text_block - datatype -> string A block of string used to capture data for comments.
         
-        *  placer - datatype -> string A placeholder to change values within `text_block` object.
+      *  placer - datatype -> string A placeholder to change values within `text_block` object.
         
-        *  mention - datatype -> list used to cycle and change any user placeholder mentioned in `text_block` block.
+      *  mention - datatype -> list used to cycle and change any user placeholder mentioned in `text_block` block.
 
 
-***field.comment_on(key_or_id="COM-42")***<br />
+***field.comment_on(key_or_id="COM-42").data***<br />
   * data -> returns the common payload of the comment data when using "GET" method. <br />
         
         
 * ***Method*** comment() <br />
 
 
-* ***field.comment_on(key_or_id="COM-42").comment(type_field=String)***<br />
+* ***field.comment_on(key_or_id="COM-42").comment(type_field=String).result_data***<br />
    * `type_field` String required e.g options available below
    
       * [body, author, updateAuthor] 
