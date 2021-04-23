@@ -109,6 +109,7 @@ This function helps in creating a csv file or a normal file. It comes with the b
   * `mark` > string: helps evaluates how data is created, available options ["single", "many", "file"], by default mark is set to "single"
   * `mode` > string: file mode, available options ["a", "w", "a+", "w+", "wb"], by default the mode is set to "a+".
   * `content` > string: outputs the file in bytes. <br />
+  * `encoding` > string: defaults to "utf-8"
  Example usage: <br />
  
   ```python
@@ -128,6 +129,7 @@ parameter include
   * `mode` > string: file mode, available options ["r", "rb"]
   * `skip` > bool: True allows you to skip the header if the file has any. Otherwise defaults to False
   * `content` > bool: True allows you to read a byte file. By default it is set to False <br />
+  * `encoding` > string: - standard encoding strings. e.g "utf-8"
   Example usage: <br />
   
   ```python
@@ -282,8 +284,47 @@ for value in case_value:
 * `commend_id` integer
 *  `method` string with options ["GET", "PUT", "DELETE", "POST"]
 *  `kwargs` Any options start_at, max_results - datatype -> integers
+
         *  query - datatype -> string
+        
         *  event - datatype -> boolean
+        
+        *  text_block - datatype -> string A block of string used to capture data for comments.
+        
+        *  placer - datatype -> string A placeholder to change values within `text_block` object.
+        
+        *  mention - datatype -> list used to cycle and change any user placeholder mentioned in `text_block` block.
+
+
+***field.comment_on(key_or_id="COM-42")***<br />
+  * data -> returns the common payload of the comment data when using "GET" method. <br />
+        
+        
+* ***Method*** comment() <br />
+
+
+* ***field.comment_on(key_or_id="COM-42").comment(type_field=String)***<br />
+   * `type_field` String required e.g options available below
+   
+      * [body, author, updateAuthor] 
+          
+   * `result_data` -> returns a payload of the entire data.
+
+
+* ***Properties*** <br />
+
+
+* ***field.comment_on(key_or_id="COM-42").comment(type_field="body").text*** <br />
+  * `author` -> returns a payload of the authors of a comment and fieldset data.
+  
+  * `body` -> returns a body payload of a comment and fieldset data.
+  
+  * `mention` -> returns all the mentioned users. Can only be called when "body" option is called on the type_field else returns "None".
+  
+  * `text` -> returns the text of the first comment. Can only be called when "body" option is called on the type_field else returns "None".
+  
+  * `updateAuthor` -> returns the updated author and fieldset data.
+               
 
 
 ### Other variables
