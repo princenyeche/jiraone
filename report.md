@@ -49,8 +49,30 @@ LOGIN(user=user, password=password, url=link)
 if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     name = "Prince Nyeche"  # displayName of a user
+    # find multiple users, use a list
+    # name = ["Prince Nyeche, "Prince"]
     USER.search_user(pull="active", user_type="atlassian", find_user=name)
 ```
+
+* Get a mention of a cloud user.
+
+```python
+from jiraone import LOGIN, USER
+
+user = "email"
+password = "token"
+link = "https://yourinstance.atlassian.net"
+LOGIN(user=user, password=password, url=link)
+
+
+if __name__ == '__main__':
+    # the output of the file would be absolute to the directory where this python file is being executed from
+    # displayName of a user, to output multiple users separate by a comman
+    # name = "Prince Nyeche,Prince,John Doe"
+    name = "Prince Nyeche"  
+    USER.mention_user(name)
+```
+
 
 ## PROJECT API
 
