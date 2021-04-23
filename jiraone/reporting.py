@@ -7,7 +7,7 @@ Easily generate report for the various endpoints
 """
 from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict, NoReturn
 from collections import deque, namedtuple, OrderedDict
-from jiraone import LOGIN, endpoint, add_log, WORK_PATH, field
+from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
 import csv
 import sys
