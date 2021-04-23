@@ -1694,36 +1694,6 @@ class Field(object):
 
         return collect
 
-    @staticmethod
-    def comment_on(key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs):
-        """Comment on a ticket or write on a description field.
-
-        GET comments
-        POST comments by id
-        PUT update a comment
-        POST add a comment
-        DELETE delete a comment
-        Do the same thing you do via the UI.
-        """
-        # TODO: work in progress
-        start_at = kwargs["start_at"] if "start_at" in kwargs else 0
-        max_results = kwargs["max_results"] if "max_results" in kwargs else 50
-        event = kwargs["event"] if "event" in kwargs else False
-        query = kwargs["query"] if "query" in kwargs else None
-        data = None
-        if method.upper() == "GET":
-            load = LOGIN.get(endpoint.comment(key_or_id=key_or_id, ids=comment_id,
-                                              start_at=start_at, max_results=max_results,
-                                              event=event, query=query))
-            data = load.json()
-        # if method.upper() == "POST":
-        #     ...
-        # if method.upper() == "PUT":
-        #     ...
-        # if method.upper() == "DELETE":
-        #    ...
-        return data
-
 
 def echo(obj):
     """A Call to the Echo Class."""
@@ -1733,4 +1703,3 @@ def echo(obj):
 
 endpoint = EndPoints()
 field = Field()
-comment = field.comment_on
