@@ -303,12 +303,12 @@ for value in case_value:
 * ***Method*** comment() <br />
 
 
-* ***field.comment_on(key_or_id="COM-42").comment(type_field=String).result_data***<br />
+* ***field.comment_on(key_or_id="COM-42").comment(type_field=String).result***<br />
    * `type_field` String required e.g options available below
    
       * [body, author, updateAuthor] 
           
-   * `result_data` -> returns a payload of the entire data.
+   * `result` -> returns a payload of the entire data.
 
 
 * ***Properties*** <br />
