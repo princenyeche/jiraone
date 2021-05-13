@@ -214,5 +214,58 @@ if __name__ == '__main__':
     PROJECT.change_log(jql=jql)
 ```
 
+* generate a report of comments in your project
+
+***PROJECT.comment_on(key_or_id=String, comment_id=Integer, method=String["GET", "PUT", "DELETE", "POST"], kwargs)*** <br />
+* `key_or_id` any string
+* `commend_id` integer
+*  `method` string with options ["GET", "PUT", "DELETE", "POST"]
+*  `kwargs` Any options start_at, max_results - datatype -> integers
+
+     *  query - datatype -> string
+        
+      *  event - datatype -> boolean
+        
+      *  text_block - datatype -> string A block of string used to capture data for comments.
+        
+      *  placer - datatype -> string A placeholder to change values within `text_block` object.
+        
+      *  mention - datatype -> list used to cycle and change any user placeholder mentioned in `text_block` block.
+
+
+***PROJECT.comment_on(key_or_id="COM-42").data***<br />
+  * data -> returns the common payload of the comment data when using "GET" method. <br />
+        
+        
+* ***Method*** comment() <br />
+
+
+* ***PROJECT.comment_on(key_or_id="COM-42").comment(type_field=String).result***<br />
+   * `type_field` String required e.g options available below
+   
+      * [body, author, updateAuthor] 
+          
+   * `result` -> returns a payload of the entire data.
+
+
+* ***Properties you can use*** <br />
+
+
+* ***PROJECT.comment_on(key_or_id="COM-42").comment(type_field="body").text*** <br />
+  * `author` -> returns a payload of the authors of a comment and fieldset data. Can only be called when "author" option is called on the type_field else returns "None".
+  
+  * `body` -> returns a body payload of a comment and fieldset data.
+  
+  * `mention` -> returns all the mentioned users. Can only be called when "body" option is called on the type_field else returns "None".
+  
+  * `text` -> returns the text of the first comment. Can only be called when "body" option is called on the type_field else returns "None".
+  
+  * `updateAuthor` -> returns the updated author and fieldset data. Can only be called when "updateAuthor" option is called on the type_field else returns "None".
+  
+  * `first_comment` -> returns the first comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
+  
+  * `last_comment` -> returns the last comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
+ 
+
 ## Support
 * For any issues or feature request, feel free to create an issue on Github or email me at support@elfapp.website
