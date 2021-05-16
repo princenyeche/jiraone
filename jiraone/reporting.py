@@ -958,7 +958,7 @@ class Projects:
                                 if "body" in d:
                                     if self._body_ is None:
                                         self.body = [j.get("body") for j in self.result]
-                                        first_comm, *middle_comm, last_comm = self.body
+                                        first_comm, *_, last_comm = self.body
                                         self.last_comment = last_comm
                                         self.first_comment = first_comm
 
