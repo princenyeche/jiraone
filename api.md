@@ -311,6 +311,10 @@ Alias to PROJECT.comment_on() method
       * [body, author, updateAuthor] 
           
    * `result` -> returns a payload of the entire data.
+   
+   * `first_comment` -> returns the first comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
+  
+   * `last_comment` -> returns the last comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
 
 
 * ***Properties you can use*** <br />
@@ -325,9 +329,7 @@ Alias to PROJECT.comment_on() method
   
   * `text` -> returns the text of the first comment. Can only be called when "body" option is called on the type_field else returns "None".
   
-  * `first_comment` -> returns the first comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
   
-  * `last_comment` -> returns the last comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
 
 * POST a comment to a Jira issue and mention users sequentially on a comment.
 
