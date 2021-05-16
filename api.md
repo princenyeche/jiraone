@@ -311,9 +311,7 @@ Alias to PROJECT.comment_on() method
       * [body, author, updateAuthor] 
           
    * `result` -> returns a payload of the entire data.
-   
    * `first_comment` -> returns the first comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
-  
    * `last_comment` -> returns the last comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
 
 
