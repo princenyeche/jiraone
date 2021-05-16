@@ -863,7 +863,7 @@ class Projects:
             data = load.json()
 
             class ReturnCommentData:
-                """Get a list of the data in one chuck."""
+                """Get a list of the data in one chunk."""
 
                 def __init__(self, results) -> None:
                     """Get all data from a comment field.
@@ -958,6 +958,9 @@ class Projects:
                                 if "body" in d:
                                     if self._body_ is None:
                                         self.body = [j.get("body") for j in self.result]
+                                        first_comm, *_, last_comm = self.body
+                                        self.last_comment = last_comm
+                                        self.first_comment = first_comm
 
                         @property
                         def author(self):
@@ -1002,8 +1005,10 @@ class Projects:
                                                         if value["type"] == "mention":
                                                             self.pull.append({"mention": value["attrs"],
                                                                               "type": value["type"]})
+                            # will only show value on API v3.
                             self.text = [OrderedDict({"text": a.get("text"), "type": a.get("type")})
                                          for a in self.pull if "text" in a]
+                            # will only show value on API v3.
                             self.mention = [OrderedDict({"mention": a.get("mention"),
                                                          "type": a.get("type")}) for a in self.pull if "mention" in a]
 
@@ -1043,27 +1048,52 @@ class Projects:
             block = [text_block]
             text = None
             if block is not None:
-                if len(mention) == 1:
+                if len(mention) > 0:
                     text = replacement_placeholder(placer, block, mention, 0)
-                elif len(mention) > 1:
-                    text = replacement_placeholder(placer, block, mention, 0)
+            # change REST endpoint from 3 to latest, so we can easily post a comment.
+            LOGIN.api = kwargs["api"] if "api" in kwargs else False
+            body_content = {
+                "body": {
+                    "type": "doc",
+                    "version": 1,
+                    "content": [
+                        {
+                            "type": "paragraph",
+                            "content": [
+                                {
+                                    "text": text[0],
+                                    "type": "text"
+                                }
+
+                            ]
+                        }
+                    ]
+                }
+            }
             field_text = {
-                    "body": text[0]
-                } if visible is None else {
+                "body": text[0]
+            } if visible is None and LOGIN.api is False else body_content if visible is None and LOGIN.api is True \
+                else {
                 "visibility": {
                     "type": "role",
                     "value": visible
                 },
-                    "body": text[0]
-                }
-            # change REST endpoint from 3 to latest, so we can easily post a comment.
-            LOGIN.api = kwargs["api"] if "api" in kwargs else False
+                "body": text[0]
+            }
             result = LOGIN.post(endpoint.comment(key_or_id=key_or_id, event=event), payload=field_text)
             if result.status_code < 300:
                 print("Comment added to {}".format(key_or_id))
             else:
                 print("Comment not added to {}, error: {}".format(key_or_id, result.status_code))
             block.clear()
+
+    def create_issues(self,
+                      *args,
+                      csv_file: Callable = None,
+                      **kwargs):
+        """"""
+        columns = csv_file(*args) if "column" in kwargs else exit("Unable to extract columns from CSV file")
+        self.byte_converter(columns)
 
 
 class Users:
@@ -1182,14 +1212,16 @@ class Users:
                     get_user = f.accountId
                     display_name = f.display_name
                     status = f.active
-                    self.user_list.append({"accountId": get_user, "displayName": display_name, "active": status})
+                    self.user_list.append(OrderedDict({"accountId": get_user,
+                                                       "displayName": display_name, "active": status}))
             if isinstance(find_user, list):
                 for i in find_user:
                     if i in f._asdict().values():
                         get_user = f.accountId
                         display_name = f.display_name
                         status = f.active
-                        self.user_list.append({"accountId": get_user, "displayName": display_name, "active": status})
+                        self.user_list.append(OrderedDict({"accountId": get_user,
+                                                           "displayName": display_name, "active": status}))
 
         return self.user_list if self.user_list.__len__() != 0 else exit(f"\n User: {find_user} not found.")
 
