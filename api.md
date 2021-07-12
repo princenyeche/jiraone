@@ -277,6 +277,19 @@ for value in case_value:
 # output
 # < Response[204] >
 ```
+        
+***field.get_field_value(name=String, keys=Union[string, integer])*** <br />
+* `name` datatype[String] a name of the custom field.
+* `keys` datatype[String, Integer] issue key or id of an issue.
+        
+```python
+from jiraone import field, echo
+#...previous login statements
+# it expects the field name as the first parameter and the issue key where the field is used as the second parameter
+value = field.get_field_value("Labels", "COM-15")
+echo(value) 
+```
+        
 
 ## comment
 Alias to PROJECT.comment_on() method
