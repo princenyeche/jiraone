@@ -1357,7 +1357,9 @@ class Field(object):
         "timetracking": "timetracking",
         "reporter": "reporter",
         "assignee": "assignee",
-        "description": "description"
+        "description": "description",
+        "Epic Status": "com.pyxis.greenhopper.jira:gh-epic-status",
+        "Epic Name": "com.pyxis.greenhopper.jira:gh-epic-label"
 
     }
     """
@@ -1555,7 +1557,29 @@ class Field(object):
                 raise ValueError("Excepting string value as \"add\" or \"remove\" from the options keyword argument "
                                  "got value: \"{}\" instead.".format(options))
             response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-        elif search["key"] in [self.field_type["components"], self.field_type['fixversions']]:
+        elif search.get("custom") in [self.field_type["multiuserpicker"], self.field_type['userpicker']]:
+            # add a list of values in the form of a list or string for single value
+            if options is None:
+                attr = {
+                    search["id"]:
+                        self.multi_field(data, s="accountId")
+                }
+                payload = self.data_load(attr)
+            elif options == "add" or options == "remove":
+                # update the field with the desired value
+                get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
+                                                            amend=options, data=data)
+                concat = ",".join(get_data)
+                attr = {
+                    search["id"]:
+                        self.multi_field(concat, s="accountId")
+                }
+                payload = self.data_load(attr)
+            else:
+                raise ValueError("Excepting string value as \"add\" or \"remove\" "
+                                 "from the options keyword argument got value: \"{}\" instead.".format(options))
+            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+        elif search.get("key") in [self.field_type["components"], self.field_type['fixversions']]:
             # add a list of values in the form of a list or string for single value
             if options is None:
                 attr = {
@@ -1645,8 +1669,7 @@ class Field(object):
             var = [val for elem in vec for val in elem]
             return var
 
-    @staticmethod
-    def extract_issue_field_options(key_or_id: Union[str, int] = None, search: Dict = None,
+    def extract_issue_field_options(self, key_or_id: Union[str, int] = None, search: Dict = None,
                                     amend: str = None, data: Any = Any):
         """Get the option from an issue.
 
@@ -1679,7 +1702,10 @@ class Field(object):
                     sys.exit("Use the `field.update_field_data()` method instead to update values to a cascading select"
                              " field. Exiting...")
                 for i in init[search["id"]]:
-                    collect.append(i["value"])
+                    if "accountId" in i:
+                        collect.append(i.get("accountId"))
+                    if "value" in i:
+                        collect.append(i["value"])
 
         if amend == "add":
             if data in collect:
@@ -1693,6 +1719,21 @@ class Field(object):
                              "Please check your input.".format(amend))
 
         return collect
+
+    def get_field_value(self, name: str, keys: Union[str, int]) -> Any:
+        """Return the value of a field on an issue.
+
+        :param name The name of a field
+        :param keys The issue key or issue id of an issue
+        """
+        var = self.get_field(name)
+        get_value = LOGIN.get(endpoint.issues(keys)).json()
+        try:
+            if "errorMessages" in get_value:
+                return "It seems you don't have access to this issue {}".format(keys)
+            return get_value["fields"][var.get("id")]
+        except AttributeError as i:
+            return f"<Error: {i} - options: Most probably the field '{name}' cannot be found >"
 
 
 def echo(obj):
