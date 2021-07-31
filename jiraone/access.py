@@ -1536,7 +1536,7 @@ class Field(object):
                         for f in separated(data):
                             get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
                                                                         amend=options, data=f)
-                            if len(get_data) is 0:
+                            if len(get_data) == 0:
                                 attr = {
                                     search["id"]: None
                                 }
@@ -1668,7 +1668,7 @@ class Field(object):
                                 for f in separated(data):
                                     get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
                                                                                 amend=options, data=f)
-                                    if len(get_data) is 0:
+                                    if len(get_data) == 0:
                                         attr = {
                                             search["id"]: None
                                         }
@@ -1710,7 +1710,7 @@ class Field(object):
                         for f in separated(data):
                             get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
                                                                         amend=options, data=f)
-                            if len(get_data) is 0:
+                            if len(get_data) == 0:
                                 attr = {
                                     search["id"]:
                                         []
