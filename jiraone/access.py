@@ -12,6 +12,7 @@ from typing import Any, Optional, Union, Dict
 from pprint import PrettyPrinter
 import requests
 import sys
+from jiraone.exceptions import JiraOneErrors
 
 
 class Credentials(object):
@@ -1391,16 +1392,16 @@ class Field(object):
         while True:
             load = LOGIN.get(endpoint.get_field(query="type=custom", start_at=count_start_at))
             data = load.json()
-            if load.status_code == 200:
+            if load.status_code < 300:
                 for a in data["values"]:
                     if a["name"] == fields:
                         return {
-                            "id": a["id"], "name": a["name"],
-                            "custom": a["schema"]["custom"], "customId": a["schema"]["customId"],
+                            "id": a["id"], "name": a["name"], "customType": a["schema"]["custom"],
+                            "customId": a["schema"]["customId"],
                             "type": a["schema"]["type"]
                         }
 
-                count_start_at += 50
+                count_start_at += 100
                 if count_start_at > data["total"]:
                     break
 
@@ -1410,21 +1411,28 @@ class Field(object):
         fields = find_field if find_field is not None else sys.exit("You must enter a field name")
         load = LOGIN.get(endpoint.get_field(system="type=system"))
         data = load.json()
-        if load.status_code == 200:
+        if load.status_code < 300:
             for a in list(data):
                 if fields in a["name"]:
-                    if a["schema"] is not None:
-                        if "customId" not in a["schema"]:
+                    if fields == a["name"]:
+                        if "schema" in a:
+                            if "customId" not in a["schema"]:
+                                return {
+                                    "name": a["name"], "id": a["id"], "custom": a["custom"], "key": a["key"],
+                                    "searchable": a["searchable"],
+                                    "type": a["schema"]["type"]
+                                }
                             return {
-                                "name": a["name"], "id": a["id"], "custom": a["custom"], "key": a["key"],
-                                "searchable": a["searchable"],
-                                "type": a["schema"]["type"]
+                                "name": a["name"], "id": a["id"], "key": a["key"],
+                                "searchable": a["searchable"], "customType": a["schema"]["custom"],
+                                "customId": a["schema"]["customId"], "type": a["schema"]["type"],
+                                "custom": a["custom"]
                             }
-                        return {
-                            "name": a["name"], "id": a["id"], "key": a["key"],
-                            "searchable": a["searchable"], "custom": a["schema"]["custom"],
-                            "customId": a["schema"]["customId"], "type": a["schema"]["type"]
-                        }
+                        if "schema" not in a["name"]:
+                            return {
+                                "name": a["name"], "id": a["id"], "key": a["key"], "searchable": a["searchable"],
+                                "custom": a["custom"]
+                            }
 
     def update_field_data(self, data: Any = None, find_field: str = None, field_type: str = "custom",
                           key_or_id: Union[str, int] = None, show: bool = True, **kwargs):
@@ -1460,157 +1468,343 @@ class Field(object):
             search = self.get_field(find_field)
         echo({"Field data returned": search}) if show is True else ""
         response = None
+
+        def separated(pull: Any = Any) -> Any:
+            """Check if the value is a string or list."""
+            if isinstance(pull, str):
+                if "," in pull:
+                    manipulate = pull.split(",")
+                else:
+                    manipulate = [pull]
+                return manipulate
+            elif isinstance(pull, list):
+                return pull
+            else:
+                raise JiraOneErrors("wrong", "You are using the wrong data type. Please check again.")
+
         if data == "" or data is None:
             payload = None
-            if search["custom"] in [self.field_type["multicheckboxes"], self.field_type["multiselect"],
-                                    self.field_type["labels"], self.field_type["version"]]:
-                attr = {
-                    search["id"]: []
-                }
-                payload = self.data_load(attr)
-            elif search["custom"] in [self.field_type["select"], self.field_type["cascadingselect"],
-                                      self.field_type["radiobuttons"]]:
-                attr = {
-                    search["id"]: None
-                }
-                payload = self.data_load(attr)
-            elif search["key"] in [self.field_type["components"], self.field_type['fixversions']]:
-                attr = {
-                    search["id"]: []
-                }
-                payload = self.data_load(attr)
-            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-        elif search["custom"] in [self.field_type["multiselect"], self.field_type["multicheckboxes"]]:
-            if options is None:
-                attr = {
-                    search["id"]: self.multi_field(data)
-                }
-                payload = self.data_load(attr)
-            elif options == "add" or options == "remove":
-                get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
-                                                            amend=options, data=data)
-                concat = ",".join(get_data)
-                attr = {
-                    search["id"]:
-                        self.multi_field(concat)
-                }
-                payload = self.data_load(attr)
-            else:
-                raise ValueError("Excepting string value as \"add\" or \"remove\" from the options keyword argument "
-                                 "got value: \"{}\" instead.".format(options))
-            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-        elif search["custom"] == self.field_type["cascadingselect"]:
-            cass = self.cascading(data)
-            if len(cass) > 3:
-                attr = {
-                    search["id"]:
-                        {
-                            "value": cass.__getitem__(1).lstrip(),
-                            "child": {
-                                "value": cass.__getitem__(3).lstrip()
-                            }
-                        }
-
-                }
-                payload = self.data_load(attr)
-                response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-            elif len(cass) <= 3:
-                attr = {
-                    search["id"]:
-                        {
-                            "value": cass.__getitem__(1).lstrip()
-                        }
-
-                }
-                payload = self.data_load(attr)
-                response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-        elif search["custom"] in [self.field_type["radiobuttons"], self.field_type["select"]]:
-            attr = {
-                search["id"]:
-                    {
-                        "value": data
+            if "customType" in search:
+                if search["customType"] in [self.field_type["multicheckboxes"], self.field_type["multiselect"],
+                                            self.field_type["labels"], self.field_type["version"]]:
+                    attr = {
+                        search["id"]: []
                     }
+                    payload = self.data_load(attr)
+                elif search["customType"] in [self.field_type["select"], self.field_type["cascadingselect"],
+                                              self.field_type["radiobuttons"]]:
+                    attr = {
+                        search["id"]: None
+                    }
+                    payload = self.data_load(attr)
+                else:
+                    attr = {
+                        search["id"]: None
+                    }
+                    payload = self.data_load(attr)
+            elif "customType" not in search:
+                if search["key"] in [self.field_type["components"], self.field_type['fixversions']]:
+                    attr = {
+                        search["id"]: []
+                    }
+                    payload = self.data_load(attr)
+                elif search["key"] in ["assignee", "reporter", self.field_type["userpicker"]]:
+                    attr = {
+                        search["id"]:
+                            {"accountId": None}
+                    }
+                    payload = self.data_load(attr)
+                else:
+                    attr = {
+                        search["id"]: None
 
-            }
-            payload = self.data_load(attr)
+                    }
+                    payload = self.data_load(attr)
             response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-        elif search["custom"] in [self.field_type["labels"], self.field_type["version"]]:
-            # add a list of values in the form of a list or string for single value
-            if options is None:
-                attr = {
-                    search["id"]:
-                        data
-                }
-                payload = self.data_load(attr)
-            elif options == "add" or options == "remove":  # update the field with the desired value
-                attr = {
-                    search["id"]:
-                        [
-                            {
-                                options: data
+        elif data != "" or data is not None:
+            if "customType" in search:
+                if search["customType"] in [self.field_type["multiselect"], self.field_type["multicheckboxes"]]:
+                    if options is None:
+                        if not isinstance(data, str):
+                            raise JiraOneErrors("wrong")
+                        else:
+                            attr = {
+                                search["id"]: self.multi_field(data)
                             }
-                        ]
+                            payload = self.data_load(attr)
+                    elif options == "add" or options == "remove":
+                        for f in separated(data):
+                            get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
+                                                                        amend=options, data=f)
+                            if len(get_data) is 0:
+                                attr = {
+                                    search["id"]: None
+                                }
+                                payload = self.data_load(attr)
+                            else:
+                                concat = ",".join(get_data)
+                                attr = {
+                                    search["id"]:
+                                        self.multi_field(concat)
+                                }
+                                payload = self.data_load(attr)
+                            LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                    else:
+                        raise JiraOneErrors("value",
+                                            "Excepting string value as \"add\" or \"remove\" "
+                                            "from the options keyword argument "
+                                            "got value: \"{}\" instead.".format(options))
+                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                elif search["customType"] == self.field_type["cascadingselect"]:
+                    cass = self.cascading(data)
+                    if len(cass) > 3:
+                        attr = {
+                            search["id"]:
+                                {
+                                    "value": cass.__getitem__(1).lstrip(),
+                                    "child": {
+                                        "value": cass.__getitem__(3).lstrip()
+                                    }
+                                }
 
-                }
-                payload = self.data_load(attr, s="update")
-            else:
-                raise ValueError("Excepting string value as \"add\" or \"remove\" from the options keyword argument "
-                                 "got value: \"{}\" instead.".format(options))
-            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-        elif search.get("custom") in [self.field_type["multiuserpicker"], self.field_type['userpicker']]:
-            # add a list of values in the form of a list or string for single value
-            if options is None:
-                attr = {
-                    search["id"]:
-                        self.multi_field(data, s="accountId")
-                }
-                payload = self.data_load(attr)
-            elif options == "add" or options == "remove":
-                # update the field with the desired value
-                get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
-                                                            amend=options, data=data)
-                concat = ",".join(get_data)
-                attr = {
-                    search["id"]:
-                        self.multi_field(concat, s="accountId")
-                }
-                payload = self.data_load(attr)
-            else:
-                raise ValueError("Excepting string value as \"add\" or \"remove\" "
-                                 "from the options keyword argument got value: \"{}\" instead.".format(options))
-            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-        elif search.get("key") in [self.field_type["components"], self.field_type['fixversions']]:
-            # add a list of values in the form of a list or string for single value
-            if options is None:
-                attr = {
-                    search["id"]:
-                        self.multi_field(data, s="name")
-                }
-                payload = self.data_load(attr)
-            elif options == "add" or options == "remove":
-                # update the field with the desired value
-                get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
-                                                            amend=options, data=data)
-                concat = ",".join(get_data)
-                attr = {
-                    search["id"]:
-                        self.multi_field(concat, s="name")
-                }
-                payload = self.data_load(attr)
-            else:
-                raise ValueError("Excepting string value as \"add\" or \"remove\" "
-                                 "from the options keyword argument got value: \"{}\" instead.".format(options))
-            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-        else:
-            raise NameError("The field name: {} is not among the list of supported field type for this function."
-                            .format(find_field))
+                        }
+                        payload = self.data_load(attr)
+                        response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                    elif len(cass) <= 3:
+                        attr = {
+                            search["id"]:
+                                {
+                                    "value": cass.__getitem__(1).lstrip()
+                                }
+
+                        }
+                        payload = self.data_load(attr)
+                        response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                elif search["customType"] in [self.field_type["radiobuttons"], self.field_type["select"]]:
+                    attr = {
+                        search["id"]:
+                            {
+                                "value": data
+                            }
+
+                    }
+                    payload = self.data_load(attr)
+                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                elif search["customType"] in [self.field_type["labels"], self.field_type["version"]]:
+                    # add a list of values in the form of a list or string for single value
+                    if options is None:
+                        if not isinstance(data, list):
+                            raise JiraOneErrors("wrong")
+                        else:
+                            if len(data) > 1:
+                                raise JiraOneErrors("value", "Expecting 1 value got {}. Use the "
+                                                             "update parameter for multiple values".format(len(data)))
+                            else:
+                                attr = {
+                                    search["id"]:
+                                        data
+                                }
+                                payload = self.data_load(attr)
+                    elif options == "add" or options == "remove":  # update the field with the desired value
+                        if not isinstance(data, list):
+                            raise JiraOneErrors("wrong")
+                        else:
+                            if len(data) == 1:
+                                attr = {
+                                    search["id"]:
+                                        [
+                                            {
+                                                options: data
+                                            }
+                                        ]
+
+                                }
+                                payload = self.data_load(attr, s="update")
+                            elif len(data) > 1:
+                                for q in data:
+                                    attr = {
+                                        search["id"]:
+                                            [
+                                                {
+                                                    options: q
+                                                }
+                                            ]
+
+                                    }
+                                    payload = self.data_load(attr, s="update")
+                                    LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                    else:
+                        raise JiraOneErrors("value",
+                                            "Excepting string value as \"add\" or \"remove\" from "
+                                            "the options keyword argument "
+                                            "got value: \"{}\" instead.".format(options))
+                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                elif search["customType"] in [self.field_type["multiuserpicker"], self.field_type['userpicker']]:
+                    # add a list of values in the form of a list or string for single value
+                    if options is None:
+                        if not isinstance(data, str):
+                            raise JiraOneErrors("wrong")
+                        else:
+                            if search["type"] == "user":
+                                attr = {
+                                    search["id"]:
+                                        {"accountId": data}
+                                }
+                                payload = self.data_load(attr)
+                            else:
+                                attr = {
+                                    search["id"]:
+                                        self.multi_field(data, s="accountId")
+                                }
+                                payload = self.data_load(attr)
+                    elif options == "add" or options == "remove":
+                        # update the field with the desired value
+                        if not isinstance(data, list):
+                            raise JiraOneErrors("wrong", "Excepting a list value")
+                        else:
+                            if search["type"] == "user":
+                                raise JiraOneErrors("wrong", "You cannot post multiple values to this user field.")
+                            else:
+                                for f in separated(data):
+                                    get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
+                                                                                amend=options, data=f)
+                                    if len(get_data) is 0:
+                                        attr = {
+                                            search["id"]: None
+                                        }
+                                        payload = self.data_load(attr)
+                                    else:
+                                        concat = ",".join(get_data)
+                                        attr = {
+                                            search["id"]:
+                                                self.multi_field(concat, s="accountId")
+                                        }
+                                        payload = self.data_load(attr)
+                                    LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                    else:
+                        raise JiraOneErrors("value", "Excepting string value as \"add\" or \"remove\" "
+                                                     "from the options keyword argument "
+                                                     "got value: \"{}\" instead.".format(options))
+                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                else:
+                    if options is None:
+                        attr = {
+                            search["id"]: data
+                        }
+                        payload = self.data_load(attr)
+                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+            elif "customType" not in search:
+                if search["key"] in [self.field_type["components"], self.field_type['fixversions']]:
+                    # add a list of values in the form of a list or string for single value
+                    if options is None:
+                        if not isinstance(data, str):
+                            raise JiraOneErrors("value", "Expecting a string value")
+                        else:
+                            attr = {
+                                search["id"]:
+                                    self.multi_field(data, s="name")
+                            }
+                            payload = self.data_load(attr)
+                    elif options == "add" or options == "remove":
+                        # update the field with the desired value
+                        for f in separated(data):
+                            get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
+                                                                        amend=options, data=f)
+                            if len(get_data) is 0:
+                                attr = {
+                                    search["id"]:
+                                        []
+                                }
+                                payload = self.data_load(attr)
+                            else:
+                                concat = ",".join(get_data)
+                                attr = {
+                                    search["id"]:
+                                        self.multi_field(concat, s="name")
+                                }
+                                payload = self.data_load(attr)
+                            LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+
+                    else:
+                        raise JiraOneErrors("value", "Excepting string value as \"add\" or \"remove\" "
+                                                     "from the options keyword argument got "
+                                                     "value: \"{}\" instead.".format(options))
+                elif search["key"] in ["labels"]:
+                    if options is None:
+                        if not isinstance(data, list):
+                            raise JiraOneErrors("wrong")
+                        else:
+                            attr = {
+                                search["id"]:
+                                    data
+                            }
+                            payload = self.data_load(attr)
+                    elif options == "add" or options == "remove":  # update the field with the desired value
+                        if not isinstance(data, list):
+                            raise JiraOneErrors("wrong")
+                        else:
+                            if len(data) == 1:
+                                attr = {
+                                    search["id"]:
+                                        [
+                                            {
+                                                options: data
+                                            }
+                                        ]
+                                }
+                                payload = self.data_load(attr, s="update")
+                            # add multiple values to a labels system field
+                            elif len(data) > 1:
+                                for q in data:
+                                    attr = {
+                                        search["id"]:
+                                            [
+                                                {
+                                                    options: q
+                                                }
+                                            ]
+                                    }
+                                    payload = self.data_load(attr, s="update")
+                                    LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                                              payload=payload)
+                else:
+                    if options is None:
+                        if not isinstance(data, str):
+                            raise JiraOneErrors("wrong")
+                        else:
+                            if search["key"] in ["assignee", "reporter"]:
+                                attr = {
+                                    search["id"]:
+                                        {"accountId": data}
+                                }
+                                payload = self.data_load(attr)
+                            elif search["key"] in ["watches"]:
+                                payload = data
+                            elif search["key"] in ["priority"]:
+                                attr = {
+                                    search["id"]: {
+                                        "name": data
+                                    }
+                                }
+                                payload = self.data_load(attr)
+                            else:
+                                attr = {
+                                    search["id"]: data
+                                }
+                                payload = self.data_load(attr)
+                    else:
+                        raise JiraOneErrors("wrong" "You cannot post multiple values with these fields.")
+                response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload) \
+                    if search["key"] != "watches" else LOGIN.post(
+                    endpoint.issues(issue_key_or_id=key_or_id, query="watchers", event=True),
+                    payload=payload)
         return response
 
     @staticmethod
     def data_load(data: Any = Any, s: Any = None):
         """Process the received data into a dict.
 
-        :param s any object that makes it not None.
+        :param s Any object to change s to not None
 
         :param data any object
         """
@@ -1625,7 +1819,7 @@ class Field(object):
         return payload
 
     @staticmethod
-    def multi_field(data: str = Any, s: str = "value"):
+    def multi_field(data: Any = Any, s: str = "value"):
         """Transform any given string separated by comma into an acceptable multi value string.
 
         :param data any string object data.
@@ -1654,22 +1848,28 @@ class Field(object):
         if isinstance(data, list):
             if len(data) == 1:
                 m = f"Parent values: {data[0]}(10059)"
-            elif 1 < len(data) < 2:
+            elif 1 < len(data) <= 2:
                 m = f"Parent values: {data[0]}(10059)Level 1 values: {data[1]}(10060)"
             elif len(data) > 2:
-                raise ValueError("Too many values received, expecting 2 only.")
+                raise JiraOneErrors("value", "Too many values received, expecting 2 only.")
+
         if m.__len__() > 0:
             k = m.split(")", maxsplit=5)
+            print(k)
             d = m.split(")", maxsplit=5)
+            print(d)
             z = k.__getitem__(0).split("(")
+            print(z)
             e = d.__getitem__(1).split("(")
+            print(e)
             b = z.__getitem__(0).split(":")
             i = e.__getitem__(0).split(":")
             vec = [b, i]
             var = [val for elem in vec for val in elem]
             return var
 
-    def extract_issue_field_options(self, key_or_id: Union[str, int] = None, search: Dict = None,
+    @staticmethod
+    def extract_issue_field_options(key_or_id: Union[str, int] = None, search: Dict = None,
                                     amend: str = None, data: Any = Any):
         """Get the option from an issue.
 
@@ -1685,38 +1885,51 @@ class Field(object):
         :param data datatype[string] our object data that will be processed.
         """
         collect = []
-        field_type = False if isinstance(search["custom"], bool) else True
-        load = LOGIN.get(endpoint.issues(issue_key_or_id=key_or_id)).json()
-        if field_type is False:
-            if search["key"] in load["fields"]:
-                init = load["fields"]
-                for i in init[search["key"]]:
-                    if search["key"] in ["labels"]:
+        field_type = False if "customType" not in search else True
+        value = field.get_field_value(search["name"], key_or_id)
+
+        def determine(content: Any = None) -> None:
+            """Determine the type of value to query depending on the data type."""
+            if isinstance(content, list):
+                for x in content:
+                    if "value" in x:
+                        i = x["value"]
                         collect.append(i)
-                    else:
-                        collect.append(i["name"])
+                    if "name" in x:
+                        i = x["name"]
+                        collect.append(i)
+                    if "accountId" in x:
+                        i = x["accountId"]
+                        collect.append(i)
+            if isinstance(content, dict):
+                if "value" in content:
+                    i = content["value"]
+                    collect.append(i)
+                if "name" in content:
+                    i = content["name"]
+                    collect.append(i)
+                if "accountId" in content:
+                    i = content["accountId"]
+                    collect.append(i)
+
+        if field_type is False:
+            determine(value)
         elif field_type is True:
-            if search["id"] in load["fields"]:
-                init = load["fields"]
-                if search["type"] == "option-with-child":
-                    sys.exit("Use the `field.update_field_data()` method instead to update values to a cascading select"
-                             " field. Exiting...")
-                for i in init[search["id"]]:
-                    if "accountId" in i:
-                        collect.append(i.get("accountId"))
-                    if "value" in i:
-                        collect.append(i["value"])
+            if search["type"] == "option-with-child":
+                raise JiraOneErrors("value", "Use the `field.update_field_data()` method instead to update "
+                                             "values to a cascading select field. Exiting...")
+            determine(value)
 
         if amend == "add":
             if data in collect:
-                raise ValueError("Value \"{}\" already exist in list".format(data))
+                raise JiraOneErrors("wrong", "Value \"{}\" already exist in list".format(data))
             else:
                 collect.append(data)
         elif amend == "remove":
             collect.remove(data)
         else:
-            raise ValueError("The amend option cannot be processed because the value \"{}\" doesn't exist."
-                             "Please check your input.".format(amend))
+            raise JiraOneErrors("value", "The amend option cannot be processed because the value \"{}\" doesn't exist."
+                                         "Please check your input.".format(amend))
 
         return collect
 
@@ -1732,8 +1945,11 @@ class Field(object):
             if "errorMessages" in get_value:
                 return "It seems you don't have access to this issue {}".format(keys)
             return get_value["fields"][var.get("id")]
-        except AttributeError as i:
-            return f"<Error: {i} - options: Most probably the field '{name}' cannot be found >"
+        except (AttributeError, KeyError) as i:
+            if isinstance(i, AttributeError):
+                return f"<Error: {i} - options: Most probably the field '{name}' cannot be found >"
+            if isinstance(i, KeyError):
+                return f"<Error: KeyError on {i} - options: It seems that the field '{name}' doesn't exist within {keys}>"
 
 
 def echo(obj):
