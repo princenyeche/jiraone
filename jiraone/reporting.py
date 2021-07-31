@@ -536,7 +536,7 @@ class Projects:
             method_allowed: bool = False,
             method_function: Callable = Any,
             properties: Union[float, int] = Any,
-            classification: str = Ellipsis,
+            classification: str = Any,
             diagram: List[str] = Any,
             probability: Dict[List[str], int] = Any,
             status: Tuple[Union[List[str]]] = Any,
@@ -831,7 +831,7 @@ class Projects:
                 if count > data["total"]:
                     break
                 changelog_search()
-            count += 50
+            count += 100
 
         print("A CSV file has been written to disk, find it here {}".format(
             path_builder(folder, file_name=file)))
@@ -1124,7 +1124,7 @@ class Users:
             extract = LOGIN.get(endpoint.search_users(count_start_at))
             results = json.loads(extract.content)
             self.user_activity(pull, user_type, results)
-            count_start_at += 50
+            count_start_at += 100
             print("Current Record - At Row", count_start_at)
             add_log(f"Current Record - At Row {count_start_at}", "info")
 
@@ -1223,7 +1223,7 @@ class Users:
                         self.user_list.append(OrderedDict({"accountId": get_user,
                                                            "displayName": display_name, "active": status}))
 
-        return self.user_list if self.user_list.__len__() != 0 else exit(f"\n User: {find_user} not found.")
+        return self.user_list if len(self.user_list) != 0 else 0
 
     def mention_user(self, name):
         """Return a format that you can use to mention users on cloud."""
