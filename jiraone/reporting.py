@@ -1223,7 +1223,7 @@ class Users:
                         self.user_list.append(OrderedDict({"accountId": get_user,
                                                            "displayName": display_name, "active": status}))
 
-        return self.user_list if len(self.user_list) is not 0 else 0
+        return self.user_list if len(self.user_list) != 0 else 0
 
     def mention_user(self, name):
         """Return a format that you can use to mention users on cloud."""
