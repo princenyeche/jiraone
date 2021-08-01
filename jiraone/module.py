@@ -50,7 +50,7 @@ def field_update(field, key_or_id: Union[str, int], name: Optional[str] = None, 
     :param update A way to update a field value.
     :param data A way to send out data.
 
-            *options to use for `data` parameter*
+            *options to use for `update` parameter*
                   i) add - add to list value or dict value
                   ii) remove - remove an option value from a list or dict
     """
