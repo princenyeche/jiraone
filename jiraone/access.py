@@ -1401,7 +1401,7 @@ class Field(object):
                             "type": a["schema"]["type"]
                         }
 
-                count_start_at += 100
+                count_start_at += 50
                 if count_start_at > data["total"]:
                     break
 
@@ -1901,6 +1901,9 @@ class Field(object):
                     if "accountId" in x:
                         i = x["accountId"]
                         collect.append(i)
+                    else:
+                        collect.append(i)
+                        
             if isinstance(content, dict):
                 if "value" in content:
                     i = content["value"]
