@@ -1124,7 +1124,7 @@ class Users:
             extract = LOGIN.get(endpoint.search_users(count_start_at))
             results = json.loads(extract.content)
             self.user_activity(pull, user_type, results)
-            count_start_at += 100
+            count_start_at += 50
             print("Current Record - At Row", count_start_at)
             add_log(f"Current Record - At Row {count_start_at}", "info")
 
