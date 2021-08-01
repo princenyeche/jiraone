@@ -1855,13 +1855,9 @@ class Field(object):
 
         if m.__len__() > 0:
             k = m.split(")", maxsplit=5)
-            print(k)
             d = m.split(")", maxsplit=5)
-            print(d)
             z = k.__getitem__(0).split("(")
-            print(z)
             e = d.__getitem__(1).split("(")
-            print(e)
             b = z.__getitem__(0).split(":")
             i = e.__getitem__(0).split(":")
             vec = [b, i]
