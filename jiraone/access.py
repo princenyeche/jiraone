@@ -1902,8 +1902,7 @@ class Field(object):
                         i = x["accountId"]
                         collect.append(i)
                     else:
-                        collect.append(i)
-                        
+                        collect.append(i)                       
             if isinstance(content, dict):
                 if "value" in content:
                     i = content["value"]
