@@ -1891,6 +1891,8 @@ class Field(object):
         :param amend datatype[String] available option "add" or "remove" condition to decide action for appending.
 
         :param data datatype[string] our object data that will be processed.
+        
+        :return List of values
         """
         collect = []
         field_type = False if "customType" not in search else True
