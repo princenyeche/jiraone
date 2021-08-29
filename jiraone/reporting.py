@@ -731,8 +731,11 @@ class Projects:
                                                                  "editmeta,changelog,versionedRepresentations"))
                 if get_issue_keys.status_code == 200:
                     key_data = json.loads(get_issue_keys.content)
-                    load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=keys)).json()
-                    _summary = load_summary["fields"]["summary"]
+                    # Bug Fix to "Extraction Of Jira History Error #47" return value of None in some issue keys.
+                    # https://github.com/princenyeche/atlassian-cloud-api/issues/47
+                    load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=keys))
+                    _summary = json.loads(load_summary.content).get("fields").get("summary") if 'fields' in \
+                                             json.loads(load_summary.content) else "Error:#47 - Unable to load summary"
                     if LOGIN.api is False:
                         if "changelog" in key_data:
                             _data = key_data["changelog"]
