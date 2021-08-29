@@ -25,7 +25,9 @@ class Credentials(object):
     def __init__(self, user: str, password: str, url: str = Any) -> Optional:
         """Instantiate the login."""
         self.base_url = url
-        self.token_session(email=user, token=password)
+        self.user = user
+        self.password = password
+        self.token_session(email=self.user, token=self.password)
 
     # produce a session for the script and save the session
     def token_session(self, email: Any = None, token: Any = None) -> Any:
@@ -1360,7 +1362,8 @@ class Field(object):
         "assignee": "assignee",
         "description": "description",
         "Epic Status": "com.pyxis.greenhopper.jira:gh-epic-status",
-        "Epic Name": "com.pyxis.greenhopper.jira:gh-epic-label"
+        "Epic Name": "com.pyxis.greenhopper.jira:gh-epic-label",
+        "versions": "versions"
 
     }
     """
@@ -1526,7 +1529,8 @@ class Field(object):
                 if search["customType"] in [self.field_type["multiselect"], self.field_type["multicheckboxes"]]:
                     if options is None:
                         if not isinstance(data, str):
-                            raise JiraOneErrors("wrong")
+                            raise JiraOneErrors("wrong", "Expecting a string value or a string of values separated by"
+                                                         " comma.")
                         else:
                             attr = {
                                 search["id"]: self.multi_field(data)
@@ -1594,7 +1598,7 @@ class Field(object):
                     # add a list of values in the form of a list or string for single value
                     if options is None:
                         if not isinstance(data, list):
-                            raise JiraOneErrors("wrong")
+                            raise JiraOneErrors("wrong", "Expecting a list of values")
                         else:
                             if len(data) > 1:
                                 raise JiraOneErrors("value", "Expecting 1 value got {}. Use the "
@@ -1607,14 +1611,14 @@ class Field(object):
                                 payload = self.data_load(attr)
                     elif options == "add" or options == "remove":  # update the field with the desired value
                         if not isinstance(data, list):
-                            raise JiraOneErrors("wrong")
+                            raise JiraOneErrors("wrong", "Expecting a list of values")
                         else:
                             if len(data) == 1:
                                 attr = {
                                     search["id"]:
                                         [
                                             {
-                                                options: data
+                                                options: data[0]
                                             }
                                         ]
 
@@ -1694,11 +1698,13 @@ class Field(object):
                         payload = self.data_load(attr)
                     response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
             elif "customType" not in search:
-                if search["key"] in [self.field_type["components"], self.field_type['fixversions']]:
+                if search["key"] in [self.field_type["components"], self.field_type['fixversions'],
+                                     self.field_type['versions']]:
                     # add a list of values in the form of a list or string for single value
                     if options is None:
                         if not isinstance(data, str):
-                            raise JiraOneErrors("value", "Expecting a string value")
+                            raise JiraOneErrors("value", "Expecting a string value or a string of values, separated"
+                                                         " by comma.")
                         else:
                             attr = {
                                 search["id"]:
@@ -1748,7 +1754,7 @@ class Field(object):
                                     search["id"]:
                                         [
                                             {
-                                                options: data
+                                                options: data[0]
                                             }
                                         ]
                                 }
@@ -1769,7 +1775,7 @@ class Field(object):
                                               payload=payload)
                 else:
                     if options is None:
-                        if not isinstance(data, str):
+                        if not isinstance(data, (str, dict)):
                             raise JiraOneErrors("wrong")
                         else:
                             if search["key"] in ["assignee", "reporter"]:
@@ -1785,6 +1791,12 @@ class Field(object):
                                     search["id"]: {
                                         "name": data
                                     }
+                                }
+                                payload = self.data_load(attr)
+                            elif search["key"] in ["parent"]:
+                                attr = {
+                                    search["id"]:
+                                        {"key": data}
                                 }
                                 payload = self.data_load(attr)
                             else:
@@ -1897,8 +1909,6 @@ class Field(object):
                     if "accountId" in x:
                         i = x["accountId"]
                         collect.append(i)
-                    else:
-                        collect.append(i)                       
             if isinstance(content, dict):
                 if "value" in content:
                     i = content["value"]
@@ -1912,7 +1922,7 @@ class Field(object):
 
         if field_type is False:
             determine(value)
-        elif field_type is True:
+        if field_type is True:
             if search["type"] == "option-with-child":
                 raise JiraOneErrors("value", "Use the `field.update_field_data()` method instead to update "
                                              "values to a cascading select field. Exiting...")
