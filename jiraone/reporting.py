@@ -7,7 +7,7 @@ Easily generate report for the various endpoints
 """
 from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict, NoReturn
 from collections import deque, namedtuple, OrderedDict
-from jiraone import LOGIN, endpoint, add_log, WORK_PATH
+from jiraone import LOGIN, endpoint, add_log, WORK_PATH, field
 import json
 import csv
 import sys
@@ -734,8 +734,9 @@ class Projects:
                     # Bug Fix to "Extraction Of Jira History Error #47" return value of None in some issue keys.
                     # https://github.com/princenyeche/atlassian-cloud-api/issues/47
                     load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=keys))
-                    _summary = json.loads(load_summary.content).get("fields").get("summary") if 'fields' in \
-                                             json.loads(load_summary.content) else "Error:#47 - Unable to load summary"
+                    _summary = None
+                    if load_summary.status_code < 300:
+                        _summary = field.get_field_value("Summary", keys)
                     if LOGIN.api is False:
                         if "changelog" in key_data:
                             _data = key_data["changelog"]
