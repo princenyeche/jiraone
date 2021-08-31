@@ -7,7 +7,7 @@ Easily generate report for the various endpoints
 """
 from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict, NoReturn
 from collections import deque, namedtuple, OrderedDict
-from jiraone import LOGIN, endpoint, add_log, WORK_PATH, field
+from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
 import csv
 import sys
@@ -736,7 +736,7 @@ class Projects:
                     load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=keys))
                     _summary = None
                     if load_summary.status_code < 300:
-                        _summary = field.get_field_value("Summary", keys)
+                        _summary = json.loads(load_summary.content).get('fields').get('summary')
                     if LOGIN.api is False:
                         if "changelog" in key_data:
                             _data = key_data["changelog"]
