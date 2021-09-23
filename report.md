@@ -3,7 +3,7 @@ The script comes with some basic reporting Classes and methods which you can use
 currently only CSV file output is supported. other format such as JSON might be available in future.
 
 ## USER API
-* generate a report of all active users in your instance
+* Generate a report of all active users in your instance
 
 ```python
 from jiraone import LOGIN, USER
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     USER.get_all_users(pull="active", user_type="atlassian", file="user_file.csv")
 ```
 
-* generate a report of all user in the instance and which group do they belong to
+* Generate a report of all user in the instance and which group do they belong to
 
 ```python
 from jiraone import LOGIN, USER
@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
 ## PROJECT API
 
-* generate a report of users in your instance, who has BROWSE access to the projects on the instance.
+* Generate a report of users in your instance, who has BROWSE access to the projects on the instance.
 
 ```python
 from jiraone import LOGIN, PROJECT
@@ -93,7 +93,7 @@ if __name__ == '__main__':
                                         pull="active", user_type="atlassian")
 ```
 
-* generate a report of the number of Dashboard on the Instance, who's the owner and who it is shared with.
+* Generate a report of the number of Dashboard on the Instance, who's the owner and who it is shared with.
 
 ```python
 from jiraone import LOGIN, PROJECT
@@ -110,7 +110,7 @@ if __name__ == '__main__':
 ```
 
 
-* generate a report, get all project list and users within a project as well as their corresponding project role in the project.
+* Generate a report, get all project list and users within a project as well as their corresponding project role in the project.
 
 ```python
 from jiraone import LOGIN, PROJECT
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     PROJECT.get_all_roles_for_projects(pull="active", user_type="atlassian")
 ```
 
-* generate a report, get all attachments per issue on a project or search for projects and get all attachment urls
+* Generate a report, get all attachments per issue on a project or search for projects and get all attachment urls
 
 ```python
 from jiraone import LOGIN, PROJECT
@@ -195,7 +195,7 @@ if __name__ == '__main__':
     PROJECT.get_total_comments_on_issues(find_user="Prince Nyeche", pull="active", user_type="atlassian")
 ```
 
-* generate a report of all the issue history within a project or projects
+* Generate a report of all the issue history within a project or projects
 
 Use `LOGIN.api = False` if you want to extract the issue history from a Server instance.
 
@@ -212,6 +212,27 @@ if __name__ == '__main__':
     # the output of the file would be absolute to the directory where this python file is being executed from
     jql = "project in (PYT) ORDER BY Rank DESC"  # A valid JQL query
     PROJECT.change_log(jql=jql)
+```
+
+## Module API
+The API from the `jiraone.module` uses functions
+
+* Generate a report of time in status of Jira issue.
+
+```python
+from jiraone import LOGIN, PROJECT, file_reader
+from jiraone.module import time_in_status
+import json
+
+config = json.load(open('config.json'))
+LOGIN(**config)
+
+key = ["COM-12", "COM-14"]
+
+if __name__ == "__main__":
+     time_in_status(PROJECT, key, file_reader, pprint=True, is_printable=False,
+     output_format="json", report_folder="STATUSPAGE", report_file="time.csv",
+     status="In progress", login=LOGIN, output_filename="result")
 ```
 
 
