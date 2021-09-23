@@ -716,6 +716,8 @@ class Projects:
         changes = deque()
         item_list = deque()
         jql = kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
+        field_name = kwargs["field_name"] if "field_name" in kwargs else None
+        show_output: bool = kwargs["show_output"] if "show_output" in kwargs else True
         print("Extracting issue histories...")
         add_log("Extracting issue histories...", "info")
 
@@ -788,10 +790,16 @@ class Projects:
                         _fromString = item.get("fromString")
                         _to = item.get("to")
                         _toString = item.get("toString")
-                        raw = [_field, _field_type, _from, _fromString, _to, _toString] if LOGIN.api is False \
-                            else [_field, _field_type, _field_id, _from, _fromString, _to, _toString,
-                                  _tmpFromAccountId, _tmpToAccountId]
-                        item_list.append(raw)
+                        if field_name == _field:
+                            raw = [_field, _field_type, _from, _fromString, _to, _toString] if LOGIN.api is False \
+                                else [_field, _field_type, _field_id, _from, _fromString, _to, _toString,
+                                      _tmpFromAccountId, _tmpToAccountId]
+                            item_list.append(raw)
+                        elif field_name is None:
+                            raw = [_field, _field_type, _from, _fromString, _to, _toString] if LOGIN.api is False \
+                                else [_field, _field_type, _field_id, _from, _fromString, _to, _toString,
+                                      _tmpFromAccountId, _tmpToAccountId]
+                            item_list.append(raw)
 
                         ItemList = namedtuple("ItemList", ["field", "field_type", "from_", "fromString",
                                                            "to", "toString"]) if LOGIN.api is False else \
@@ -837,8 +845,9 @@ class Projects:
                 changelog_search()
             count += 100
 
-        print("A CSV file has been written to disk, find it here {}".format(
-            path_builder(folder, file_name=file)))
+        if show_output is True:
+            print("A CSV file has been written to disk, find it here {}".format(
+                path_builder(folder, file_name=file)))
         add_log("File extraction for change log completed", "info")
 
     def comment_on(self, key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs):
