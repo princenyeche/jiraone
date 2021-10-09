@@ -372,14 +372,16 @@ manage.LINK
 You do not need to change anything to these attributes because they are constants. <br />
 
 **Properties** - You have access to 5 property values as long as you authenticate with the right token. <br /> 
-manage.org_id - This gives access to the organization id needed to check other organization endpoints<br />
-manage.org_ids - If the organization id are more than one, this property becomes accessible else it shows as `None` <br />     
-manage.domain_id - This can be a string or list depending on how many `domain_id` is returned<br />
-manage.policy_id - This can be a string or list depending on how many `policy_id` is returned<br />
-manage.event_id - This can be a string or list depending on how many `event_id` is returned<br />
+`manage.org_id` - This gives access to the organization id needed to check other organization endpoints<br />
+`manage.org_ids` - If the organization id are more than one, this property becomes accessible else it shows as `None` <br />     
+`manage.domain_id` - This can be a string or list depending on how many `domain_id` is returned<br />
+`manage.policy_id` - This can be a string or list depending on how many `policy_id` is returned<br />
+`manage.event_id` - This can be a string or list depending on how many `event_id` is returned<br />
 <br />
 
-**Access the methods by using manage**<method_name> <br />
+**Access the methods by using `manage.<method_name>`** <br />
+                
+                
 **add_token(token: str)** <br />
 This API requires that you enter a API token for your organization.
                 
@@ -398,17 +400,17 @@ Returns the set of permissions you have for managing the specified Atlassian acc
 
 **manage_profile(account_id: str, method: str = "GET", _**kwargs_: t.Any)**<br />
 You can be able to call various methods by altering the `method` keyword argument
-* GET request: Returns information about a single Atlassian account by ID by using a "GET" request.
-* PATCH request: Updates fields in a user account.
+* `GET` request: Returns information about a single Atlassian account by ID by using a "GET" request.
+* `PATCH` request: Updates fields in a user account.
                 *Body parameter*<br />
                 > Any or all user object this is value<br />
                 e.g. {"name": "Lila User", "nickname": "marshmallow"}
-* PUT request: Sets the specified user's email address.
+* `PUT` request: Sets the specified user's email address.
                *Body parameter* <br />
                 e.g. {"email": "prince.nyeche@elfapp.website"}
 <br />
                 
-**api_token(self, account_id: str, method: str = "GET", token_id: str = None)**<br />
+**api_token(account_id: str, method: str = "GET", token_id: str = None)**<br />
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
                 <br />
                 
