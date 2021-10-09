@@ -362,6 +362,124 @@ text = """
 comment(key, method="post", text_block=text, placer="<user>", mention=USER.mention_user(name), event=True)
 ```
  
+## manage
+The `manage` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management <br />
+
+**Attributes** - You have access to two constant attributes. <br />
+manage.AUTH<br />
+manage.LINK
+
+You do not need to change anything to these attributes because they are constants. <br />
+
+**Properties** - You have access to 5 property values as long as you authenticate with the right token. <br /> 
+manage.org_id - This gives access to the organization id needed to check other organization endpoints<br />
+manage.org_ids - If the organization id are more than one, this property becomes accessible else it shows as `None` <br />     
+manage.domain_id - This can be a string or list depending on how many `domain_id` is returned<br />
+manage.policy_id - This can be a string or list depending on how many `policy_id` is returned<br />
+manage.event_id - This can be a string or list depending on how many `event_id` is returned<br />
+<br />
+
+**Access the methods by using manage**<method_name> <br />
+**add_token(token: str)** <br />
+This API requires that you enter a API token for your organization.
+                
+```python
+from jiraone import manage
+
+token = "Edfj78jiXXX"
+manage.add_token(token)
+```      
+<br />
+                
+**get_user_permission(account_id: str, query: list = None)** <br />
+Returns the set of permissions you have for managing the specified Atlassian account. The `account_id` is required and query is an Array<string> which can be any of the values below:
+* Valid values: profile, profile.write, profile.read, email.set, lifecycle.enablement, apiToken.read, apiToken.delete
+<br />
+
+**manage_profile(account_id: str, method: str = "GET", _**kwargs_: t.Any)**<br />
+You can be able to call various methods by altering the `method` keyword argument
+* GET request: Returns information about a single Atlassian account by ID by using a "GET" request.
+* PATCH request: Updates fields in a user account.
+                *Body parameter*<br />
+                > Any or all user object this is value<br />
+                e.g. {"name": "Lila User", "nickname": "marshmallow"}
+* PUT request: Sets the specified user's email address.
+               *Body parameter* <br />
+                e.g. {"email": "prince.nyeche@elfapp.website"}
+<br />
+                
+**api_token(self, account_id: str, method: str = "GET", token_id: str = None)**<br />
+Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
+                <br />
+                
+**manage_user(self, account_id: str, disable: bool = True, _**kwargs_)**<br />
+Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
+OR
+Enables the specified user account.The permission to make use of this resource is exposed by the lifecycle.enablement privilege
+
+```python
+from jiraone import manage
+
+token = "Edfj78jiXXX"
+account_id = "5bc7uXXX"
+payload = {"message": "On 6-month suspension"} # A payload needs to be passed for the endpoint to work
+manage.add_token(token)
+manage.manage_user(account_id, json=payload) # By default it is set to disable a user
+# manage.manage_user(account_id, json=payload, disable=False) # Changing disable=False enables back the user
+
+# output
+# <Response 204>
+```   
+
+<br />
+                
+**get_organization(org_id: t.Optional[str] = None,
+                         filter_by: t.Optional[str] = None,
+                         domain_id: t.Optional[str] = None,
+                         event_id: t.Optional[str] = None,
+                         action: t.Optional[bool] = True,
+                         policy_id: t.Optional[str] = None,
+                         _**kwargs_: t.Any)** <br />
+GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
+The `filter_by` arguments accepts 4 valid options which as `users`, `domains`, `policies`, and `events`. <br />
+The `action` argument allows a certain action for the events filter_by option. When set `action=True` it returns the event actions rather than a list of events.
+The `kwargs` argument accepts valid response arguments such as `json`, `data` etc which can be used as body parameter when making the request.
+                
+```python
+from jiraone import manage
+
+token = "Edfj78jiXXX"
+manage.add_token(token)
+manage.get_organization(filter_by="users")
+
+# output
+# <Response 204>
+``` 
+
+Get the data from the list of policies
+```python
+from jiraone import manage, echo
+
+token = "Edfj78jiXXX"
+manage.add_token(token)
+for policy in manage.policy_id:
+    deploy = manage.get_organization(filter_by="policies", policy_id=policy)
+    echo(deploy)
+
+# output
+# <Response 204>
+``` 
+
+ <br />
+                
+**manage_organization(self, org_id: t.Optional[str], method: str = "POST",
+                            policy_id: t.Optional[str] = None,
+                            resource_id: t.Optional[str] = None,
+                            _**kwargs_: t.Any)**<br />
+Create, put and delete organization data, create a policy for an org, send a post request by using `method="post"` as keyword args.Update a policy for an org.
+Send a put request by using `method="put"` as keyword args.
+The `method` argument accepts "put", "post" or "delete" (case insensitive) <br />
+                
  
 ### Other variables
 * `WORK_PATH`: This is a direct link to the present directory in which you're calling the script. How it works, is that it uses the present working directory of where the script you're initializing. Use this variable, if you want to create your own pathway.
