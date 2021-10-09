@@ -293,8 +293,8 @@ if __name__ == "__main__":
 # output
 # <Response [204]>
 ```
-The above function is able to update all fields used on Jira. All you simple need to do is find the field based on it's name. If it exist, then a result will be shown for it. The field_update requires the below argument.
-* field: a call to the field class needs to be passed as the first argument
+The above function is able to update any field used on Jira cloud. All you simply need to do is find the field based on it's name (case sensitive). If it exist, then a result will be shown for it. The field_update requires the below argument.
+* field: a call to the `Field` class needs to be passed as the first argument.
 * key_or_id: An issue key or issue id needs to be passed as the second argument or you can use a keyword argument.
 * update: A way to update the custom field. It accepts two valid values either `add` (adds a value to a list or dict) or `remove` (removes from a value to a list or dict)
 * name: The name of a field
