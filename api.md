@@ -54,6 +54,8 @@ LOGIN(user=user, password=password, url=link)
 **Attributes**, available to the LOGIN alias
 * LOGIN.base_url 
 * LOGIN.headers 
+* LOGIN.password
+* LOGIN.user
 * LOGIN.api <default> to True - This helps with changing the api version from 3 to use the latest version.
 * LOGIN.auth_requests <br />
 
