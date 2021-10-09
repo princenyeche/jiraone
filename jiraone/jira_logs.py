@@ -33,10 +33,10 @@ if system() == "Windows":
 
 def add_log(message, level):
     """Writes a log to a log file with activity done."""
-    if level == "debug".lower():
+    if level.lower() == "debug":
         logger.setLevel(logging.DEBUG)
         logger.debug(message)
-    elif level == "error".lower():
+    elif level.lower() == "error":
         logger.setLevel(logging.ERROR)
         logger.error(message)
     else:

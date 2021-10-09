@@ -23,6 +23,7 @@ and many more depending on what you can come up with.
 from jiraone.access import LOGIN, endpoint, echo, For, field
 from jiraone.jira_logs import add_log, WORK_PATH
 from jiraone.reporting import PROJECT, USER, file_writer, file_reader, path_builder, replacement_placeholder, comment
+from jiraone.user import manage
 
 __all__ = ["LOGIN",
            "endpoint",
@@ -36,4 +37,4 @@ __all__ = ["LOGIN",
            "path_builder",
            "replacement_placeholder",
            "For",
-           "field", "comment"]
+           "field", "comment", "manage"]
