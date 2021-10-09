@@ -1,2 +1,2 @@
-# atlassian-cloud-api
+# jiraone
 Documentation pages for jiraone.
