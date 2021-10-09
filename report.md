@@ -233,6 +233,109 @@ if __name__ == "__main__":
      time_in_status(PROJECT, key, file_reader, pprint=True, is_printable=False,
      output_format="json", report_folder="STATUSPAGE", report_file="time.csv",
      status="In progress", login=LOGIN, output_filename="result")
+     
+# output
+# result.json file
+```
+
+This function has the ability to generate the time an issue has stayed in a particular status or it can generate all the time it stays in each and every status that exists within a Jira issue. I’ll explain what each argument within the function does, so you can get a clear picture of how to use it. The standard way to call this function is the way it is shown above. First, the PROJECT alias is used as a required positional argument and within the function calls the `change_log()` method. The second argument requires an issue key. Now you can be able to pass the issue key in various formats such as below
+```python
+# previous statement
+
+key = "COM-12" # as a string
+key = "COM-12,COM-14" # a string separated by comma
+key = 10034 # an integer denoting the issueid
+key = ["COM-12", "COM-114", "TPS-14", 10024] # a list of issue keys or issue ids
+key = {"jql": "project = COM ORDER BY created DESC"} # a dict using JQL
+```
+The third argument is file_reader function which you will need to pass or you can pass as a keyword argument as reader=file_reader. The remaining arguments can be passed as keyword arguments, pprint enables you to print out the time in status in Jira’s pretty format e.g. 13d 11h 22m 15s if it is set to True otherwise if it is not set at all, you will get the DateTime output as *13 days, 11:22:15.913* which is a time delta string of the DateTime string collected from the issue history. The output_format argument enables you to generate a report file either in *CSV* or *JSON* format. The words have to be strings and are case insensitive. E.g cSV or JsoN will output the correct file. The output_file argument basically just allows you to name the file, avoid using any extension as this will be automatically added based on the output_format. The status argument allows you to only output statuses that have that status name. For example, you want a report of only “In Progress” status, then you should write the name "In Progress" (this is case sensitive) as the value to the status argument. If left blank, the result will be all the statuses within the issues being searched. Therefore, if you want the time in status for all the statuses that exist within the Jira issues, do not set the status argument. The login argument is essential to the function as it is required for authenticating your API to the Jira issues. The `report_file` basically helps within the history generation, you do not have to set this as it is optional. The same goes for `report_folder` you do not have to set this as it is optional.
+
+Once you run the script, you will end up with a report that looks like the one below as the output
+
+```json
+[
+ {        
+  "author": "Prince Nyeche",        
+  "issueKey": "COM-12",        
+  "status": "To Do",        
+  "summary": "Workflow test 3",        
+  "timeStatus": "0h 00m 19s"    
+ },    
+ {        
+  "author": "Prince Nyeche",        
+  "issueKey": "COM-14",        
+  "status": "In Progress",        
+  "summary": "Workflow test 3",        
+  "timeStatus": "8d 6h 32m 52s"    
+ }
+]
+```
+
+* Update custom field or system fields using a field update function
+
+```python
+from jiraone import LOGIN, PROJECT, USER, echo, field
+from jiraone.module import field_update
+import json
+
+# a configuration file which is a dict containing keys user, password and url
+config = json.load(open('config.json'))
+LOGIN(**config)
+
+key = 'ITSM-4'
+name = 'Last Update User'  # A single user picker field
+
+if __name__ == "__main__":
+     change = USER.search_user('Prince Nyeche')[0].get('accountId')
+     make = field_update(field, key, name, data=change)
+     echo(make)
+
+# output
+# <Response [204]>
+```
+The above function is able to update all fields used on Jira. All you simple need to do is find the field based on it's name. If it exist, then a result will be shown for it. The field_update requires the below argument.
+* field: a call to the field class needs to be passed as the first argument
+* key_or_id: An issue key or issue id needs to be passed as the second argument or you can use a keyword argument.
+* update: A way to update the custom field. It accepts two valid values either `add` (adds a value to a list or dict) or `remove` (removes from a value to a list or dict)
+* name: The name of a field
+* data: The data item we want to change which could be any data types.
+
+Another example is given below to update multiple value set to a field. Use the `update` argument to add or remove values. Most of the fields that requires add or removing can be places in a list such as components, labels, fixversions, multicheckboxes, multiselect etc - these fields items can be places in a list as shown below to either add or remove items from it.
+
+```python
+from jiraone import LOGIN, PROJECT, USER, echo, field
+from jiraone.module import field_update
+import json
+
+# a configuration file which is a dict containing keys user, password and url
+config = json.load(open('config.json'))
+LOGIN(**config)
+
+key = 'ITSM-4'
+name = 'Component Field'  # A Component field
+
+if __name__ == "__main__":
+     vals = ['Browser', 'Firefox']
+     make = field_update(field, key, name, data=vals, update="add")
+     echo(make)
+     
+# output
+# <Response [204]>
+```
+
+```python
+#...previous statement
+
+key = 'ITSM-4'
+name = 'Story Points'  # A Story point field
+
+if __name__ == "__main__":
+     vals = 3 # An integer and not string for Story Points type field
+     make = field_update(field, key, name, data=vals)
+     echo(make)
+     
+# output
+# <Response [204]>
 ```
 
 
