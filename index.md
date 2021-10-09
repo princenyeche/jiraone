@@ -35,4 +35,5 @@ aforementioned methods or functions above to get further information.
 * [Basic report usage](https://princenyeche.github.io/atlassian-cloud-api/report#basic-report-usage)
   * [PROJECT API](https://princenyeche.github.io/atlassian-cloud-api/report#project-api)
   * [USER API](https://princenyeche.github.io/atlassian-cloud-api/report#user-api)
+  * [Module API](https://princenyeche.github.io/atlassian-cloud-api/report#module-api)
   * [Support](https://princenyeche.github.io/atlassian-cloud-api/report#support)
