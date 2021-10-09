@@ -338,6 +338,35 @@ if __name__ == "__main__":
 # <Response [204]>
 ```
 
+```python
+#...previous statement
+
+key = 'ITSM-4'
+name = 'Helper Date'  # A Date picker field
+
+if __name__ == "__main__":
+     vals = '2021-10-24'
+     make = field_update(field, key, name, data=vals)
+     echo(make)
+     
+# output
+# <Response [204]>
+```
+
+```python
+#...previous statement
+
+key = 'ITSM-4'
+name = 'Due date picker'  # A Date time picker field
+
+if __name__ == "__main__":
+     vals = '2021-10-11T19:56:28.118+0200'
+     make = field_update(field, key, name, data=vals)
+     echo(make)
+     
+# output
+# <Response [204]>
+```
 
 ## Support
 * For any issues or feature request, feel free to create an issue on Github or email me at support@elfapp.website
