@@ -475,7 +475,7 @@ class UserManagement:
             # You can still call this from the events request.
             # threading.Thread(target=self.get_organization, kwargs={"filter_by": "events", "action": False}).run()
         except KeyError:
-            raise JiraOneErrors("login", "Your connection has failed. Please check the response to see the reason!")
+            raise JiraOneErrors("warning", "Your connection has failed. Please check the response to see the reason!")
 
 
 manage = UserManagement()
