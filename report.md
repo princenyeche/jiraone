@@ -271,10 +271,10 @@ Once you run the script, you will end up with a report that looks like the one b
 ]
 ```
 
-* Update custom field or system fields using a field update function
+* Update custom field or system fields using a field update function. Please ensure that the fields you want to update is visible on screen in your projects, if not you will get a 400 error response instead. The API doesn't override the screen functions.
 
 ```python
-from jiraone import LOGIN, PROJECT, USER, echo, field
+from jiraone import LOGIN, USER, echo, field
 from jiraone.module import field_update
 import json
 
@@ -303,7 +303,7 @@ The above function is able to update any field used on Jira cloud. All you simpl
 Another example is given below to update multiple value set to a field. Use the `update` argument to add or remove values. Most of the fields that requires add or removing can be places in a list such as components, labels, fixversions, multicheckboxes, multiselect etc - these fields items can be places in a list as shown below to either add or remove items from it.
 
 ```python
-from jiraone import LOGIN, PROJECT, USER, echo, field
+from jiraone import LOGIN, echo, field
 from jiraone.module import field_update
 import json
 
