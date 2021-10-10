@@ -471,7 +471,9 @@ class UserManagement:
             threading.Thread(target=self.get_organization).run()
             threading.Thread(target=self.get_organization, kwargs={"filter_by": "policies"}).run()
             threading.Thread(target=self.get_organization, kwargs={"filter_by": "domains"}).run()
-            threading.Thread(target=self.get_organization, kwargs={"filter_by": "events", "action": False}).run()
+            # This property is accessible to premium / enterprise users, so turning off this feature by default, 
+            # You can still call this from the events request.
+            # threading.Thread(target=self.get_organization, kwargs={"filter_by": "events", "action": False}).run()
         except KeyError:
             raise JiraOneErrors("login", "Your connection has failed. Please check the response to see the reason!")
 
