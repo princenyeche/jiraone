@@ -368,5 +368,60 @@ if __name__ == "__main__":
 # <Response [204]>
 ```
 
+* Bulk change email addresses of organization users
+
+This function helps with changing the email addresses in bulk of organization users. The target email address must not exist as an Atlassian account for the change to be effective. All domains needing the bulk change needs to be verified within your organization for the changes to work.
+
+For example
+```python
+from jiraone.module import bulk_change_email
+
+token = "Vhsj28UJsXXX"
+file = "user.csv"
+bulk_change_email(file, token)
+
+# A CSV file needs to be added to the same directory the script is running from
+# The format of the CSV file has to be in the below format of max 4 columns
+# id,current_email, name, target_email
+# processes the information.
+```
+
+* Bulk change email address of organization users with an existing Atlassian account.
+
+This function helps to bulk change email address but only on the condition that the target email address already exist as an Atlassian account. To use this function, you must verify all the domains you wish to swap. If you're not a premium/enterprise plan user, you will need to add a second file that will contain all the users in your organizations.
+
+For example
+```python
+from jiraone.module import bulk_change_swap_email
+
+token = "Vhsj28UJsXXX"
+file = "user.csv"
+user_list = "userlist.csv" # file containing all the users in your organization.
+bulk_change_swap_email(file, token, users=user_list)
+
+# A CSV file needs to be added to the same directory the script is running from
+# The format of the CSV file named "file" has to be in the below format of max 4 columns
+# id,current_email, name, target_email
+# processes the information.
+# The user list file has to be max 2 columns as described below
+# id,email
+```
+
+For example
+```python
+from jiraone.module import bulk_change_swap_email
+
+token = "Vhsj28UJsXXX"
+file = "user.csv"
+place_holder = "dummy@example.com" # You can supply a dummy email address which is non-existent
+# The above function of a dummy email is used as a placeholder to perform the swap.
+bulk_change_swap_email(file, token, dummy=place_holder)
+
+# A CSV file needs to be added to the same directory the script is running from
+# The format of the CSV file named "file" has to be in the below format of max 4 columns
+# id,current_email, name, target_email
+# processes the information.
+```
+
 ## Support
 * For any issues or feature request, feel free to create an issue on Github or email me at support@elfapp.website
