@@ -369,6 +369,14 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> NoReturn:
     :param data A string of the file name
 
     :param token An API token to authenticate the API.
+    
+    :param kwargs Additional keyword argument to pass
+                
+                *Valid values*
+                > dummy - A dummy email address to choose if not a default is formed
+                   from your email addressed
+                > users - The name of a file to check the users and their account_id
+                    only needed if your organization is not on premium/enterprise plan
 
     :return: None
     """
