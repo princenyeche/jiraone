@@ -408,7 +408,7 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> NoReturn:
 
         :return: None
         """
-        print("Checking organization users...") if 'users' in kwargs else print("Reading user file...")
+        print("Checking organization users...")
         while True:
             next_item_data = source['links']['next'] if 'links' in source \
                                                         and len(source['links']) > 1 else {}
