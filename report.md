@@ -388,7 +388,7 @@ bulk_change_email(file, token)
 
 * Bulk change email address of organization users with an existing Atlassian account.
 
-This function helps to bulk change email address but only on the condition that the target email address already exist as an Atlassian account. To use this function, you must verify all the domains you wish to swap. If you're not a premium/enterprise plan user, you will need to add a second file that will contain all the users in your organizations.
+This function helps to bulk change email address but only on the condition that the target email address already exist as an Atlassian account. To use this function, you must verify all the domains you wish to swap.
 
 For example
 ```python
@@ -403,8 +403,6 @@ bulk_change_swap_email(file, token, users=user_list)
 # The format of the CSV file named "file" has to be in the below format of max 4 columns
 # id,current_email, name, target_email
 # processes the information.
-# The user list file has to be max 2 columns as described below
-# id,email
 ```
 
 For example
