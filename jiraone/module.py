@@ -95,7 +95,7 @@ def time_in_status(
         # A file name used to store the output file
         report_file: Optional[str] = "time_status.csv",
         # a folder which can used to store the file
-        report_folder: str = "TimeStatus",
+        report_folder: Optional[str] = "TimeStatus",
         # shows an output type
         output_format: Optional[str] = None,
         # A status to check
@@ -339,7 +339,7 @@ def bulk_change_email(data: str, token: str) -> None:
     headers = ["account_id", "current_email", "name", "target_email"]
     file_writer(file_name=data, mode="w+", mark="single", data=headers)
     if len(data_check[0]) != 4:
-        raise JiraOneErrors("value", f"The expected data column should be 4 columns got {data_check[0]} instead")
+        raise JiraOneErrors("value", f"The expected data column should be 4 columns got {len(data_check[0])} instead")
     items = namedtuple("items", ["account_id", "current_email", "name", "target_email"])
     org.add_token(token)
     for _ in read:
@@ -485,7 +485,7 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> NoReturn:
     for _ in read:
         user = items._make(_)
         current = user.current_email.split("@")[1]
-        dummy = f"dummy0000008@" + current if 'dummy' not in kwargs else kwargs['dummy']
+        dummy = "dummy0000008@" + current if 'dummy' not in kwargs else kwargs['dummy']
         payload = {
             "email": dummy
         }
