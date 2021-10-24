@@ -7,7 +7,6 @@ import os
 import re
 import json
 from typing import Union, Any, Optional, List, Callable, Dict, NoReturn
-import requests
 from jiraone.exceptions import JiraOneErrors
 from collections import namedtuple, deque
 from datetime import datetime as dt
@@ -320,7 +319,7 @@ def pretty_format(date: Any, pprint: bool) -> str:
     return make_date
 
 
-def bulk_change_email(data: str, token: str) -> None:
+def bulk_change_email(data: str, token: str) -> NoReturn:
     """Bulk change managed user's email address if they do not exist.
 
     :param data A string of the file name
@@ -351,7 +350,8 @@ def bulk_change_email(data: str, token: str) -> None:
         if response.status_code < 300:
             print(f"Changed current email: {user.current_email} to target email: {user.target_email}")
         else:
-            print(f"Not able to change current email: {user.current_email} to target email: {user.target_email}")
+            print(f"Not able to change current email: {user.current_email} to target email: {user.target_email} "
+                  f"- {response.reason}")
             collect.append(_)
 
     # If any of the email address isn't changed, write the output to the same file.
@@ -369,14 +369,14 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> NoReturn:
     :param data A string of the file name
 
     :param token An API token to authenticate the API.
-    
+
     :param kwargs Additional keyword argument to pass
-                
+
                 *Valid values*
                 > dummy - A dummy email address to choose if not a default is formed
-                   from your email addressed
+                   from your email address
                 > users - The name of a file to check the users and their account_id
-                    only needed if your organization is not on premium/enterprise plan
+                    only needed if you want to search a predefined set of users.
 
     :return: None
     """
@@ -386,7 +386,6 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> NoReturn:
     # Provide a CSV file data source
     read = file_reader(file_name=data, skip=True)
     data_check = deepcopy(read)
-    user_collection = deque()
     copy_name = data.split('.')[0] + "_cp.csv"
     headers = ["account_id", "current_email", "name", "target_email", "reason"]
     headers_2 = ["account_id", "email"]
@@ -397,36 +396,13 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> NoReturn:
         raise JiraOneErrors("value", f"The expected data column should be 4 columns got {len(data_check[0])} instead")
     user_items = namedtuple("user_items", ["account_id", "email"])
     items = namedtuple("items", ["account_id", "current_email", "name", "target_email"])
-    # If the user is not on premium/enterprise plan they need to supply their own user_list for find_id()
-    # If not the swap won't work correctly.
+    # If you want, you can supply your own user list for find_id()
     users = file_reader(file_name=kwargs['users'], skip=True) if 'users' in kwargs else None
     data_response = {'count': 0, 'email': None}
-
-    def get_all_users(source) -> NoReturn:
-        """Store all user list from organization, so we can search them by email.
-        :param source A JSON response payload
-
-        :return: None
-        """
-        print("Checking organization users...")
-        while True:
-            next_item_data = source['links']['next'] if 'links' in source \
-                                                        and len(source['links']) > 1 else {}
-            for item in source['data']:
-                user_data = {
-                    "account_id": item['account_id'],
-                    "email": item['email']
-                }
-                user_collection.append(list(user_data.values()))
-            # If our next item is an empty dict, we want to stop the loop.
-            if isinstance(next_item_data, dict):
-                break
-            source = requests.get(next_item_data, headers=org.AUTH).json()
-
     source_data = org.get_organization(filter_by="users").json()
-    get_all_users(source_data)
-    file_writer(file_name=copy_name, mark="many", mode="a+", data=user_collection)
-    user_collection.clear()
+    source_user = org.get_all_users(source_data)
+    file_writer(file_name=copy_name, mark="many", mode="a+", data=source_user)
+    source_user.clear()
     get_file = file_reader(file_name=copy_name, skip=True)
 
     def find_id(email: str) -> Any:
