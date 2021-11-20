@@ -463,7 +463,7 @@ class UserManagement:
 
                 :return: Deque List
                 """
-        exit("Your source data isn't a valid JSON object.") if not isinstance(source, dict) else ""
+        exit("Your source data isn't a valid JSON object.") if not isinstance(source, t.Mapping) else ""
         user_collection = deque()
         exit(f"Incorrect data type {type(detail)} for keyword argument 'detail'. "
              f"Expecting bool type") \
