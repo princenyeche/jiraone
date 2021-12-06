@@ -779,7 +779,7 @@ class EndPoints:
                     :param account_id, datatype string. e.g. 5b10ac8d82e05b22cc7d4ef5
         """
         if account_id is not None:
-            return "{}/rest/servicedeskapi/organization?{}&start={}&limit={}" \
+            return "{}/rest/servicedeskapi/organization?accountId={}&start={}&limit={}" \
                 .format(LOGIN.base_url, account_id, start, limit)
         else:
             return "{}/rest/servicedeskapi/organization?start={}&limit={}".format(LOGIN.base_url, start, limit)
@@ -791,6 +791,7 @@ class EndPoints:
         :request POST:
 
         :body param: name, datatype -> string
+        
         """
         return "{}/rest/servicedeskapi/organization".format(LOGIN.base_url)
 
@@ -801,9 +802,37 @@ class EndPoints:
         Use this method to get organization details whenever your application component is passed an organization ID
         but needs to display other organization details.
 
-        :param org_id required
+        :param org_id: required
+        
         """
         return "{}/rest/servicedeskapi/organization/{}".format(LOGIN.base_url, org_id)
+
+    @classmethod
+    def get_service_desks(cls, start: int = 0, limit: int = 100) -> str:
+        """This method returns all the service desks in the Jira Service Management
+        instance that the user has permission to access. Use this method where you need a list of service
+        desks or need to locate a service desk by name or keyword.
+
+        :param start: integer - pagination row
+
+        :param limit: integer - limit to each pagination
+
+
+        :return: string
+        """
+        return "{}/rest/servicedeskapi/servicedesk?start={}&limit={}".format(LOGIN.base_url, start, limit)
+
+    @classmethod
+    def get_sd_by_id(cls, service_desk_id) -> str:
+        """
+        This method returns a service desk. Use this method to get service desk details whenever your
+        application component is passed a service desk ID but needs to display other service desk details.
+
+        :param service_desk_id: The ID of the service desk to return. Required
+
+        :return: string
+        """
+        return "{}/rest/servicedeskapi/servicedesk/{}".format(LOGIN.base_url, service_desk_id)
 
     @classmethod
     def delete_organization(cls, org_id):
@@ -907,7 +936,9 @@ class EndPoints:
         """
         return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(LOGIN.base_url, service_desk_id)
 
+    ############################################
     # SERVICEDESK -> API specific to servicedesk
+    ############################################
     @classmethod
     def get_customers(cls, service_desk_id, start: int = 0, limit: int = 50, query: str = None):
         """This method returns a list of the customers on a service desk.
@@ -1891,8 +1922,6 @@ class Field(object):
         :param amend datatype[String] available option "add" or "remove" condition to decide action for appending.
 
         :param data datatype[string] our object data that will be processed.
-        
-        :return List of values
         """
         collect = []
         field_type = False if "customType" not in search else True
