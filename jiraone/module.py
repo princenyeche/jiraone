@@ -201,7 +201,7 @@ def time_in_status(
         else:
             if items['from_string'] == items['to_string']:
                 from_time = dt.strptime(items['created'], "%Y-%m-%dT%H:%M:%S.%f%z")
-                # convert the current time to something we that we can use timedelta on
+                # convert the current time to something that we can use timedelta on
                 present = dt.strftime(dt.astimezone(dt.now()), "%Y-%m-%dT%H:%M:%S.%f%z")
                 today = dt.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
                 difference = today - from_time
