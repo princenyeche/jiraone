@@ -5,14 +5,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="jiraone",
-    version="0.4.8",
+    version="0.4.9",
     author="Prince Nyeche",
     author_email="support@elfapp.website",
     description="A REST API Implementation to Jira Cloud APIs for creating reports and "
                 "for performing other Jira queries.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/princenyeche/atlassian-cloud-api",
+    url="https://github.com/princenyeche/jiraone",
     packages=setuptools.find_packages(),
     install_requires=['requests'],
     classifiers=[
