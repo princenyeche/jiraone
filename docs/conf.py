@@ -12,9 +12,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('..'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
@@ -48,6 +48,15 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 
 source_suffix = ['.rst', '.md']
+
+autodoc_mock_imports = ['jiraone']
+
+xtensions = ['autoapi.extension']
+
+
+# Document Python Code
+autoapi_type = 'python'
+autoapi_dir = '../jiraone'
 
 # The master toctree document.
 master_doc = 'index'
@@ -105,9 +114,10 @@ html_static_path = ['_static']
 #
 html_sidebars = {
 "**": [
-        "about.html",
+        "index.html",
+        "api.html",
+        "report.html",
         "navigation.html",
-        "relations.html",
         "searchbox.html",
         "donate.html",
     ]
