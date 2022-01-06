@@ -9,6 +9,7 @@ In generating reports, you can create functions, classes or even methods to deri
 
 
 .. code-block:: python
+
 from jiraone import LOGIN, endpoint
 
 user = "email"
@@ -29,23 +30,25 @@ which easily enables you to fetch all users on the instance without you programm
 All these methods and functions are accessible directly from the jiraone package.
 
 
-.. _endpoint:
+.. endpoint:
 
 endpoint
 =============
-.. autoclass:: endpoint
+
+.. autoclass:: EndPoint
    :members:
    
 This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. <br />
 Example usage: ``endpoint.myself()``, ``endpoint.search_users()`` <br />
 
-.. _LOGIN:
+.. LOGIN:
 
 LOGIN
 =============
+
 .. autoclass:: LOGIN 
 
-<br />
+
 This is a call to the `Credentials` class and the accepted parameters are
   * user &gt; string
   * password &gt; string
@@ -53,6 +56,7 @@ This is a call to the `Credentials` class and the accepted parameters are
 Example usage: <br />
 
 .. code-block:: python
+
 from jiraone import LOGIN
 
 user = "email"
@@ -64,6 +68,7 @@ LOGIN(user=user, password=password, url=link)
 <br />
 
 **Attributes**, available to the LOGIN alias
+
 * `~LOGIN.base_url` 
 * `~LOGIN.headers`
 * `~LOGIN.password`
@@ -72,6 +77,7 @@ LOGIN(user=user, password=password, url=link)
 * `~LOGIN.auth_requests` <br />
 
 **Methods**, available to the LOGIN alias, it returns a response object. <br />
+
 The keyword argument of payload can be any json object you want to pass to the method. Subsequently, you can pass other keyword arguments
 such as ``files``, ``data`` etc.
 * `~LOGIN.get(url, *args, payload=None, **kwargs)`
@@ -80,14 +86,19 @@ such as ``files``, ``data`` etc.
 * `~LOGIN.put(url, *args, payload=None, **kwargs)`
 
 
+.. echo:
+
 echo
 =============
+
 `~echo(object)` <br />
+
 This is a function which uses a copy of the PrettyPrint Class used to nicely format a represented printed result. To call, simply use the function `echo`. <br />
 It accepts one required parameter, which can be any object. <br />
 Example usage: <br />
 
 .. code-block:: python
+
 from jiraone import echo
     
 data = "hello world"
@@ -98,8 +109,11 @@ echo(data)
 
  <br />
  
+ .. add-log:
+ 
 add_log
 =============
+
 `~add_log(message, level)` <br />
 This function is used to log messages to a log file. It accepts two required parameters ``message`` and ``level`` of which both are strings.
 The function uses the logging module and writes a log, based on 3 levels. 
@@ -110,6 +124,7 @@ The message part is a string used to denote what is written to the log and the l
 Example usage: <br />
 
 .. code-block:: python
+
 from jiraone import add_log
     
 message = "successfully Initiated the script"
@@ -118,6 +133,8 @@ add_log(message, "info")
 
 <br />  
 
+ .. file-writer:
+ 
 file_writer
 =============
 `~file_writer(folder="string", file_name="string", data=['iterable'], mark="string", mode="string", content="string[bytes]")` <br />
@@ -132,12 +149,14 @@ This function helps in creating a csv file or a normal file. It comes with the b
  Example usage: <br />
  
 .. code-block:: python
+
 from jiraone import file_writer
     
 a_list = [1, 14, 22, "hello", "file"]
 files = file_writer(folder="TEST", file_name="test.csv", data=a_list)
     
 
+ .. file-reader:
 
 file_reader
 =============
@@ -153,14 +172,17 @@ parameter include
   Example usage: <br />
   
 .. code-block:: python
+
 from jiraone import file_reader
     
 files = file_reader(folder="TEST", file_name="test.csv")
     
 
+ .. path-builder:
 
 path_builder
 =============
+
 `~path_builder(path="string", file_name="string")` <br />
 This function helps to build a directory path and file path then returns the file path in the directory.
 parameters include
@@ -169,6 +191,7 @@ parameters include
    Example usage: <br />
   
 .. code-block:: python
+
 from jiraone import path_builder
     
 path = "Test_folder"
@@ -179,15 +202,12 @@ dir_path = path_builder(path=path, file_name=file)
 # "Test_folder/test.csv"
 
 
+ .. For:
+ 
 For
 =============
-`~For(object)` <br />
-* ***For(list)***
-* ***For(dict)***
-* ***For(tuple)***
-* ***For(set)***
-* ***For(string)***
-* ***For(int)***
+
+.. autoclass:: For
 
 The ``For`` class is a class to show the implementation of a 'for' loop. it calls the **__iter__** magic method then the **__next__** method
 and raises a StopIteration once it reaches the end of the loop. Datatype expected are list, dict, tuple, str, set or int.
@@ -199,6 +219,7 @@ It also contains a unique method called `__dictionary__()` which helps in indexi
 Example usage:
 
 .. code-block:: python
+
 from jiraone import For
 
 diction = {1: 4, "hello": "hi", "value": True, "why": False}
@@ -208,7 +229,8 @@ d = For(diction).__dictionary__(2)  # calls the 3rd item in the list
 # {"value": True}
 
 
-
+ .. replacement-placeholder:
+ 
 replacement_placeholder
 =============
 `~replacement_placeholder(string="", data=[list],
@@ -219,7 +241,9 @@ replacement_placeholder
  as a marker to replace the strings.<br />
  
 Example usage: <br />
+
 .. code-block:: python
+
 from jiraone import replacement_placeholder
 
 hold = ["Hello", "John doe", "Post mortem"]
@@ -231,60 +255,21 @@ print(cb)
 # ["Hello John doe, welcome to the Post mortem of what is to come"]
 
 
-
+ .. field:
+ 
 field
 =============
 Alias to the `Field` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. <br />
-.. autoclass:: field
+
+.. autoclass:: Field
    :members:
    
-**Attributes** - You have access to two vital attributes. <br />
-* `~field.field_type`:  A dictionary of Jira's field properties.
-* `~field.field_search_key`:  A dictionary of Jira's field search key.
-<br />
-
-**Methods** - Below are the various methods that can be used. <br />
-`~field.search_field(find_field="string")` <br />
-This helps to search for a custom field. The paramater needed ``find_field`` which should be a string.
-
-`~field.get_field(find_field="string")` <br />
-This helps to search for system fields or custom fields. The paramater needed ``find_field`` which should be a string.
-
-`~field.update_field_data(data=['Any'], find_field="string", field_type="string", key_or_id='Union[str, int]', show=[bool], kwargs=['Any'])` <br />
-
-This method helps with updating fields. Performs a ``put`` request, with the below parameters. <br />
-* ``data`` datatype[Any] the data you're trying to process, depending on what field it could be any object.
-* ``find_field`` datatype[String] name of the custom field or system field to find in strings.
-* ``field_type`` datatype[String] available options - system or custom.
-* ``key_or_id`` datatype[String or Integer] issue key or id of an issue.
-* ``show`` datatype[Bool] allows you to print out a formatted field that was searched. Set to false, if you don't want the field data shown.
-* ``kwargs`` datatype[String] perform other operations with keyword args
-  * options arg is a string and has two values "add" or "remove".
-  * query arg is a string and it can have any value that is stated on the endpoint.issue() method e.g. query="notifyUsers=false"
-
-
-`~field.data_load(data=['Any'], s=['Any'])` <br />
-* ``data`` any object
-* ``s`` any object that makes it not None.
-
-`~field.multi_field(data=['Any'], s="string")` <br />
-* ``data`` any string object data.
-* ``s`` is a placeholder to determine the object key. Value can be "value" or "name"
-  * e.g. required output [{"value": "hello"}] -> for Multicheckboxes type of field.
-  * e.g. required output [{"name": "hello"}] -> for Components or Fix versions type of field.
-
-`~field.cascading(data=[String,List])` <br />
-* `data` any string or list object data.
-
-`~field.extract_issue_field_options(key_or_id='Union[string, integer]', search=None, amend=None, data='Any')` <br />
-* ``key_or_id`` datatype[String, Integer] issue key or id of an issue.
-* ``search`` datatype[Dict] issue data of an issue or issue payload.
-* ``amend`` datatype[String] available option "add" or "remove" condition to decide action for appending.
-* ``data`` datatype[string] our object data that will be processed.
 
 
 Example usage: <br />
+
 .. code-block:: python
+
 from jiraone import field, echo, LOGIN
 
 user = "email"
@@ -308,69 +293,27 @@ for value in case_value:
 * ``keys`` datatype[String, Integer] issue key or id of an issue.
         
 .. code-block:: python
+
 from jiraone import field, echo
 #...previous login statements
 # it expects the field name as the first parameter and the issue key where the field is used as the second parameter
 value = field.get_field_value("Labels", "COM-15")
 echo(value) 
 
-        
+
+ .. comment:
 
 comment
 =============
-Alias to PROJECT.comment_on() method
 
-`~comment_on(key_or_id='String', comment_id='Integer', method=String["GET", "PUT", "DELETE", "POST"], kwargs)` <br />
-* ``key_or_id`` any string
-* ``commend_id`` integer
-*  ``method`` string with options ["GET", "PUT", "DELETE", "POST"]
-*  ``kwargs`` Any options start_at, max_results - datatype -> integers
-
-     *  query - datatype -> string
-        
-      *  event - datatype -> boolean
-        
-      *  text_block - datatype -> string A block of string used to capture data for comments.
-        
-      *  placer - datatype -> string A placeholder to change values within `text_block` object.
-        
-      *  mention - datatype -> list used to cycle and change any user placeholder mentioned in `text_block` block.
+.. autoclass:: PROJECT.comment_on
 
 
-`~comment_on(key_or_id="COM-42").data`<br />
-  * data -> returns the common payload of the comment data when using "GET" method. <br />
-        
-        
-* ***Method*** `~comment()` <br />
-
-
-* `c~omment_on(key_or_id="COM-42").comment(type_field=String).result`<br />
-   * ``type_field`` String required e.g options available below
-   
-      * [body, author, updateAuthor] 
-          
-   * ``result`` -> returns a payload of the entire data.
-   * ``first_comment`` -> returns the first comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
-   * ``last_comment`` -> returns the last comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
-
-
-* ***Properties you can use*** <br />
-
-
-* comment_on(key_or_id="COM-42").comment(type_field="body").text` <br />
-  * ``author`` -> returns a payload of the authors of a comment and fieldset data. Can only be called when "author" option is called on the type_field else returns "None".
-  
-  * ``body`` -> returns a body payload of a comment and fieldset data.
-  
-  * ``mention`` -> returns all the mentioned users. Can only be called when "body" option is called on the type_field else returns "None".
-  
-  * ``text`` -> returns the text of the first comment. Can only be called when "body" option is called on the type_field else returns "None".
-  
-  
 
 * POST a comment to a Jira issue and mention users sequentially on a comment.
 
 .. code-block:: python
+
 from jiraone import LOGIN, USER, comment
 
 user = "email"
@@ -385,34 +328,22 @@ text = """
         """
 comment(key, method="post", text_block=text, placer="<user>", mention=USER.mention_user(name), event=True)
 
- 
+.. manage:
+
 manage
 =============
+
 The ``manage`` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management <br />
-.. data:: manage
 
-**Attributes** - You have access to two constant attributes. <br />
-`~manage.AUTH`<br />
-`~manage.LINK`
+.. autoclass:: manage
 
-You do not need to change anything to these attributes because they are constants. <br />
-
-**Properties** - You have access to 5 property values as long as you authenticate with the right token. <br /> 
-``manage.org_id`` - This gives access to the organization id needed to check other organization endpoints<br />
-``manage.org_ids`` - If the organization id are more than one, this property becomes accessible else it shows as `None` <br />     
-``manage.domain_id`` - This can be a string or list depending on how many `domain_id` is returned<br />
-``manage.policy_id`` - This can be a string or list depending on how many `policy_id` is returned<br />
-``manage.event_id`` - This can be a string or list depending on how many `event_id` is returned<br />
-<br />
-
-**Access the methods by using `manage.<method_name>`** <br />
                 
-                
-.. autofunction:: add_token
+.. autofunction:: manage.add_token
 <br />
 This API requires that you enter a API token for your organization.
                 
 .. code-block:: python
+
 from jiraone import manage
 
 token = "Edfj78jiXXX"
@@ -438,18 +369,21 @@ You can be able to call various methods by altering the ``method`` keyword argum
                 e.g. {"email": "prince.nyeche@elfapp.website"}
 <br />
                 
-.. autofunction:: api_token
+.. autofunction:: manage.api_token
+
 <br />
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
                 <br />
                 
-.. autofunction:: manage_user
+.. autofunction:: manage.manage_user
+
 <br />
 Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
 OR
 Enables the specified user account.The permission to make use of this resource is exposed by the lifecycle.enablement privilege
 
 .. code-block:: python
+
 from jiraone import manage
 
 token = "Edfj78jiXXX"
@@ -465,14 +399,17 @@ manage.manage_user(account_id, json=payload) # By default it is set to disable a
 
 <br />
                 
-.. autofunction:: get_organization
+.. autofunction:: manage.get_organization
+
 <br />
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
 The ``filter_by`` arguments accepts 4 valid options which as ``users``, ``domains``, ``policies``, and ``events``. <br />
 The ``action`` argument allows a certain action for the events filter_by option. When set ``action=True`` it returns the event actions rather than a list of events.
 The ``kwargs`` argument accepts valid response arguments such as ``json``, ``data`` etc which can be used as body parameter when making the request.
                 
+                
 .. code-block:: python
+
 from jiraone import manage
 
 token = "Edfj78jiXXX"
@@ -484,11 +421,13 @@ manage.get_organization(filter_by="users")
 
 
 Get the data from the list of policies
+
 .. code-block:: python
+
 from jiraone import manage, echo
 
 token = "Edfj78jiXXX"
-.. autofunction:: manage.add_token
+manage.add_token(token)
 for policy in manage.policy_id:
     deploy = manage.get_organization(filter_by="policies", policy_id=policy)
     echo(deploy)
@@ -500,6 +439,7 @@ for policy in manage.policy_id:
  <br />
                 
 .. autofunction:: manage_organization 
+
 <br />
 Create, put and delete organization data, create a policy for an org, send a post request by using ``method="post"`` as keyword args.Update a policy for an org.
 Send a put request by using ``method="put"`` as keyword args.
