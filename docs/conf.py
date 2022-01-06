@@ -59,11 +59,6 @@ master_doc = 'index'
 # Usually you set "language" from the command line for these cases.
 # language = None
 
-extensions = ['autoapi.extension']
-
-# Document Python Code
-autoapi_type = 'python'
-autoapi_dir = '../src'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
