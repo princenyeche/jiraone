@@ -1,3 +1,2 @@
 sphinxcontrib-httpdomain==1.7.0
-recommonmark
 sphinx-autoapi
