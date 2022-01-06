@@ -10,19 +10,19 @@ In generating reports, you can create functions, classes or even methods to deri
 
 .. code-block:: python
 
-from jiraone import LOGIN, endpoint
+ from jiraone import LOGIN, endpoint
 
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
+ user = "email"
+ password = "token"
+ link = "https://yourinstance.atlassian.net"
+ LOGIN(user=user, password=password, url=link)
 
 
-def priorities():
-        load = LOGIN.get(endpoint.get_all_priorities())
-        if load.status_code == 200:
-             # some expression here
-             ...
+ def priorities():
+         load = LOGIN.get(endpoint.get_all_priorities())
+         if load.status_code == 200:
+              # some expression here
+              ...
 
 
 The script comes with a "User" and "Project" classes which includes basic reporting examples. The User class has a user generator,
@@ -36,7 +36,7 @@ endpoint
 =============
 
 .. autoclass:: EndPoint
-   :members:
+    :members:
    
 This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. <br />
 Example usage: ``endpoint.myself()``, ``endpoint.search_users()`` <br />
@@ -57,15 +57,14 @@ Example usage: <br />
 
 .. code-block:: python
 
-from jiraone import LOGIN
+ from jiraone import LOGIN
 
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
+ user = "email"
+ password = "token"
+ link = "https://yourinstance.atlassian.net"
+ LOGIN(user=user, password=password, url=link)
 
 
-<br />
 
 **Attributes**, available to the LOGIN alias
 
@@ -91,7 +90,7 @@ such as ``files``, ``data`` etc.
 echo
 =============
 
-`~echo(object)` <br />
+:py:func:`~echo`
 
 This is a function which uses a copy of the PrettyPrint Class used to nicely format a represented printed result. To call, simply use the function `echo`. <br />
 It accepts one required parameter, which can be any object. <br />
@@ -99,15 +98,14 @@ Example usage: <br />
 
 .. code-block:: python
 
-from jiraone import echo
+ from jiraone import echo
     
-data = "hello world"
-echo(data)
-# prints //
-# 'hello world'
+ data = "hello world"
+ echo(data)
+ # prints //
+ # 'hello world'
 
 
- <br />
  
  .. add-log:
  
@@ -125,13 +123,11 @@ Example usage: <br />
 
 .. code-block:: python
 
-from jiraone import add_log
+ from jiraone import add_log
     
-message = "successfully Initiated the script"
-add_log(message, "info")
-
-
-<br />  
+ message = "successfully Initiated the script"
+ add_log(message, "info")
+  
 
  .. file-writer:
  
@@ -150,10 +146,10 @@ This function helps in creating a csv file or a normal file. It comes with the b
  
 .. code-block:: python
 
-from jiraone import file_writer
+ from jiraone import file_writer
     
-a_list = [1, 14, 22, "hello", "file"]
-files = file_writer(folder="TEST", file_name="test.csv", data=a_list)
+ a_list = [1, 14, 22, "hello", "file"]
+ files = file_writer(folder="TEST", file_name="test.csv", data=a_list)
     
 
  .. file-reader:
@@ -173,9 +169,9 @@ parameter include
   
 .. code-block:: python
 
-from jiraone import file_reader
+ from jiraone import file_reader
     
-files = file_reader(folder="TEST", file_name="test.csv")
+ files = file_reader(folder="TEST", file_name="test.csv")
     
 
  .. path-builder:
@@ -192,14 +188,14 @@ parameters include
   
 .. code-block:: python
 
-from jiraone import path_builder
+ from jiraone import path_builder
     
-path = "Test_folder"
-file = "test.csv"
-dir_path = path_builder(path=path, file_name=file)
+ path = "Test_folder"
+ file = "test.csv"
+ dir_path = path_builder(path=path, file_name=file)
     
-# output
-# "Test_folder/test.csv"
+ # output
+ # "Test_folder/test.csv"
 
 
  .. For:
@@ -220,13 +216,13 @@ Example usage:
 
 .. code-block:: python
 
-from jiraone import For
+ from jiraone import For
 
-diction = {1: 4, "hello": "hi", "value": True, "why": False}
-d = For(diction).__dictionary__(2)  # calls the 3rd item in the list
+ diction = {1: 4, "hello": "hi", "value": True, "why": False}
+ d = For(diction).__dictionary__(2)  # calls the 3rd item in the list
 
-# output
-# {"value": True}
+ # output
+ # {"value": True}
 
 
  .. replacement-placeholder:
@@ -244,15 +240,15 @@ Example usage: <br />
 
 .. code-block:: python
 
-from jiraone import replacement_placeholder
+ from jiraone import replacement_placeholder
 
-hold = ["Hello", "John doe", "Post mortem"]
-text = ["<name> <name>, welcome to the <name> of what is to come"]
-cb = replacement_placeholder("<name>", text, hold, 0)
-print(cb)
+ hold = ["Hello", "John doe", "Post mortem"]
+ text = ["<name> <name>, welcome to the <name> of what is to come"]
+ cb = replacement_placeholder("<name>", text, hold, 0)
+ print(cb)
 
-# output
-# ["Hello John doe, welcome to the Post mortem of what is to come"]
+ # output
+ # ["Hello John doe, welcome to the Post mortem of what is to come"]
 
 
  .. field:
@@ -270,22 +266,22 @@ Example usage: <br />
 
 .. code-block:: python
 
-from jiraone import field, echo, LOGIN
+ from jiraone import field, echo, LOGIN
 
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
+ user = "email"
+ password = "token"
+ link = "https://yourinstance.atlassian.net"
+ LOGIN(user=user, password=password, url=link)
 
-issue = "T6-75"
-fields = "Multiple files" # a multiselect custom field
-case_value = ["COM Row 1", "Thanos"]
-for value in case_value:
-    c = field.update_field_data(data=value, find_field=fields, key_or_id=issue, options="add", show=False)
-    echo(c)
+ issue = "T6-75"
+ fields = "Multiple files" # a multiselect custom field
+ case_value = ["COM Row 1", "Thanos"]
+ for value in case_value:
+     c = field.update_field_data(data=value, find_field=fields, key_or_id=issue, options="add", show=False)
+     echo(c)
 
-# output
-# < Response[204] >
+ # output
+ # < Response[204] >
 
         
 `~field.get_field_value(name='String', keys='Union[string, integer]')` <br />
@@ -294,11 +290,11 @@ for value in case_value:
         
 .. code-block:: python
 
-from jiraone import field, echo
-#...previous login statements
-# it expects the field name as the first parameter and the issue key where the field is used as the second parameter
-value = field.get_field_value("Labels", "COM-15")
-echo(value) 
+ from jiraone import field, echo
+ #...previous login statements
+ # it expects the field name as the first parameter and the issue key where the field is used as the second parameter
+ value = field.get_field_value("Labels", "COM-15")
+ echo(value) 
 
 
  .. comment:
@@ -314,19 +310,19 @@ comment
 
 .. code-block:: python
 
-from jiraone import LOGIN, USER, comment
+ from jiraone import LOGIN, USER, comment
 
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
-LOGIN(user=user, password=password, url=link)
+ user = "email"
+ password = "token"
+ link = "https://yourinstance.atlassian.net"
+ LOGIN(user=user, password=password, url=link)
 
-key = "COM-42"
-name = "Prince Nyeche,Prince"
-text = """
+ key = "COM-42"
+ name = "Prince Nyeche,Prince"
+ text = """
         <user> please can you help to check the docker environment? Ping <user> to help out.
         """
-comment(key, method="post", text_block=text, placer="<user>", mention=USER.mention_user(name), event=True)
+ comment(key, method="post", text_block=text, placer="<user>", mention=USER.mention_user(name), event=True)
 
 .. manage:
 
@@ -339,23 +335,22 @@ The ``manage`` API brings organization and user REST API features to jiraone. Wi
 
                 
 .. autofunction:: manage.add_token
-<br />
+
+
 This API requires that you enter a API token for your organization.
                 
 .. code-block:: python
 
-from jiraone import manage
+ from jiraone import manage
 
-token = "Edfj78jiXXX"
-manage.add_token(token)
+ token = "Edfj78jiXXX"
+ manage.add_token(token)
 
 
-<br />
                 
 `~get_user_permission(account_id: str, query: list = None)` <br />
 Returns the set of permissions you have for managing the specified Atlassian account. The `account_id` is required and query is an Array<string> which can be any of the values below:
 * Valid values: profile, profile.write, profile.read, email.set, lifecycle.enablement, apiToken.read, apiToken.delete
-<br />
 
 `~manage_profile(account_id: str, method: str = "GET", **kwargs_: t.Any)`<br />
 You can be able to call various methods by altering the ``method`` keyword argument
@@ -367,41 +362,38 @@ You can be able to call various methods by altering the ``method`` keyword argum
 * ``PUT`` request: Sets the specified user's email address.
                *Body parameter* <br />
                 e.g. {"email": "prince.nyeche@elfapp.website"}
-<br />
                 
 .. autofunction:: manage.api_token
 
-<br />
+
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
                 <br />
                 
 .. autofunction:: manage.manage_user
 
-<br />
+
 Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
 OR
 Enables the specified user account.The permission to make use of this resource is exposed by the lifecycle.enablement privilege
 
 .. code-block:: python
 
-from jiraone import manage
+ from jiraone import manage
 
-token = "Edfj78jiXXX"
-account_id = "5bc7uXXX"
-payload = {"message": "On 6-month suspension"} # A payload needs to be passed for the endpoint to work
-manage.add_token(token)
-manage.manage_user(account_id, json=payload) # By default it is set to disable a user
-# manage.manage_user(account_id, json=payload, disable=False) # Changing disable=False enables back the user
+ token = "Edfj78jiXXX"
+ account_id = "5bc7uXXX"
+ payload = {"message": "On 6-month suspension"} # A payload needs to be passed for the endpoint to work
+ manage.add_token(token)
+ manage.manage_user(account_id, json=payload) # By default it is set to disable a user
+ # manage.manage_user(account_id, json=payload, disable=False) # Changing disable=False enables back the user
 
-# output
-# <Response 204>
+ # output
+ # <Response 204>
   
-
-<br />
                 
 .. autofunction:: manage.get_organization
 
-<br />
+
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
 The ``filter_by`` arguments accepts 4 valid options which as ``users``, ``domains``, ``policies``, and ``events``. <br />
 The ``action`` argument allows a certain action for the events filter_by option. When set ``action=True`` it returns the event actions rather than a list of events.
@@ -410,37 +402,35 @@ The ``kwargs`` argument accepts valid response arguments such as ``json``, ``dat
                 
 .. code-block:: python
 
-from jiraone import manage
+ from jiraone import manage
 
-token = "Edfj78jiXXX"
-manage.add_token(token)
-manage.get_organization(filter_by="users")
+ token = "Edfj78jiXXX"
+ manage.add_token(token)
+ manage.get_organization(filter_by="users")
 
-# output
-# <Response 204>
+ # output
+ # <Response 204>
 
 
 Get the data from the list of policies
 
 .. code-block:: python
 
-from jiraone import manage, echo
+ from jiraone import manage, echo
 
-token = "Edfj78jiXXX"
-manage.add_token(token)
-for policy in manage.policy_id:
-    deploy = manage.get_organization(filter_by="policies", policy_id=policy)
-    echo(deploy)
+ token = "Edfj78jiXXX"
+ manage.add_token(token)
+ for policy in manage.policy_id:
+     deploy = manage.get_organization(filter_by="policies", policy_id=policy)
+     echo(deploy)
 
-# output
-# <Response 204>
+ # output
+ # <Response 204>
 
-
- <br />
                 
 .. autofunction:: manage_organization 
 
-<br />
+
 Create, put and delete organization data, create a policy for an org, send a post request by using ``method="post"`` as keyword args.Update a policy for an org.
 Send a put request by using ``method="put"`` as keyword args.
 The `method` argument accepts "put", "post" or "delete" (case insensitive) <br />
