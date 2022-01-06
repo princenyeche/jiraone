@@ -34,7 +34,7 @@ All these methods and functions are accessible directly from the jiraone package
 endpoint
 =============
 
-.. autoclass:: EndPoint
+.. autoclass:: jiraone.endpoint
    
 This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. 
 
@@ -46,7 +46,7 @@ Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 LOGIN
 =============
 
-.. autoclass:: LOGIN 
+.. autoclass:: jiraone.LOGIN 
 
 
 This is a call to the `Credentials` class and the accepted parameters are
@@ -81,7 +81,7 @@ Example usage:
 
 * ``LOGIN.auth_requests`` 
 
-**Methods**, available to the LOGIN alias, it returns a response object. <br />
+**Methods**, available to the LOGIN alias, it returns a response object.
 
 The keyword argument of payload can be any json object you want to pass to the method. Subsequently, you can pass other keyword arguments
 such as ``files``, ``data`` etc.
@@ -99,9 +99,9 @@ such as ``files``, ``data`` etc.
 .. echo:
 echo
 =============
-.. autofunction:: echo
+.. autofunction:: jiraone.echo
 
-This is a function which uses a copy of the PrettyPrint Class used to nicely format a represented printed result. To call, simply use the function ``echo``. <br />
+This is a function which uses a copy of the PrettyPrint Class used to nicely format a represented printed result. To call, simply use the function ``echo``.
 It accepts one required parameter, which can be any object. 
 Example usage:
 
@@ -115,17 +115,21 @@ Example usage:
      # 'hello world'
 
 
-.. add_log: 
+.. add-log: 
 add_log
 =============
 
-``add_log(message, level)``
+.. autofunction:: jiraone.add_log
 
 This function is used to log messages to a log file. It accepts two required parameters ``message`` and ``level`` of which both are strings.
 The function uses the logging module and writes a log, based on 3 levels. 
-* debug
-* info
-* error
+
+* ``debug``
+
+* ``info``
+
+* ``error``
+
 The message part is a string used to denote what is written to the log and the level parameter can use any of the strings above as options.
 Example usage: 
 
@@ -138,11 +142,11 @@ Example usage:
   
 
 
-.. file_writer:
+.. file-writer:
 file_writer
 =============
 
-``file_writer(folder="string", file_name="string", data=['iterable'], mark="string", mode="string", content="string[bytes]")``
+.. autofunction:: jiraone.file_writer
 
 This function helps in creating a csv file or a normal file. It comes with the below parameters as keyword arguments 
   * ``folder``: string - a path to the name of the folder
@@ -167,7 +171,7 @@ This function helps in creating a csv file or a normal file. It comes with the b
 file_reader
 =============
  
-``file_writer(folder="string", file_name="string", mode="string", content=bool, skip=bool)``
+.. autofunction:: jiraone.file_reader
 
 This function helps in reading a csv file and returning a list comprehension of the data or read a byte file. Accepted
 parameter include
@@ -191,7 +195,8 @@ parameter include
 path_builder
 =============
 
-``path_builder(path="string", file_name="string")`` 
+.. autofunction:: jiraone.path_builder
+
 
 This function helps to build a directory path and file path then returns the file path in the directory.
 parameters include
@@ -216,7 +221,7 @@ parameters include
 .. for:
 For
 =============
-.. autoclass:: For
+.. autoclass:: jiraone.For
 
 The ``For`` class is a class to show the implementation of a 'for' loop. it calls the **__iter__** magic method then the **__next__** method
 and raises a StopIteration once it reaches the end of the loop. Datatype expected are list, dict, tuple, str, set or int.
@@ -244,7 +249,8 @@ Example usage:
 replacement_placeholder
 =============
  
-``replacement_placeholder(string="", data=[list], iterable=[list],row=int)``
+.. autofunction:: jiraone.replacement_placeholder
+
 
  This function returns multiple string replacement. This can be used to replace multiple strings in a list where a placeholder can be identified and used
  as a marker to replace the strings.
@@ -269,7 +275,7 @@ field
 =============
 Alias to the ``Field`` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. 
 
-.. autoclass:: Field
+.. autoclass:: jiraone.field
    
 Example usage: 
 
@@ -310,8 +316,8 @@ Example usage:
 .. comment:
 comment
 =============
-.. autoclass:: PROJECT.comment_on
-
+.. autoclass:: jiraone.PROJECT.comment_on
+   :members:
 
 
 * POST a comment to a Jira issue and mention users sequentially on a comment.
@@ -340,10 +346,10 @@ manage
 
 The ``manage`` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management.
 
-.. autoclass:: manage
+.. autoclass:: jiraone.manage
 
                 
-.. autoclass:: manage.add_token
+.. autoclass:: jiraone.manage.add_token
 
 
 This API requires that you enter a API token for your organization.
@@ -357,7 +363,7 @@ This API requires that you enter a API token for your organization.
 
 
                 
-``get_user_permission(account_id: str, query: list = None)``
+.. autoclass:: jiraone.manage.get_user_permission
 
 Returns the set of permissions you have for managing the specified Atlassian account. The `account_id` is required and query is an ``Array<string>`` which can be any of the values below:
 
@@ -378,12 +384,12 @@ You can be able to call various methods by altering the ``method`` keyword argum
      * Body parameter
           e.g. {"email": "prince.nyeche@elfapp.website"}
                 
-.. autoclass:: manage.api_token
+.. autoclass:: jiraone.manage.api_token
 
 
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
                   
-.. autoclass:: manage.manage_user
+.. autoclass:: jiraone.manage.manage_user
 
 
 Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
@@ -405,7 +411,7 @@ Enables the specified user account.The permission to make use of this resource i
  # <Response 204>
   
                 
-.. autoclass:: manage.get_organization
+.. autoclass:: jiraone.manage.get_organization
 
 
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
@@ -444,7 +450,7 @@ Get the data from the list of policies
  # <Response 204>
 
                 
-.. autoclass:: manage_organization 
+.. autoclass:: jiraone.manage.manage_organization 
 
 
 Create, put and delete organization data, create a policy for an org, send a post request by using ``method="post"`` as keyword args.Update a policy for an org.
