@@ -92,14 +92,6 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_context = {
-    "project_links": [
-        ProjectLink("PyPI Releases", "https://pypi.org/project/jiraone/"),
-        ProjectLink("Source Code", "https://github.com/princenyeche/jiraone/"),
-        ProjectLink("Issue Tracker", "https://github.com/princenyeche/jiraone/issues/"),
-        ProjectLink("Website", "https://elfapp.website"),
-    ]
-}
 
 html_theme_options = {
     'github_user': 'princenyeche',
@@ -125,9 +117,23 @@ html_static_path = ['_static']
 # 'searchbox.html']``.
 #
 html_sidebars = {
- "index": ["project.html", "localtoc.html", "searchbox.html", "ethicalads.html"],
-    "**": ["localtoc.html", "relations.html", "searchbox.html", "ethicalads.html"],
+    "**": [
+        "about.html",
+        "navigation.html",
+        "localtoc.html",
+        "relations.html",
+        "searchbox.html",
+        "donate.html",
+    ]
 }
+
+html_theme_options = {
+    "description": "A REST API implementation of Jira's API",
+    "github_user": "princenyeche",
+    "github_repo": "jiraone",
+    "fixed_sidebar": True,
+}
+
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
