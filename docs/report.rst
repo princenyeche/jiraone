@@ -1,4 +1,5 @@
 .. _basic-report-usage:
+
 =================
 Basic Report Usage
 =================
@@ -6,11 +7,13 @@ The script comes with some basic reporting Classes and methods which you can use
 currently only CSV file output is supported. other format such as JSON might be available in future.
 
 .. _user-api:
+
 USER API
 =================
 * Generate a report of all active users in your instance
 
 .. code-block:: python
+
 from jiraone import LOGIN, USER
 
 user = "email"
@@ -27,6 +30,7 @@ if __name__ == '__main__':
 * Generate a report of all user in the instance and which group do they belong to
 
 .. code-block:: python
+
 from jiraone import LOGIN, USER
 
 user = "email"
@@ -43,6 +47,7 @@ if __name__ == '__main__':
 * Search and find users within your cloud instance.
 
 .. code-block:: python
+
 from jiraone import LOGIN, USER
 
 user = "email"
@@ -62,6 +67,7 @@ if __name__ == '__main__':
 * Get a mention of a cloud user.
 
 .. code-block:: python
+
 from jiraone import LOGIN, USER
 
 user = "email"
@@ -86,6 +92,7 @@ PROJECT API
 * Generate a report of users in your instance, who has BROWSE access to the projects on the instance.
 
 .. code-block:: python
+
 from jiraone import LOGIN, PROJECT
 
 user = "email"
@@ -103,6 +110,7 @@ if __name__ == '__main__':
 * Generate a report of the number of Dashboard on the Instance, who's the owner and who it is shared with.
 
 .. code-block:: python
+
 from jiraone import LOGIN, PROJECT
 
 user = "email"
@@ -120,6 +128,7 @@ if __name__ == '__main__':
 * Generate a report, get all project list and users within a project as well as their corresponding project role in the project.
 
 .. code-block:: python
+
 from jiraone import LOGIN, PROJECT
 
 user = "email"
@@ -136,6 +145,7 @@ if __name__ == '__main__':
 * Generate a report, get all attachments per issue on a project or search for projects and get all attachment urls
 
 .. code-block:: python
+
 from jiraone import LOGIN, PROJECT
 
 user = "email"
@@ -154,6 +164,7 @@ if __name__ == '__main__':
 * Transfer a file across instances or download a file to your local drive from an Instance
 
 .. code-block:: python
+
 from jiraone import LOGIN, PROJECT
 from threading import Thread
 
@@ -181,6 +192,7 @@ if __name__ == '__main__':
 * Track the number of comments sent to a reporter on per issue and get the total sum sent by the reporter and by other users.
 
 .. code-block:: python
+
 from jiraone import LOGIN, PROJECT
 
 
@@ -207,6 +219,7 @@ if __name__ == '__main__':
 Use ``LOGIN.api = False`` if you want to extract the issue history from a Server instance.
 
 .. code-block:: python
+
 from jiraone import LOGIN, PROJECT
 
 user = "email"
@@ -230,6 +243,7 @@ The API from the ``jiraone.module`` uses functions
 * Generate a report of time in status of Jira issue.
 
 .. code-block:: python
+
 from jiraone import LOGIN, PROJECT, file_reader
 from jiraone.module import time_in_status
 import json
@@ -249,7 +263,9 @@ if __name__ == "__main__":
 
 
 This function has the ability to generate the time an issue has stayed in a particular status or it can generate all the time it stays in each and every status that exists within a Jira issue. I’ll explain what each argument within the function does, so you can get a clear picture of how to use it. The standard way to call this function is the way it is shown above. First, the PROJECT alias is used as a required positional argument and within the function calls the ``change_log()`` method. The second argument requires an issue key. Now you can be able to pass the issue key in various formats such as below
+
 .. code-block:: python
+
 # previous statement
 
 key = "COM-12" # as a string
@@ -263,6 +279,7 @@ The third argument is file_reader function which you will need to pass or you ca
 Once you run the script, you will end up with a report that looks like the one below as the output
 
 .. code-block:: json
+
 [
  {        
   "author": "Prince Nyeche",        
@@ -284,6 +301,7 @@ Once you run the script, you will end up with a report that looks like the one b
 * Update custom field or system fields using a field update function. Please ensure that the fields you want to update is visible on screen in your projects, if not you will get a 400 error response instead. The API doesn't override the screen functions.
 
 .. code-block:: python
+
 from jiraone import LOGIN, USER, echo, field
 from jiraone.module import field_update
 import json
@@ -314,6 +332,7 @@ The above function is able to update any field used on Jira cloud. All you simpl
 Another example is given below to update multiple value set to a field. Use the ``update`` argument to add or remove values. Most of the fields that requires add or removing can be places in a list such as components, labels, fixversions, multicheckboxes, multiselect etc - these fields items can be places in a list as shown below to either add or remove items from it.
 
 .. code-block:: python
+
 from jiraone import LOGIN, echo, field
 from jiraone.module import field_update
 import json
@@ -335,6 +354,7 @@ if __name__ == "__main__":
 
 
 .. code-block:: python
+
 #...previous statement
 
 key = 'ITSM-4'
@@ -350,6 +370,7 @@ if __name__ == "__main__":
 
 
 .. code-block:: python
+
 #...previous statement
 
 key = 'ITSM-4'
@@ -365,6 +386,7 @@ if __name__ == "__main__":
 
 
 .. code-block:: python
+
 #...previous statement
 
 key = 'ITSM-4'
@@ -383,7 +405,9 @@ if __name__ == "__main__":
 This function helps with changing the email addresses in bulk of organization users. The target email address must not exist as an Atlassian account for the change to be effective. All domains needing the bulk change needs to be verified within your organization for the changes to work.
 
 For example
+
 .. code-block:: python
+
 from jiraone.module import bulk_change_email
 
 token = "Vhsj28UJsXXX"
@@ -401,7 +425,9 @@ bulk_change_email(file, token)
 This function helps to bulk change email address but only on the condition that the target email address already exist as an Atlassian account. To use this function, you must verify all the domains you wish to swap.
 
 For example
+
 .. code-block:: python
+
 from jiraone.module import bulk_change_swap_email
 
 token = "Vhsj28UJsXXX"
@@ -416,7 +442,9 @@ bulk_change_swap_email(file, token, users=user_list)
 
 
 For example
+
 .. code-block:: python
+
 from jiraone.module import bulk_change_swap_email
 
 token = "Vhsj28UJsXXX"
@@ -432,6 +460,7 @@ bulk_change_swap_email(file, token, dummy=place_holder)
 
 
 .. _support:
+
 Support
 =================
 * For any issues or feature request, feel free to create an issue on Github or email me at support@elfapp.website
