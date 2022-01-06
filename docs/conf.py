@@ -26,7 +26,7 @@ author = 'Prince Nyeche'
 # The short X.Y version
 version = '0.5.0'
 # The full version, including alpha/beta/rc tags
-release = ''
+release = '0.5.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -49,7 +49,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.md'
+source_suffix = ".rst"
 
 # The master toctree document.
 master_doc = 'index'
@@ -104,7 +104,15 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-# html_sidebars = {}
+html_sidebars = {
+"**": [
+        "about.html",
+        "navigation.html",
+        "relations.html",
+        "searchbox.html",
+        "donate.html",
+    ]
+}
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
