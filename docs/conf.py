@@ -114,7 +114,6 @@ html_static_path = ['_static']
 #
 html_sidebars = {
 "**": [
-        "index.html",
         "api.html",
         "report.html",
         "navigation.html",
