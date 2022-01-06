@@ -25,21 +25,21 @@ aforementioned methods or functions above to get further information.
 
 Directory
 =================
-* `Using the API<https://princenyeche.github.io/jiraone/api#using-the-api>`_
-  * `endpoint<https://princenyeche.github.io/jiraone/api#endpoint>`_
-  * `LOGIN<https://princenyeche.github.io/jiraone/api#login>`_
-  * `echo<https://princenyeche.github.io/jiraone/api#echo>`_
-  * `add_log<https://princenyeche.github.io/jiraone/api#add-log>`_
-  * `file_writer<https://princenyeche.github.io/jiraone/api#file-writer>`_
-  * `file_reader<https://princenyeche.github.io/jiraone/api#file-reader>`_
-  * `path_builder<https://princenyeche.github.io/jiraone/api#path-builder>`_
-  * `For<https://princenyeche.github.io/jiraone/api#for>`_
-  * `replacement_placeholder<https://princenyeche.github.io/jiraone/api#replacement-placeholder>`_
-  * `field<https://princenyeche.github.io/jiraone/api#field>`_
-  * `comment<https://princenyeche.github.io/jiraone/api#comment>`_
-  * `manage<https://princenyeche.github.io/jiraone/api#manage>`_
-* `Basic report usage<https://princenyeche.github.io/jiraone/report#basic-report-usage>`_
-  * `PROJECT API<https://princenyeche.github.io/jiraone/report#project-api>`_
-  * `USER API<https://princenyeche.github.io/jiraone/report#user-api>`_
-  * `Module API<https://princenyeche.github.io/jiraone/report#module-api>`_
-  * `Support<https://princenyeche.github.io/jiraone/report#support>`_
+* :ref:`using-the-api`_
+  * :ref:`endpoint`_
+  * :ref:`LOGIN`_
+  * :ref:`echo`_
+  * :ref:`add-log`_
+  * :ref:`file-writer`_
+  * :ref:`file-reader`_
+  * :ref:`path-builder`_
+  * :ref:`For`_
+  * :ref:`replacement-placeholder`_
+  * :ref:`field`_
+  * :ref:`comment`_
+  * :ref:`manage`_
+* :ref:`basic-report-usage`_
+  * :ref:`project-api`_
+  * :ref:`user-api`_
+  * :ref:`module-api`_
+  * :ref:`support`_
