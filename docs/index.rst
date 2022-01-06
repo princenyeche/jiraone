@@ -1,7 +1,23 @@
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/86f1594e0ac3406aa9609c4cd7c70642)](https://www.codacy.com/gh/princenyeche/jiraone/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/jiraone&amp;utm_campaign=Badge_Grade)
-[![Downloads](https://pepy.tech/badge/jiraone)](https://pepy.tech/project/jiraone)
-[![PyPI version](https://badge.fury.io/py/jiraone.svg)](https://badge.fury.io/py/jiraone)
-![PyPI - License](https://img.shields.io/pypi/l/jiraone)
+.. image:: https://app.codacy.com/project/badge/Grade/86f1594e0ac3406aa9609c4cd7c70642
+:target: https://www.codacy.com/gh/princenyeche/jiraone/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/jiraone&amp;utm_campaign=Badge_Grade
+:alt: Codacy Badge
+
+.. image:: https://pepy.tech/badge/jiraone
+:target: https://pepy.tech/badge/jiraone
+:alt: Downloads
+
+.. image:: https://badge.fury.io/py/jiraone.svg
+:target: https://badge.fury.io/py/jiraone
+:alt: PyPI version
+
+.. image:: https://img.shields.io/pypi/l/jiraone
+:target: https://img.shields.io/pypi/l/jiraone
+:alt: PyPI - License
+
+.. image:: https://readthedocs.org/projects/jiraone/badge/?version=latest
+:target: https://jiraone.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+
 
 Jira one
 =================
