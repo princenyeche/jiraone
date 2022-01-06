@@ -1,7 +1,7 @@
-`Codacy Badge<https://app.codacy.com/project/badge/Grade/86f1594e0ac3406aa9609c4cd7c70642)](https://www.codacy.com/gh/princenyeche/jiraone/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/jiraone&amp;utm_campaign=Badge_Grade>`_
-`Downloads<https://pepy.tech/badge/jiraone)](https://pepy.tech/project/jiraone>`_
-`PyPI version<https://badge.fury.io/py/jiraone.svg)](https://badge.fury.io/py/jiraone>`_
-`PyPI - License<https://img.shields.io/pypi/l/jiraone>`_
+`Codacy Badge<https://app.codacy.com/project/badge/Grade/86f1594e0ac3406aa9609c4cd7c70642)](https://www.codacy.com/gh/princenyeche/jiraone/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/jiraone&amp;utm_campaign=Badge_Grade>`
+`Downloads<https://pepy.tech/badge/jiraone)](https://pepy.tech/project/jiraone>`
+`PyPI version<https://badge.fury.io/py/jiraone.svg)](https://badge.fury.io/py/jiraone>`
+`PyPI - License<https://img.shields.io/pypi/l/jiraone>`
 
 Jira one
 =================
@@ -11,9 +11,11 @@ A REST API Implementation to Jira Cloud APIs for creating reports and for perfor
 Configurations
 =================
 Install using `pip`. you have to be on python >= 3.6.x in order to utilize this script.
+
 .. code-block:: bash
+
 pip install jiraone
-```
+
 
 Classes, functions and methods
 =================
@@ -25,21 +27,21 @@ aforementioned methods or functions above to get further information.
 
 Directory
 =================
-* :ref:`using-the-api`_
-  * :ref:`endpoint`_
-  * :ref:`LOGIN`_
-  * :ref:`echo`_
-  * :ref:`add-log`_
-  * :ref:`file-writer`_
-  * :ref:`file-reader`_
-  * :ref:`path-builder`_
-  * :ref:`For`_
-  * :ref:`replacement-placeholder`_
-  * :ref:`field`_
-  * :ref:`comment`_
-  * :ref:`manage`_
-* :ref:`basic-report-usage`_
-  * :ref:`project-api`_
-  * :ref:`user-api`_
-  * :ref:`module-api`_
-  * :ref:`support`_
+* :ref:`using-the-api`
+  * :ref:`endpoint`
+  * :ref:`LOGIN`
+  * :ref:`echo`
+  * :ref:`add-log`
+  * :ref:`file-writer`
+  * :ref:`file-reader`
+  * :ref:`path-builder`
+  * :ref:`For`
+  * :ref:`replacement-placeholder`
+  * :ref:`field`
+  * :ref:`comment`
+  * :ref:`manage`
+* :ref:`basic-report-usage`
+  * :ref:`project-api`
+  * :ref:`user-api`
+  * :ref:`module-api`
+  * :ref:`support`
