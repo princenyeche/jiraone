@@ -48,15 +48,16 @@ Directory
   * :ref:`endpoint`
   * :ref:`LOGIN`
   * :ref:`echo`
-  * :ref:`add-log`
-  * :ref:`file-writer`
-  * :ref:`file-reader`
-  * :ref:`path-builder`
+  * :ref:`add_log`
+  * :ref:`file_writer`
+  * :ref:`file_reader`
+  * :ref:`path_builder`
   * :ref:`For`
-  * :ref:`replacement-placeholder`
+  * :ref:`replacement_placeholder`
   * :ref:`field`
   * :ref:`comment`
   * :ref:`manage`
+  * :ref:`other-variables`
  
 * :ref:`basic-report-usage`
 
