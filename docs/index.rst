@@ -9,15 +9,16 @@ A REST API Implementation to Jira Cloud APIs for creating reports and for perfor
 
 
 Configurations
-=================
-Install using `pip`. you have to be on python >= 3.6.x in order to utilize this script.
+-------
+Install using ``pip``. you have to be on python >= 3.6.x in order to utilize this script.
 
-jiraone install::
+.. code-block:: bash
+
     pip install jiraone
 
 
 Classes, functions and methods
-=================
+-------
 Jiraone comes with various classes, functions and methods. Aliases as well, are used to represent
 links to classes and functions. The major ones to take note of are the ones shown on the directory link below.
 
@@ -25,27 +26,23 @@ For further knowledge on how to use the classes, methods or functions. Open the 
 aforementioned methods or functions above to get further information.
 
 Directory
-=================
+-------
 * :ref:`using-the-api`
-.. toctree::
-   :maxdepth: 11
-   :ref:`endpoint`
-   :ref:`LOGIN`
-   :ref:`echo`
-   :ref:`add-log`
-   :ref:`file-writer`
-   :ref:`file-reader`
-   :ref:`path-builder`
-   :ref:`For`
-   :ref:`replacement-placeholder`
-   :ref:`field`
-   :ref:`comment`
-   :ref:`manage`
+  * :ref:`endpoint`
+  * :ref:`LOGIN`
+  * :ref:`echo`
+  * :ref:`add-log`
+  * :ref:`file-writer`
+  * :ref:`file-reader`
+  * :ref:`path-builder`
+  * :ref:`For`
+  * :ref:`replacement-placeholder`
+  * :ref:`field`
+  * :ref:`comment`
+  * :ref:`manage`
  
 * :ref:`basic-report-usage`
-.. toctree::
-   :maxdepth: 4
-   :ref:`project-api`
-   :ref:`user-api`
-   :ref:`module-api`
-   :ref:`support`
+  * :ref:`project-api`
+  * :ref:`user-api`
+  * :ref:`module-api`
+  * :ref:`support`
