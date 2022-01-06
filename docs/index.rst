@@ -47,17 +47,18 @@ Directory
 * :ref:`using-the-api`
 
   * :ref:`endpoint`
-  * :ref:`LOGIN`
+  * :ref:`login`
   * :ref:`echo`
   * :ref:`add-log`
   * :ref:`file-writer`
   * :ref:`file-reader`
   * :ref:`path-builder`
-  * :ref:`For`
+  * :ref:`for`
   * :ref:`replacement-placeholder`
   * :ref:`field`
   * :ref:`comment`
   * :ref:`manage`
+  * :ref:`other-variables`
  
 * :ref:`basic-report-usage`
 
