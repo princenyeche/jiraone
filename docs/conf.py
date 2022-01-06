@@ -38,7 +38,9 @@ release = version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx_tabs.tabs",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -50,6 +52,7 @@ templates_path = ['_templates']
 source_suffix = ['.rst', '.md']
 
 autodoc_mock_imports = ['jiraone']
+autodoc_typehints = "description"
 
 xtensions = ['autoapi.extension']
 
@@ -89,6 +92,15 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
+html_context = {
+    "project_links": [
+        ProjectLink("PyPI Releases", "https://pypi.org/project/jiraone/"),
+        ProjectLink("Source Code", "https://github.com/princenyeche/jiraone/"),
+        ProjectLink("Issue Tracker", "https://github.com/princenyeche/jiraone/issues/"),
+        ProjectLink("Website", "https://elfapp.website"),
+    ]
+}
+
 html_theme_options = {
     'github_user': 'princenyeche',
     'github_repo': 'jiraone',
@@ -113,11 +125,8 @@ html_static_path = ['_static']
 # 'searchbox.html']``.
 #
 html_sidebars = {
-"**": [
-        "navigation.html",
-        "searchbox.html",
-        "donate.html",
-    ]
+ "index": ["project.html", "localtoc.html", "searchbox.html", "ethicalads.html"],
+    "**": ["localtoc.html", "relations.html", "searchbox.html", "ethicalads.html"],
 }
 
 
