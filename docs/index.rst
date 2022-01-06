@@ -1,22 +1,22 @@
 .. image:: https://app.codacy.com/project/badge/Grade/86f1594e0ac3406aa9609c4cd7c70642
-:target: https://www.codacy.com/gh/princenyeche/jiraone/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/jiraone&amp;utm_campaign=Badge_Grade
-:alt: Codacy Badge
+   :target: https://www.codacy.com/gh/princenyeche/jiraone/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/jiraone&amp;utm_campaign=Badge_Grade
+   :alt: Codacy Badge
 
 .. image:: https://pepy.tech/badge/jiraone
-:target: https://pepy.tech/badge/jiraone
-:alt: Downloads
+   :target: https://pepy.tech/badge/jiraone
+   :alt: Downloads
 
 .. image:: https://badge.fury.io/py/jiraone.svg
-:target: https://badge.fury.io/py/jiraone
-:alt: PyPI version
+   :target: https://badge.fury.io/py/jiraone
+   :alt: PyPI version
 
 .. image:: https://img.shields.io/pypi/l/jiraone
-:target: https://img.shields.io/pypi/l/jiraone
-:alt: PyPI - License
+   :target: https://img.shields.io/pypi/l/jiraone
+   :alt: PyPI - License
 
 .. image:: https://readthedocs.org/projects/jiraone/badge/?version=latest
-:target: https://jiraone.readthedocs.io/en/latest/?badge=latest
-:alt: Documentation Status
+   :target: https://jiraone.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 
 Jira one
@@ -44,6 +44,7 @@ aforementioned methods or functions above to get further information.
 Directory
 -------
 * :ref:`using-the-api`
+
   * :ref:`endpoint`
   * :ref:`LOGIN`
   * :ref:`echo`
@@ -58,6 +59,7 @@ Directory
   * :ref:`manage`
  
 * :ref:`basic-report-usage`
+
   * :ref:`project-api`
   * :ref:`user-api`
   * :ref:`module-api`
