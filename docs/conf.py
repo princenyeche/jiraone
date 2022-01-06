@@ -14,8 +14,7 @@
 #
 # import os
 # import sys
-# sys.path.insert(0, os.path.abspath('.'))
-
+# sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
@@ -24,9 +23,9 @@ copyright = '2021, Prince Nyeche'
 author = 'Prince Nyeche'
 
 # The short X.Y version
-version = '0.5.0'
+version = "0.5.0"
 # The full version, including alpha/beta/rc tags
-release = '0.5.0'
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -59,7 +58,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+# language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -67,7 +66,7 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = "sphinx"
 
 
 # -- Options for HTML output -------------------------------------------------
