@@ -1,7 +1,6 @@
-=============
+.. using-the-api:
 Using the API
 =============
-.. currentmodule:: jiraone
 
 Jiraone basically allows you to create a report based method using Atlassian REST API on your cloud infrastructure.
 It uses a class method on the Endpoint class, so you can easily call the direct Atlassian API.
@@ -36,13 +35,13 @@ endpoint
 =============
 
 .. autoclass:: EndPoint
-    :members:
    
-This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. <br />
-Example usage: ``endpoint.myself()``, ``endpoint.search_users()`` <br />
+This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. 
+
+Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 
 
-.. LOGIN:
+.. login:
 
 LOGIN
 =============
@@ -51,10 +50,11 @@ LOGIN
 
 
 This is a call to the `Credentials` class and the accepted parameters are
-  * user &gt; string
-  * password &gt; string
-  * url &gt; string <br />
-Example usage: <br />
+  * user - string
+  * password - string
+  * url - string 
+  
+Example usage:
 
 .. code-block:: python
 
@@ -70,29 +70,36 @@ Example usage: <br />
 **Attributes**, available to the LOGIN alias
 
 * ``LOGIN.base_url``
+
 * ``LOGIN.headers``
+
 * ``LOGIN.password``
+
 * ``LOGIN.user``
+
 * ``LOGIN.api`` <default> to True - This helps with changing the api version from 3 to use the latest version.
-* ``LOGIN.auth_requests`` <br />
+
+* ``LOGIN.auth_requests`` 
 
 **Methods**, available to the LOGIN alias, it returns a response object. <br />
 
 The keyword argument of payload can be any json object you want to pass to the method. Subsequently, you can pass other keyword arguments
 such as ``files``, ``data`` etc.
+
 * ``LOGIN.get(url, *args, payload=None, **kwargs)``
+
 * ``LOGIN.post(url, *args, payload=None, **kwargs)``
+
 * ``LOGIN.delete(url, **kwargs)``
+
 * ``LOGIN.put(url, *args, payload=None, **kwargs)``
 
 
 
-
+.. echo:
 echo
 =============
-.. echo:
-
-:py:func:``echo``
+.. autofunction:: echo
 
 This is a function which uses a copy of the PrettyPrint Class used to nicely format a represented printed result. To call, simply use the function ``echo``. <br />
 It accepts one required parameter, which can be any object. 
@@ -100,22 +107,20 @@ Example usage:
 
 .. code-block:: python
 
- from jiraone import echo
+     from jiraone import echo
     
- data = "hello world"
- echo(data)
- # prints //
- # 'hello world'
+     data = "hello world"
+     echo(data)
+     # prints //
+     # 'hello world'
 
 
-
- 
- 
+.. add_log: 
 add_log
 =============
- .. add-log:
 
 ``add_log(message, level)``
+
 This function is used to log messages to a log file. It accepts two required parameters ``message`` and ``level`` of which both are strings.
 The function uses the logging module and writes a log, based on 3 levels. 
 * debug
@@ -132,12 +137,13 @@ Example usage:
  add_log(message, "info")
   
 
- 
+
+.. file_writer:
 file_writer
 =============
- .. file-writer:
- 
-``file_writer(folder="string", file_name="string", data=['iterable'], mark="string", mode="string", content="string[bytes]")`` 
+
+``file_writer(folder="string", file_name="string", data=['iterable'], mark="string", mode="string", content="string[bytes]")``
+
 This function helps in creating a csv file or a normal file. It comes with the below parameters as keyword arguments 
   * ``folder``: string - a path to the name of the folder
   * ``file_name``:  string - the name of the file being created.
@@ -146,7 +152,7 @@ This function helps in creating a csv file or a normal file. It comes with the b
   * ``mode``: string - file mode, available options ["a", "w", "a+", "w+", "wb"], by default the mode is set to "a+".
   * ``content``: string - outputs the file in bytes.
   * ``encoding``: string - defaults to "utf-8"
- Example usage: <br />
+ Example usage:
  
 .. code-block:: python
 
@@ -157,11 +163,12 @@ This function helps in creating a csv file or a normal file. It comes with the b
     
 
 
+.. file_reader:
 file_reader
 =============
- .. file-reader:
  
 ``file_writer(folder="string", file_name="string", mode="string", content=bool, skip=bool)``
+
 This function helps in reading a csv file and returning a list comprehension of the data or read a byte file. Accepted
 parameter include
   * ``folder``: string - a path to the name of the folder
@@ -180,18 +187,18 @@ parameter include
     
 
 
-
-
-
+.. path_builder:
 path_builder
 =============
- .. path-builder:
 
 ``path_builder(path="string", file_name="string")`` 
+
 This function helps to build a directory path and file path then returns the file path in the directory.
 parameters include
+
   * ``path``: string - a path to declare absolute to where the script is executed.
   * ``file_name``:  string - the name of the file being created
+  
    Example usage:
   
 .. code-block:: python
@@ -206,10 +213,9 @@ parameters include
  # "Test_folder/test.csv"
 
 
+.. for:
 For
 =============
- .. For:
-
 .. autoclass:: For
 
 The ``For`` class is a class to show the implementation of a 'for' loop. it calls the **__iter__** magic method then the **__next__** method
@@ -234,15 +240,11 @@ Example usage:
 
 
 
-
-
+.. replacement_placeholder:
 replacement_placeholder
 =============
- .. replacement-placeholder:
  
-``replacement_placeholder(string="", data=[list],
-                            iterable=[list],
-                            row=int)``
+``replacement_placeholder(string="", data=[list], iterable=[list],row=int)``
 
  This function returns multiple string replacement. This can be used to replace multiple strings in a list where a placeholder can be identified and used
  as a marker to replace the strings.
@@ -262,17 +264,13 @@ Example usage:
  # ["Hello John doe, welcome to the Post mortem of what is to come"]
  
  
- 
- .. field:
+.. field:
 field
 =============
 Alias to the ``Field`` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. 
 
 .. autoclass:: Field
-   :members:
    
-
-
 Example usage: 
 
 .. code-block:: python
@@ -296,25 +294,22 @@ Example usage:
 
         
 ``field.get_field_value(name='String', keys='Union[string, integer]')`` 
+
 * ``name`` datatype[String] a name of the custom field.
 * ``keys`` datatype[String, Integer] issue key or id of an issue.
         
 .. code-block:: python
 
  from jiraone import field, echo
- #...previous login statements
+ # ...previous login statements
  # it expects the field name as the first parameter and the issue key where the field is used as the second parameter
  value = field.get_field_value("Labels", "COM-15")
  echo(value) 
 
 
-
-
- .. comment:
-
+.. comment:
 comment
 =============
-
 .. autoclass:: PROJECT.comment_on
 
 
@@ -339,9 +334,7 @@ comment
 
 
 
-
 .. manage:
-
 manage
 =============
 
@@ -350,7 +343,7 @@ The ``manage`` API brings organization and user REST API features to jiraone. Wi
 .. autoclass:: manage
 
                 
-.. autofunction:: manage.add_token
+.. autoclass:: manage.add_token
 
 
 This API requires that you enter a API token for your organization.
@@ -364,28 +357,33 @@ This API requires that you enter a API token for your organization.
 
 
                 
-``get_user_permission(account_id: str, query: list = None)`` 
+``get_user_permission(account_id: str, query: list = None)``
+
 Returns the set of permissions you have for managing the specified Atlassian account. The `account_id` is required and query is an ``Array<string>`` which can be any of the values below:
+
 * Valid values: ``profile``, ``profile.write``, ``profile.read``, ``email.set``, ``lifecycle.enablement``, ``apiToken.read``, ``apiToken.delete``
 
 ``manage_profile(account_id: str, method: str = "GET", **kwargs_: t.Any)``
+
 You can be able to call various methods by altering the ``method`` keyword argument
+
 * ``GET`` request: Returns information about a single Atlassian account by ID by using a "GET" request.
+
 * ``PATCH`` request: Updates fields in a user account.
-                * Body parameter
-                   * Any or all user object this is value
-                e.g. {"name": "Lila User", "nickname": "marshmallow"}
-* ``PUT`` request: Sets the specified user's email address.
-               * Body parameter
-                e.g. {"email": "prince.nyeche@elfapp.website"}
+     * Body parameter
+         * Any or all user object this is value
+            e.g. {"name": "Lila User", "nickname": "marshmallow"}
                 
-.. autofunction:: manage.api_token
+* ``PUT`` request: Sets the specified user's email address.
+     * Body parameter
+          e.g. {"email": "prince.nyeche@elfapp.website"}
+                
+.. autoclass:: manage.api_token
 
 
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
-             
-                
-.. autofunction:: manage.manage_user
+                  
+.. autoclass:: manage.manage_user
 
 
 Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
@@ -406,14 +404,15 @@ Enables the specified user account.The permission to make use of this resource i
  # output
  # <Response 204>
   
-  
                 
-.. autofunction:: manage.get_organization
+.. autoclass:: manage.get_organization
 
 
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
+
 The ``filter_by`` arguments accepts 4 valid options which as ``users``, ``domains``, ``policies``, and ``events``. 
 The ``action`` argument allows a certain action for the events filter_by option. When set ``action=True`` it returns the event actions rather than a list of events.
+
 The ``kwargs`` argument accepts valid response arguments such as ``json``, ``data`` etc which can be used as body parameter when making the request.
                 
                 
@@ -445,14 +444,15 @@ Get the data from the list of policies
  # <Response 204>
 
                 
-.. autofunction:: manage_organization 
+.. autoclass:: manage_organization 
 
 
 Create, put and delete organization data, create a policy for an org, send a post request by using ``method="post"`` as keyword args.Update a policy for an org.
 Send a put request by using ``method="put"`` as keyword args.
 The `method` argument accepts "put", "post" or "delete" (case insensitive)
-                
- 
+  
+  
+.. other-variables:
 Other variables
 =============
 
