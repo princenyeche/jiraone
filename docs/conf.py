@@ -94,6 +94,7 @@ html_theme = 'alabaster'
 #
 
 html_theme_options = {
+    'description': 'A REST API implementation of Jira\'s API',
     'github_user': 'princenyeche',
     'github_repo': 'jiraone',
     'github_banner': True,
@@ -125,13 +126,6 @@ html_sidebars = {
         "searchbox.html",
         "donate.html",
     ]
-}
-
-html_theme_options = {
-    "description": "A REST API implementation of Jira's API",
-    "github_user": "princenyeche",
-    "github_repo": "jiraone",
-    "fixed_sidebar": True,
 }
 
 
