@@ -1,4 +1,4 @@
-.. using-the-api:
+.. _user-the-api:
 Using the API
 =============
 
@@ -29,7 +29,7 @@ which easily enables you to fetch all users on the instance without you programm
 All these methods and functions are accessible directly from the jiraone package.
 
 
-.. endpoint:
+.. _endpoint:
 
 endpoint
 =============
@@ -41,7 +41,7 @@ This is an alias to the ``EndPoints`` class and it has many methods that can be 
 Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 
 
-.. login:
+.. _login:
 
 LOGIN
 =============
@@ -96,7 +96,7 @@ such as ``files``, ``data`` etc.
 
 
 
-.. echo:
+.. _echo:
 echo
 =============
 .. autofunction:: jiraone.echo
@@ -115,7 +115,7 @@ Example usage:
      # 'hello world'
 
 
-.. add-log: 
+.. _add-log:
 add_log
 =============
 
@@ -142,7 +142,7 @@ Example usage:
   
 
 
-.. file-writer:
+.. _file-writer:
 file_writer
 =============
 
@@ -167,7 +167,7 @@ This function helps in creating a csv file or a normal file. It comes with the b
     
 
 
-.. file_reader:
+.. _file-reader:
 file_reader
 =============
  
@@ -191,7 +191,7 @@ parameter include
     
 
 
-.. path_builder:
+.. _path-builder:
 path_builder
 =============
 
@@ -218,7 +218,7 @@ parameters include
  # "Test_folder/test.csv"
 
 
-.. for:
+.. _for:
 For
 =============
 .. autoclass:: jiraone.For
@@ -245,7 +245,7 @@ Example usage:
 
 
 
-.. replacement_placeholder:
+.. _replacement-placeholder:
 replacement_placeholder
 =============
  
@@ -270,7 +270,7 @@ Example usage:
  # ["Hello John doe, welcome to the Post mortem of what is to come"]
  
  
-.. field:
+.. _field:
 field
 =============
 Alias to the ``Field`` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. 
@@ -313,7 +313,7 @@ Example usage:
  echo(value) 
 
 
-.. comment:
+.. _comment:
 comment
 =============
 .. autoclass:: jiraone.PROJECT.comment_on
@@ -340,13 +340,14 @@ comment
 
 
 
-.. manage:
+.. _manage:
 manage
 =============
 
 The ``manage`` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management.
 
 .. autoclass:: jiraone.manage
+   :members:
 
                 
 .. autoclass:: jiraone.manage.add_token
@@ -458,7 +459,7 @@ Send a put request by using ``method="put"`` as keyword args.
 The `method` argument accepts "put", "post" or "delete" (case insensitive)
   
   
-.. other-variables:
+.. _other-variables:
 Other variables
 =============
 
