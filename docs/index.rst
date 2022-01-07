@@ -49,12 +49,12 @@ Directory
   * :ref:`endpoint`
   * :ref:`login`
   * :ref:`echo`
-  * :ref:`add-log`
-  * :ref:`file-writer`
-  * :ref:`file-reader`
-  * :ref:`path-builder`
+  * :ref:`add_log`
+  * :ref:`file_writer`
+  * :ref:`file_reader`
+  * :ref:`path_builder`
   * :ref:`for`
-  * :ref:`replacement-placeholder`
+  * :ref:`replacement_placeholder`
   * :ref:`field`
   * :ref:`comment`
   * :ref:`manage`
