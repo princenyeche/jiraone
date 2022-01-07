@@ -1,57 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-An exceptions list of errors
-"""
+"""A logging handler file, which helps in providing logs of the script execution."""
+from logging.handlers import RotatingFileHandler
+from datetime import datetime
+from platform import system
+import logging
+import os
+
+WORK_PATH = os.path.abspath(os.getcwd())
+now = datetime.now()
+LOGGER = ""
+
+logger = logging.getLogger(__name__)
+formatting = logging.Formatter("%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]")
+
+if system() == "Linux" or system() == "Darwin":
+    LOGGER += WORK_PATH + "{}".format("/logs")
+    if not os.path.exists(LOGGER):
+        os.mkdir(LOGGER)
+    handler = RotatingFileHandler("{}/{}".format(LOGGER, "app.log"), maxBytes=1000000, backupCount=20)
+    handler.setFormatter(formatting)
+    logger.addHandler(handler)
+
+if system() == "Windows":
+    LOGGER += WORK_PATH + "{}".format("\\logs")
+    if not os.path.exists(LOGGER):
+        os.mkdir(LOGGER)
+    handler = RotatingFileHandler("{}\\{}".format(LOGGER, "app.log"), maxBytes=1000000, backupCount=20)
+    handler.setFormatter(formatting)
+    logger.addHandler(handler)
 
 
-class JiraOneErrors(Exception):
-    """Base class for all exceptions."""
-
-    def __init__(self, errors, messages=None):
-        self.errors = errors
-        self.messages = messages
-
-        if self.errors is not None:
-            self.__str__()
-
-    def __missing_field_value__(self):
-        """A field value is missing or doesn't exist."""
-        pass
-
-    def __missing_field_name__(self):
-        """A field name is missing or doesn't exist."""
-        pass
-
-    def __login_issues__(self):
-        """An issue with authenticating logins."""
-        pass
-
-    def __user_not_found__(self):
-        """An Atlassian user cannot be found."""
-        pass
-
-    def __file_extraction__(self):
-        """An issue with either downloading or uploading an attachment."""
-        pass
-
-    def __wrong_method_used__(self):
-        """The data being posted is incorrect"""
-        pass
-
-    def __str__(self):
-        """Return the representation of the error messages."""
-        err = self.errors
-        if err == "name":
-            msg = self.messages or self.__missing_field_name__.__doc__
-        elif err == "value":
-            msg = self.messages or self.__missing_field_value__.__doc__
-        elif err == "login":
-            msg = self.messages or self.__login_issues__.__doc__
-        elif err == "user":
-            msg = self.messages or self.__user_not_found__.__doc__
-        elif err == "file":
-            msg = self.messages or self.__file_extraction__.__doc__
-        else:
-            msg = self.messages or self.__wrong_method_used__.__doc__
-        return "<JiraOneError: {}>".format(msg)
+def add_log(message, level):
+    """Writes a log to a log file with activity done."""
+    if level.lower() == "debug":
+        logger.setLevel(logging.DEBUG)
+        logger.debug(message)
+    elif level.lower() == "error":
+        logger.setLevel(logging.ERROR)
+        logger.error(message)
+    else:
+        logger.setLevel(logging.INFO)
+        logger.info(message)
