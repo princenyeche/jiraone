@@ -116,16 +116,8 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-html_sidebars = {
-    "**": [
-        "about.html",
-        "navigation.html",
-        "localtoc.html",
-        "relations.html",
-        "searchbox.html",
-        "donate.html",
-    ]
-}
+# html_sidebars = {
+# }
 
 
 
