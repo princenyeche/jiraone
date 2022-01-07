@@ -36,6 +36,7 @@ endpoint
 =============
 
 .. autoclass:: endpoint
+   :members:
    
 This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. 
 
