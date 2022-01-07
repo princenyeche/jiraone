@@ -44,28 +44,11 @@ aforementioned methods or functions above to get further information.
 Directory
 -------
 
-* :ref:`using-the-api`
-
-  * :ref:`endpoint`
-  * :ref:`login`
-  * :ref:`echo`
-  * :ref:`add_log`
-  * :ref:`file_writer`
-  * :ref:`file_reader`
-  * :ref:`path_builder`
-  * :ref:`for`
-  * :ref:`replacement_placeholder`
-  * :ref:`field`
-  * :ref:`comment`
-  * :ref:`manage`
-  * :ref:`other_variables`
- 
-* :ref:`basic-report-usage`
-
-  * :ref:`project-api`
-  * :ref:`user-api`
-  * :ref:`module-api`
-  * :ref:`support`
+.. toctree::
+   :maxdepth: 2
+   
+   api
+   report
 
 
 API Reference
