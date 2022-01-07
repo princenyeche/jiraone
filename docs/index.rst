@@ -66,3 +66,10 @@ Directory
   * :ref:`user-api`
   * :ref:`module-api`
   * :ref:`support`
+
+
+API Reference
+-------
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
