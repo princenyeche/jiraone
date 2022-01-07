@@ -33,7 +33,7 @@ All these methods and functions are accessible directly from the jiraone package
 .. _endpoint:
 
 endpoint
-=============
+--------
 
 .. autoclass:: endpoint
    :members:
@@ -46,7 +46,7 @@ Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 .. _login:
 
 LOGIN
-=============
+--------
 
 .. autoclass:: LOGIN 
 
@@ -100,7 +100,7 @@ such as ``files``, ``data`` etc.
 
 .. _echo:
 echo
-=============
+--------
 .. autofunction:: echo
 
 This is a function which uses a copy of the PrettyPrint Class used to nicely format a represented printed result. To call, simply use the function ``echo``.
@@ -119,7 +119,7 @@ Example usage:
 
 .. _add_log:
 add_log
-=============
+--------
 
 .. autofunction:: add_log
 
@@ -146,7 +146,7 @@ Example usage:
 
 .. _file_writer:
 file_writer
-=============
+--------
 
 .. autofunction:: file_writer
 
@@ -171,7 +171,7 @@ This function helps in creating a csv file or a normal file. It comes with the b
 
 .. _file_reader:
 file_reader
-=============
+--------
  
 .. autofunction:: file_reader
 
@@ -195,7 +195,7 @@ parameter include
 
 .. _path_builder:
 path_builder
-=============
+--------
 
 .. autofunction:: path_builder
 
@@ -222,7 +222,7 @@ parameters include
 
 .. _for:
 For
-=============
+--------
 .. autoclass:: For
 
 The ``For`` class is a class to show the implementation of a 'for' loop. it calls the **__iter__** magic method then the **__next__** method
@@ -249,7 +249,7 @@ Example usage:
 
 .. _replacement_placeholder:
 replacement_placeholder
-=============
+--------
  
 .. autofunction:: replacement_placeholder
 
@@ -274,7 +274,7 @@ Example usage:
  
 .. _field:
 field
-=============
+--------
 Alias to the ``Field`` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. 
 
 .. autoclass:: field
@@ -317,7 +317,7 @@ Example usage:
 
 .. _comment:
 comment
-=============
+--------
 .. autoclass:: PROJECT.comment_on
    :members:
 
@@ -344,7 +344,7 @@ comment
 
 .. _manage:
 manage
-=============
+--------
 
 The ``manage`` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management.
 
@@ -463,6 +463,6 @@ The `method` argument accepts "put", "post" or "delete" (case insensitive)
   
 .. _other_variables:
 Other variables
-=============
+--------
 
 * ``WORK_PATH``: This is a direct link to the present directory in which you're calling the script. How it works, is that it uses the present working directory of where the script you're initializing. Use this variable, if you want to create your own pathway.
