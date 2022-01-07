@@ -1,4 +1,4 @@
-.. _user-the-api:
+.. _using-the-api:
 Using the API
 =============
 
