@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'jiraone'
+project = 'Jira one'
 copyright = '2021, Prince Nyeche'
 author = 'Prince Nyeche'
 
@@ -68,7 +68,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-# language = None
+language = None
 
 
 # List of patterns, relative to source directory, that match files and
@@ -181,7 +181,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'jiraone', 'Jiraone Documentation',
-     author, 'Prince Nyeche', 'A REST API implementation of Jira API.',
+     author, 'Prince Nyeche', 'A REST API implementation of Jira\'s API.',
      'Miscellaneous'),
 ]
 
