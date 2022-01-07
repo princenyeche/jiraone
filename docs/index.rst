@@ -58,7 +58,7 @@ Directory
   * :ref:`field`
   * :ref:`comment`
   * :ref:`manage`
-  * :ref:`other-variables`
+  * :ref:`other_variables`
  
 * :ref:`basic-report-usage`
 
