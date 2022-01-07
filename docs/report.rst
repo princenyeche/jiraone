@@ -8,7 +8,7 @@ currently only CSV file output is supported. other format such as JSON might be 
 .. _user-api:
 
 USER API
-=================
+--------
 * Generate a report of all active users in your instance
 
 .. code-block:: python
@@ -91,7 +91,7 @@ USER API
 .. _project-api:
 
 PROJECT API
-=================
+--------
 
 * Generate a report of users in your instance, who has BROWSE access to the projects on the instance.
 
@@ -245,7 +245,7 @@ Use ``LOGIN.api = False`` if you want to extract the issue history from a Server
 .. _module-api:
 
 Module API
-=================
+--------
 The API from the ``jiraone.module`` uses functions
 
 * Generate a report of time in status of Jira issue.
@@ -470,5 +470,5 @@ For example
 .. _support:
 
 Support
-=================
+--------
 * For any issues or feature request, feel free to create an issue on Github or email me at support@elfapp.website
