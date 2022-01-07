@@ -1,6 +1,7 @@
 .. _using-the-api:
 Using the API
 =============
+.. module:: jiraone
 
 Jiraone basically allows you to create a report based method using Atlassian REST API on your cloud infrastructure.
 It uses a class method on the Endpoint class, so you can easily call the direct Atlassian API.
@@ -34,7 +35,7 @@ All these methods and functions are accessible directly from the jiraone package
 endpoint
 =============
 
-.. autoclass:: jiraone.endpoint
+.. autoclass:: endpoint
    
 This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. 
 
@@ -46,7 +47,7 @@ Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 LOGIN
 =============
 
-.. autoclass:: jiraone.LOGIN 
+.. autoclass:: LOGIN 
 
 
 This is a call to the `Credentials` class and the accepted parameters are
@@ -99,7 +100,7 @@ such as ``files``, ``data`` etc.
 .. _echo:
 echo
 =============
-.. autofunction:: jiraone.echo
+.. autofunction:: echo
 
 This is a function which uses a copy of the PrettyPrint Class used to nicely format a represented printed result. To call, simply use the function ``echo``.
 It accepts one required parameter, which can be any object. 
@@ -115,11 +116,11 @@ Example usage:
      # 'hello world'
 
 
-.. _add-log:
+.. _add_log:
 add_log
 =============
 
-.. autofunction:: jiraone.add_log
+.. autofunction:: add_log
 
 This function is used to log messages to a log file. It accepts two required parameters ``message`` and ``level`` of which both are strings.
 The function uses the logging module and writes a log, based on 3 levels. 
@@ -142,11 +143,11 @@ Example usage:
   
 
 
-.. _file-writer:
+.. _file_writer:
 file_writer
 =============
 
-.. autofunction:: jiraone.file_writer
+.. autofunction:: file_writer
 
 This function helps in creating a csv file or a normal file. It comes with the below parameters as keyword arguments 
   * ``folder``: string - a path to the name of the folder
@@ -167,11 +168,11 @@ This function helps in creating a csv file or a normal file. It comes with the b
     
 
 
-.. _file-reader:
+.. _file_reader:
 file_reader
 =============
  
-.. autofunction:: jiraone.file_reader
+.. autofunction:: file_reader
 
 This function helps in reading a csv file and returning a list comprehension of the data or read a byte file. Accepted
 parameter include
@@ -191,11 +192,11 @@ parameter include
     
 
 
-.. _path-builder:
+.. _path_builder:
 path_builder
 =============
 
-.. autofunction:: jiraone.path_builder
+.. autofunction:: path_builder
 
 
 This function helps to build a directory path and file path then returns the file path in the directory.
@@ -221,7 +222,7 @@ parameters include
 .. _for:
 For
 =============
-.. autoclass:: jiraone.For
+.. autoclass:: For
 
 The ``For`` class is a class to show the implementation of a 'for' loop. it calls the **__iter__** magic method then the **__next__** method
 and raises a StopIteration once it reaches the end of the loop. Datatype expected are list, dict, tuple, str, set or int.
@@ -245,11 +246,11 @@ Example usage:
 
 
 
-.. _replacement-placeholder:
+.. _replacement_placeholder:
 replacement_placeholder
 =============
  
-.. autofunction:: jiraone.replacement_placeholder
+.. autofunction:: replacement_placeholder
 
 
  This function returns multiple string replacement. This can be used to replace multiple strings in a list where a placeholder can be identified and used
@@ -275,7 +276,7 @@ field
 =============
 Alias to the ``Field`` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. 
 
-.. autoclass:: jiraone.field
+.. autoclass:: field
    
 Example usage: 
 
@@ -316,7 +317,7 @@ Example usage:
 .. _comment:
 comment
 =============
-.. autoclass:: jiraone.PROJECT.comment_on
+.. autoclass:: PROJECT.comment_on
    :members:
 
 
@@ -346,11 +347,11 @@ manage
 
 The ``manage`` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management.
 
-.. autoclass:: jiraone.manage
+.. autoclass:: manage
    :members:
 
                 
-.. autoclass:: jiraone.manage.add_token
+.. autoclass:: manage.add_token
 
 
 This API requires that you enter a API token for your organization.
@@ -364,7 +365,7 @@ This API requires that you enter a API token for your organization.
 
 
                 
-.. autoclass:: jiraone.manage.get_user_permission
+.. autoclass:: manage.get_user_permission
 
 Returns the set of permissions you have for managing the specified Atlassian account. The `account_id` is required and query is an ``Array<string>`` which can be any of the values below:
 
@@ -390,7 +391,7 @@ You can be able to call various methods by altering the ``method`` keyword argum
 
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
                   
-.. autoclass:: jiraone.manage.manage_user
+.. autoclass:: manage.manage_user
 
 
 Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
@@ -412,7 +413,7 @@ Enables the specified user account.The permission to make use of this resource i
  # <Response 204>
   
                 
-.. autoclass:: jiraone.manage.get_organization
+.. autoclass:: manage.get_organization
 
 
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
@@ -451,7 +452,7 @@ Get the data from the list of policies
  # <Response 204>
 
                 
-.. autoclass:: jiraone.manage.manage_organization 
+.. autoclass:: manage.manage_organization 
 
 
 Create, put and delete organization data, create a policy for an org, send a post request by using ``method="post"`` as keyword args.Update a policy for an org.
@@ -459,7 +460,7 @@ Send a put request by using ``method="put"`` as keyword args.
 The `method` argument accepts "put", "post" or "delete" (case insensitive)
   
   
-.. _other-variables:
+.. _other_variables:
 Other variables
 =============
 
