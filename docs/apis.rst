@@ -2,21 +2,21 @@ API Documentation
 =============
 
 .. module:: jiraone
-.. autoclass:: endpoint
+.. autoclass:: access.endpoint
    :members:
-.. autofunction:: echo
-.. autofunction:: add_log
-.. autofunction:: file_reader
-.. autofunction:: file_writer
-.. autofunction:: path_builder
-.. autofunction:: replacement_placeholder
-.. autoclass:: field
+.. autofunction:: access.echo
+.. autofunction:: access.add_log
+.. autofunction:: report.file_reader
+.. autofunction:: report.file_writer
+.. autofunction:: report.path_builder
+.. autofunction:: report.replacement_placeholder
+.. autoclass:: access.field
    :members:
-.. autoclass:: manage
+.. autoclass:: user.manage
    :members:
-.. autoclass:: For
+.. autoclass:: access.For
    :members:
-.. autoclass:: USER
+.. autoclass:: report.USER
    :members:
-.. autoclass:: PROJECT
+.. autoclass:: report.PROJECT
    :members:
