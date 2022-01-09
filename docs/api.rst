@@ -38,7 +38,7 @@ This is an alias to the ``EndPoints`` class and it has many methods that can be 
 
 Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 
-.. autoclass:: endpoint
+.. autoclass:: access.EndPoints
    :members:
 
 
@@ -344,7 +344,8 @@ manage
 
 The ``manage`` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management.
 
-.. autoclass:: manage
+.. autoclass:: user.UserManagement
+   :members:
 
                 
 .. autofunction:: manage.add_token
