@@ -38,7 +38,7 @@ This is an alias to the ``EndPoints`` class and it has many methods that can be 
 
 Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 
-.. autoclass:: access.EndPoints
+.. autoclass:: endpoint
    :members:
 
 
@@ -222,8 +222,6 @@ For
 --------
 .. autoclass:: For
 
-The ``For`` class is a class to show the implementation of a 'for' loop. it calls the **__iter__** magic method then the **__next__** method
-and raises a StopIteration once it reaches the end of the loop. Datatype expected are list, dict, tuple, str, set or int.
 It contains one required parameter called ``data`` which it uses to receive the various datatype and translate them into a list of items, 
 retaining their own unique datatype.
 
@@ -344,7 +342,7 @@ manage
 
 The ``manage`` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management.
 
-.. autoclass:: user.UserManagement
+.. autoclass:: manage
    :members:
 
                 
