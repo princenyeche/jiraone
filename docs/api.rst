@@ -34,13 +34,12 @@ All these methods and functions are accessible directly from the jiraone package
 
 endpoint
 --------
-
-.. autoclass:: endpoint
-   :members:
-   
 This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. 
 
 Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
+
+.. autoclass:: endpoint
+   :members:
 
 
 .. _login:
@@ -49,7 +48,6 @@ LOGIN
 --------
 
 .. autoclass:: LOGIN 
-
 
 This is a call to the `Credentials` class and the accepted parameters are
   * user - string
@@ -66,7 +64,6 @@ Example usage:
  password = "token"
  link = "https://yourinstance.atlassian.net"
  LOGIN(user=user, password=password, url=link)
-
 
 
 **Attributes**, available to the LOGIN alias
@@ -277,7 +274,7 @@ field
 --------
 Alias to the ``Field`` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. 
 
-.. autoclass:: field
+.. autofunction:: field
    
 Example usage: 
 
@@ -318,7 +315,7 @@ Example usage:
 .. _comment:
 comment
 --------
-.. autoclass:: comment
+.. autofunction:: comment
 
 
 * POST a comment to a Jira issue and mention users sequentially on a comment.
@@ -350,7 +347,7 @@ The ``manage`` API brings organization and user REST API features to jiraone. Wi
 .. autoclass:: manage
 
                 
-.. autoclass:: manage.add_token
+.. autofunction:: manage.add_token
 
 
 This API requires that you enter a API token for your organization.
@@ -364,7 +361,7 @@ This API requires that you enter a API token for your organization.
 
 
                 
-.. autoclass:: manage.get_user_permission
+.. autofunction:: manage.get_user_permission
 
 Returns the set of permissions you have for managing the specified Atlassian account. The `account_id` is required and query is an ``Array<string>`` which can be any of the values below:
 
@@ -385,12 +382,12 @@ You can be able to call various methods by altering the ``method`` keyword argum
      * Body parameter
           e.g. {"email": "prince.nyeche@elfapp.website"}
                 
-.. autoclass:: manage.api_token
+.. autofunction:: manage.api_token
 
 
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
                   
-.. autoclass:: manage.manage_user
+.. autofunction:: manage.manage_user
 
 
 Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
@@ -412,7 +409,7 @@ Enables the specified user account.The permission to make use of this resource i
  # <Response 204>
   
                 
-.. autoclass:: manage.get_organization
+.. autofunction:: manage.get_organization
 
 
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
@@ -451,7 +448,7 @@ Get the data from the list of policies
  # <Response 204>
 
                 
-.. autoclass:: manage.manage_organization 
+.. autofunction:: manage.manage_organization 
 
 
 Create, put and delete organization data, create a policy for an org, send a post request by using ``method="post"`` as keyword args.Update a policy for an org.
