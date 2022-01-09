@@ -35,7 +35,7 @@ All these methods and functions are accessible directly from the jiraone package
 endpoint
 --------
 
-.. autoclass:: endpoint
+.. autoclass:: EndPoints
    :members:
    
 This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. 
@@ -48,7 +48,7 @@ Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 LOGIN
 --------
 
-.. autoclass:: LOGIN 
+.. autoclass:: InitProcess 
 
 
 This is a call to the `Credentials` class and the accepted parameters are
@@ -319,7 +319,6 @@ Example usage:
 comment
 --------
 .. autoclass:: PROJECT.comment_on
-   :members:
 
 
 * POST a comment to a Jira issue and mention users sequentially on a comment.
@@ -348,11 +347,10 @@ manage
 
 The ``manage`` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management.
 
-.. autoclass:: manage
-   :members:
+.. autoclass:: user.manage
 
                 
-.. autoclass:: manage.add_token
+.. autoclass:: user.manage.add_token
 
 
 This API requires that you enter a API token for your organization.
@@ -366,7 +364,7 @@ This API requires that you enter a API token for your organization.
 
 
                 
-.. autoclass:: manage.get_user_permission
+.. autoclass:: user.manage.get_user_permission
 
 Returns the set of permissions you have for managing the specified Atlassian account. The `account_id` is required and query is an ``Array<string>`` which can be any of the values below:
 
@@ -387,12 +385,12 @@ You can be able to call various methods by altering the ``method`` keyword argum
      * Body parameter
           e.g. {"email": "prince.nyeche@elfapp.website"}
                 
-.. autoclass:: jiraone.manage.api_token
+.. autoclass:: user.manage.api_token
 
 
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
                   
-.. autoclass:: manage.manage_user
+.. autoclass:: user.manage.manage_user
 
 
 Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
@@ -414,7 +412,7 @@ Enables the specified user account.The permission to make use of this resource i
  # <Response 204>
   
                 
-.. autoclass:: manage.get_organization
+.. autoclass:: user.manage.get_organization
 
 
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
@@ -453,7 +451,7 @@ Get the data from the list of policies
  # <Response 204>
 
                 
-.. autoclass:: manage.manage_organization 
+.. autoclass:: user.manage.manage_organization 
 
 
 Create, put and delete organization data, create a policy for an org, send a post request by using ``method="post"`` as keyword args.Update a policy for an org.
