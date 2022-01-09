@@ -12,9 +12,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-sys.path.insert(0, os.path.abspath('..'))
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
@@ -53,12 +53,12 @@ source_suffix = ['.rst', '.md']
 autodoc_mock_imports = ['jiraone']
 autodoc_typehints = "description"
 
-xtensions = ['autoapi.extension']
+# xtensions = ['autoapi.extension']
 
 
-# Document Python Code
-autoapi_type = 'python'
-autoapi_dir = '../jiraone'
+# # Document Python Code
+# autoapi_type = 'python'
+# autoapi_dir = '../jiraone'
 
 # The master toctree document.
 master_doc = 'index'
