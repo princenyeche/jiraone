@@ -3,7 +3,7 @@
    :alt: Codacy Badge
 
 .. image:: https://pepy.tech/badge/jiraone
-   :target: https://pepy.tech/badge/jiraone
+   :target: https://pepy.tech/project/jiraone
    :alt: Downloads
 
 .. image:: https://badge.fury.io/py/jiraone.svg
