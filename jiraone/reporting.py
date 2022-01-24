@@ -1278,7 +1278,7 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
     file = path_builder(path=folder, file_name=file_name)
     encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
     if mode:
-        with open(file, mode, encoding=encoding) as f:
+        with open(file, mode, encoding=encoding, newline='') as f:
             write = csv.writer(f, delimiter=",")
             if mark == "single":
                 write.writerow(data)
