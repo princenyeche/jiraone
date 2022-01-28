@@ -31,8 +31,15 @@ if system() == "Windows":
     logger.addHandler(handler)
 
 
-def add_log(message, level):
-    """Writes a log to a log file with activity done."""
+def add_log(message, level) -> None:
+    """Writes a log to a log file with activity done.
+
+    :param message: A messages to the logger
+
+    :param level: A logger level e.g. info, debug, error
+
+    :return: None
+    """
     if level.lower() == "debug":
         logger.setLevel(logging.DEBUG)
         logger.debug(message)
