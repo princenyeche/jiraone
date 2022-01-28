@@ -16,11 +16,24 @@ from collections import deque
 
 # Define APIs
 class UserManagement:
+    """
+    The UserManagement API is used to access organization profiles on Atlassian sites.
+    The alias to this class is called `manage`
+
+    It comes with the below attributes and methods.
+    >> manage.LINK
+    >> manage.AUTH
+    >> token = YUISNxxx
+    >> manage.api_token(token)
+    """
     # Define constants
     LINK = "https://api.atlassian.com"
     AUTH = {"Accept": "application/json"}
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        A Constructor which also helps with property initialization.
+        """
         # Property entry point.
         self._org_id_ = None
         self._org_ids_ = None
@@ -31,9 +44,9 @@ class UserManagement:
     def get_user_permission(self, account_id: str, query: list = None) -> t.Any:
         """Returns the set of permissions you have for managing the specified Atlassian account.
 
-        :param account_id  A user string value for Atlassian accounts
+        :param account_id:  A user string value for Atlassian accounts
 
-        :param query  A query parameter of Array<string>
+        :param query:  A query parameter of Array<string>
 
                       *Valid options*
                        Valid values: profile, profile.write, profile.read, email.set, lifecycle.enablement,
@@ -57,9 +70,9 @@ class UserManagement:
         PUT request: Sets the specified user's email address.
         Before using this endpoint, you must verify the target domain
 
-        :param account_id  A user string value for Atlassian accounts
+        :param account_id:  A user string value for Atlassian accounts
 
-        :param method  A response method condition
+        :param method:  A response method condition
 
                       *Available options*
                        - GET > Get the return request
@@ -74,7 +87,7 @@ class UserManagement:
                              > email - string
                              e.g. {"email": "prince.nyeche@elfapp.website"}
 
-        :param kwargs - Contains other options passed to the requests.<patch>
+        :param kwargs: - Contains other options passed to the requests.<patch>
 
                         *Options*
                           json=<variable_name>
@@ -99,16 +112,14 @@ class UserManagement:
 
     def api_token(self, account_id: str, method: str = "GET", token_id: str = None) -> t.Any:
         """Gets the API tokens owned by the specified user
-        or
+        or Deletes a specified API token by ID.
 
-        Deletes a specifid API token by ID.
-
-        :param account_id  A user string value for Atlassian accounts
+        :param account_id:  A user string value for Atlassian accounts
 
 
-        :param method  A response method condition
+        :param method:  A response method condition
 
-        :param token_id A user token id to be deleted.
+        :param token_id: A user token id to be deleted.
 
         :return: Any
         """
@@ -132,12 +143,12 @@ class UserManagement:
         Enables the specified user account.
         The permission to make use of this resource is exposed by the lifecycle.enablement privilege.
 
-        :param account_id  A user string value for Atlassian accounts
+        :param account_id:  A user string value for Atlassian accounts
 
 
-        :param disable A bool option, if True this API url is set to disabled
+        :param disable: A bool option, if True this API url is set to disabled
 
-        :param kwargs Additional keyword argument to pass body data
+        :param kwargs: Additional keyword argument to pass body data
 
                      *Options available when disable is False*
                      e.g. payload = {"message": "On 6-month suspension"}
@@ -176,11 +187,11 @@ class UserManagement:
 
         Returns information about a single policy by ID
 
-        :param org_id Retrieve the organization id from the API key
+        :param org_id: Retrieve the organization id from the API key
 
-        :param domain_id Retrieve domain details
+        :param domain_id: Retrieve domain details
 
-        :param filter_by Use to determine the endpoint to return
+        :param filter_by: Use to determine the endpoint to return
 
                    *Valid options*
                      > users - return the users in an organization
@@ -191,16 +202,16 @@ class UserManagement:
 
                      > policies - get the policy of the organization
 
-        :param event_id Use to determine the events in the audit log
+        :param event_id: Use to determine the events in the audit log
 
-        :param action  Additional positional argument for events. True sets events-actions
+        :param action:  Additional positional argument for events. True sets events-actions
 
                        > action - Sets the event actions, true to enable by default set to true.
                              e.g action=True
 
-        :param policy_id An id of the policy
+        :param policy_id: An id of the policy
 
-        :param kwargs Optional arguments
+        :param kwargs: Optional arguments
 
                     *Valid options*
                      Any response argument
@@ -304,9 +315,9 @@ class UserManagement:
         Delete a policy for an org
 
 
-        :param org_id ID of the organization to create policy for
+        :param org_id: ID of the organization to create policy for
 
-        :param method A response method to set
+        :param method: A response method to set
 
                         *Valid options*
                          > PUT - updates resource
@@ -315,11 +326,11 @@ class UserManagement:
 
                          > DELETE - removes resources
 
-        :param policy_id ID of the policy
+        :param policy_id: ID of the policy
 
-        :param resource_id Resource ID
+        :param resource_id: Resource ID
 
-        :param kwargs - Additional data to sent in request body
+        :param kwargs: Additional data to sent in request body
 
         :return: Any
         """
@@ -404,8 +415,14 @@ class UserManagement:
         return f"<JiraOne: {self.LINK} \n" \
                f"This API is accessible>"
 
-    def _parse_data_obj(self, data: requests.Response, types: str = "org") -> t.NoReturn:
-        """Parse JSON response object for organization properties."""
+    def _parse_data_obj(self, data: requests.Response, types: str = "org") -> None:
+        """Parse JSON response object for organization properties.
+
+        :param data: A response object
+
+        :param types: A string of available attributes
+        :return: None
+        """
         many = []
         total = -1 if types == "org" or types == "domain" else data.json()['meta']['total']
         count = 0
@@ -436,8 +453,13 @@ class UserManagement:
             elif types == "event":
                 self._event_id_ = many
 
-    def add_token(self, token: str) -> t.NoReturn:
-        """Adds a Bearer token to authenticate the API."""
+    def add_token(self, token: str) -> None:
+        """Adds a Bearer token to authenticate the API.
+
+        :param token: An API key
+
+        :return: None
+        """
         if not isinstance(token, str):
             raise JiraOneErrors("value", "An API token of type string is required")
         if token == "":
@@ -457,9 +479,10 @@ class UserManagement:
 
     def get_all_users(self, source, detail: bool = False) -> deque:
         """Store all user list from organization, so we can search them by email.
-                :param source A JSON response payload
 
-                :param detail - Bool defaults to False
+                :param source: A JSON response payload
+
+                :param detail: Bool defaults to False
 
                 :return: Deque List
                 """
@@ -500,10 +523,11 @@ class UserManagement:
     @staticmethod
     def find_user(query: str, source: t.List = None) -> t.Union[t.Dict, t.List]:
         """Finds a specific user.
-        :param query A search term, could be an email, displayname or accountId if
+
+        :param query: A search term, could be an email, displayname or accountId if
         the `source` data is gotten from `self.get_all_users` and parameter `detail=True`
 
-        :param source A list of users
+        :param source: A list of users
 
         :returns: A dict of the user data or a list of the data
         """
