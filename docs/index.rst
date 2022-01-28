@@ -41,6 +41,21 @@ links to classes and functions. The major ones to take note of are the ones show
 For further knowledge on how to use the classes, methods or functions. Open the jiraone package and read the docstring on the
 aforementioned methods or functions above to get further information.
 
+If you're connecting to Jira server or datacenter, you will need to change the API endpoint to point to server instances. To do that, simply change
+the attribute ``LOGIN.api = False`` this helps to use the endpoint ``/rest/api/latest`` which is compatible for Jira server or datacenter.
+
+.. code-block:: python
+
+    from jiraone import LOGIN
+
+    data = "username", "password", "https://server.jiraserver.com"
+    LOGIN.api = False
+    LOGIN(*data)
+
+
+The above login method applies only when you need to access a Jira server or datacenter type instances. The above has no little or no effect on cloud instance and will work normally.
+
+
 Directory
 -------
 
