@@ -6,7 +6,7 @@ Includes any other functions or global variables
 import os
 import re
 import json
-from typing import Union, Any, Optional, List, Callable, Dict, NoReturn
+from typing import Union, Any, Optional, List, Callable, Dict
 from jiraone.exceptions import JiraOneErrors
 from collections import namedtuple, deque
 from datetime import datetime as dt
@@ -50,25 +50,28 @@ class Permissions(object):
     WORK_ISSUE = "WORK_ISSUE"
 
 
-def field_update(field, key_or_id: Union[str, int], name: Optional[str] = None, update: Optional[str] = None,
-                 data: Optional[Any] = None, **kwargs: Any) -> Any:
+def field_update(field, key_or_id: Union[str, int],
+                 name: str = None,
+                 update: Optional[str] = None,
+                 data: Any = None,
+                 **kwargs: Any) -> Any:
     """Ability to update a jira field or add to it or remove from it.
 
-    :param name The name of the field
+    :param name: The name of the field
 
-    :param key_or_id The issue key or id of the field
+    :param key_or_id: The issue key or id of the field
 
-    :param field An alias to jiraone's field variable
+    :param field: An alias to jiraone's field variable
 
-    :param update A way to update a field value.
+    :param update: A way to update a field value.
 
-    :param data A way to send out data.
+    :param data: A way to send out data.
 
             *options to use for `update` parameter*
                   i) add - add to list value or dict value
                   ii) remove - remove an option value from a list or dict
 
-    :return: Anything
+    :return: Any object
     """
     if name is None:
         raise JiraOneErrors("name")
@@ -104,21 +107,22 @@ def time_in_status(
     across different sets of issues. Display the output or send the output into
     a file either in CSV or JSON.
 
-    :param var - Alias to the `PROJECT.change_log` method
+    :param var: Alias to the `PROJECT.change_log` method
 
-    :param key_or_id - An issue key or id or keys put in a list to derive multiples values or use a jql format in dictionary
+    :param key_or_id: An issue key or id or keys put in a list to derive multiples values
+                    or use a jql format in dictionary
 
-    :param reader - `file_reader` function needs to be passed here
+    :param reader: `file_reader` function needs to be passed here
 
-    :param report_file - A string of the name of the file
+    :param report_file: A string of the name of the file
 
-    :param report_folder - A folder where data resides
+    :param report_folder: A folder where data resides
 
-    :param output_format - An output format either in CSV or JSON. e.g csv or json (case insensitive)
+    :param output_format: An output format either in CSV or JSON. e.g csv or json (case insensitive)
 
-    :param status - A status name to check or output.
+    :param status: A status name to check or output.
 
-    :param kwargs -Additional keyword arguments to use
+    :param kwargs: Additional keyword arguments to use
 
                *Available options*
 
@@ -180,15 +184,13 @@ def time_in_status(
         "to_string": 0,
         "summary": 0
     }):
-        rows += 1
-        # for each row, check the next row if exist and if the key is the
-        # same as of the period the status changed
-        if items['issue_key'] == item['issue_key']:
-            # parse the datetime string with a proper format
-            from_time = dt.strptime(items['created'], "%Y-%m-%dT%H:%M:%S.%f%z")
-            to_time = dt.strptime(item['created'], "%Y-%m-%dT%H:%M:%S.%f%z")
-            # get a timedelta of the datetime value
-            difference = to_time - from_time
+        def initialize(t, f) -> None:
+            """Rerun the data for time extraction.
+            :param t: A timedelta object showing the present or future datetime
+            :param f: A timedelta object showing the previous datetime
+            :return: none
+            """
+            difference = t - f
             data_bundle = {
                 "time_status": pretty_format(difference, pprint),
                 "issue_key": items['issue_key'],
@@ -198,67 +200,62 @@ def time_in_status(
                 "author": items['author']
             }
             collect_data.append(data_bundle)
+
+        rows += 1
+        # for each row, check the next row if exist and if the key is the
+        # same as of the period the status changed
+        if items['issue_key'] == item['issue_key']:
+            # parse the datetime string with a proper format
+            from_time = dt.strptime(items['created'], "%Y-%m-%dT%H:%M:%S.%f%z")
+            to_time = dt.strptime(item['created'], "%Y-%m-%dT%H:%M:%S.%f%z")
+            # get a timedelta of the datetime value
+            initialize(to_time, from_time)
         else:
             if items['from_string'] == items['to_string']:
                 from_time = dt.strptime(items['created'], "%Y-%m-%dT%H:%M:%S.%f%z")
-                # convert the current time to something that we can use timedelta on
+                # convert the current time to something we that we can use timedelta on
                 present = dt.strftime(dt.astimezone(dt.now()), "%Y-%m-%dT%H:%M:%S.%f%z")
                 today = dt.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
-                difference = today - from_time
-                data_bundle = {
-                    "time_status": pretty_format(difference, pprint),
-                    "issue_key": items['issue_key'],
-                    "from_string": items['from_string'],
-                    "to_string": items['to_string'],
-                    "summary": items['summary'],
-                    "author": items['author']
-                }
-                collect_data.append(data_bundle)
+                initialize(today, from_time)
             else:
                 # default here if this is the current status.
                 from_time = dt.strptime(items['created'], "%Y-%m-%dT%H:%M:%S.%f%z")
                 present = dt.strftime(dt.astimezone(dt.now()), "%Y-%m-%dT%H:%M:%S.%f%z")
                 today = dt.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
-                difference = today - from_time
-                data_bundle = {
-                    "time_status": pretty_format(difference, pprint),
-                    "issue_key": items['issue_key'],
-                    "from_string": items['from_string'],
-                    "status_name": items['to_string'],
-                    "summary": items['summary'],
-                    "author": items['author']
-                }
-                collect_data.append(data_bundle)
+                initialize(today, from_time)
         if rows >= number_of_history_items:
             break
 
     data_collection = deque()
+    collect_data.clear()
+    
+    def matrix_loop(proxy) -> None:
+        """Repeat of ``if`` steps validating the status.
+        :param proxy: The name of the iterable data within the dict
+        :return: None
+        """
+        matrix = [proxy['issue_key'], proxy['summary'], proxy['author'], proxy['time_status'],
+                  proxy['status_name']]
+        data_collection.append(matrix)
+
     if status is not None:
         if isinstance(status, str):
             for name in collect_data:
                 if "status_name" in name:
                     if name['status_name'] == status:
-                        matrix = [name['issue_key'], name['summary'], name['author'], name['time_status'],
-                                  name['status_name']]
-                        data_collection.append(matrix)
+                        matrix_loop(name)
                 else:
                     if name['from_string'] == status:
-                        matrix = [name['issue_key'], name['summary'], name['author'], name['time_status'],
-                                  name['from_string']]
-                        data_collection.append(matrix)
+                        matrix_loop(name)
         else:
             raise JiraOneErrors("wrong", "Expecting `status` argument to be a string value "
                                          "got {} instead".format(type(status)))
     elif status is None:
         for name in collect_data:
             if "status_name" in name:
-                matrix = [name['issue_key'], name['summary'], name['author'], name['time_status'],
-                          name['status_name']]
-                data_collection.append(matrix)
+                matrix_loop(name)
             else:
-                matrix = [name['issue_key'], name['summary'], name['author'], name['time_status'],
-                          name['from_string']]
-                data_collection.append(matrix)
+                matrix_loop(name)
 
     collect_data.clear()
     from jiraone import file_writer, path_builder
@@ -295,9 +292,9 @@ def time_in_status(
 def pretty_format(date: Any, pprint: bool) -> str:
     """Scan the datetime value and return a pretty format in string if true else returns string of datetime object.
 
-        :param date A datetime object or a string datetime value
+        :param date: A datetime object or a string datetime value
 
-        :param pprint A bool object
+        :param pprint: A bool object
 
         :return: A string value
         """
@@ -319,12 +316,12 @@ def pretty_format(date: Any, pprint: bool) -> str:
     return make_date
 
 
-def bulk_change_email(data: str, token: str) -> NoReturn:
+def bulk_change_email(data: str, token: str) -> None:
     """Bulk change managed user's email address if they do not exist.
 
-    :param data A string of the file name
+    :param data: A string of the file name
 
-    :param token A string of the API token to authenticate the request
+    :param token: A string of the API token to authenticate the request
 
     Additionally, the output of failed attempts it written back to your data file.
 
@@ -360,7 +357,7 @@ def bulk_change_email(data: str, token: str) -> NoReturn:
     collect.clear()
 
 
-def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> NoReturn:
+def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
     """The function helps to swap an email address to another.
 
     If the target email exist as an Atlassian account email, this will help to swap
