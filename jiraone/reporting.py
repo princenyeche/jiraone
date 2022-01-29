@@ -5,7 +5,7 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
-from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict, NoReturn
+from typing import Any, List, Iterable, Tuple, Union, Callable, Dict
 from collections import deque, namedtuple, OrderedDict
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
@@ -22,7 +22,7 @@ class Projects:
     def projects_accessible_by_users(*args: Any, project_folder: str = "Project",
                                      project_file_name: str = "project_file.csv",
                                      user_extraction_file: str = "project_extract.csv",
-                                     permission: str = "BROWSE", **kwargs):
+                                     permission: str = "BROWSE", **kwargs) -> None:
         """
         Send an argument as String equal to a value, example: status=live.
 
@@ -34,6 +34,20 @@ class Projects:
         https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search
 
         for endpoint /rest/api/3/user/permission/search
+
+        :param args: A set of parameter arguments to supply
+
+        :param project_folder: A folder
+
+        :param project_file_name: A file to hold temp data
+
+        :param user_extraction_file: A file to hold user temp data
+
+        :param permission: A permission of Jira to check
+
+        :param kwargs: Additional arguments
+
+        :return: None
         """
         count_start_at = 0
         headers = ["Project Key", "Project Name", "Issue Count", "Last Issue Update"]
@@ -102,12 +116,20 @@ class Projects:
     @staticmethod
     def dashboards_shared_with(dashboard_folder: str = "Dashboard",
                                dashboard_file_name: str = "dashboard_file.csv",
-                               **kwargs):
+                               **kwargs) -> None:
         """
         Retrieve the Dashboard Id/Name/owner and who it is shared with.
 
         The only requirement is that the user querying this API should have access to all
         the Dashboard available else it will only return dashboard where the user's view access is allowed.
+
+        :param dashboard_folder: A folder
+
+        :param dashboard_file_name: A file to store temp data
+
+        :param kwargs: Additional arguments
+
+        :return: None
         """
         count_start_at = 0
         dash_list = deque()  # get the id of dashboard search
@@ -174,9 +196,17 @@ class Projects:
     def get_all_roles_for_projects(roles_folder: str = "Roles",
                                    roles_file_name: str = "roles_file.csv",
                                    user_extraction: str = "role_users.csv",
-                                   **kwargs):
-        """Get the roles available in a project and which user is assigned to which
-        role within the project"""
+                                   **kwargs) -> None:
+        """
+        Get the roles available in a project and which user is assigned to which
+        role within the project.
+
+        :param roles_folder: A folder
+        :param roles_file_name: A file to store temp data
+        :param user_extraction: Data extraction file holder
+        :param kwargs: Addition argument
+        :return: None
+        """
         count_start_at = 0
         headers = ["Project Id ", "Project Key", "Project Name", "Project roles", "User AccountId", "User DisplayName",
                    "User role in Project"]
@@ -265,11 +295,18 @@ class Projects:
 
     def get_attachments_on_projects(self, attachment_folder: str = "Attachment",
                                     attachment_file_name: str = "attachment_file.csv",
-                                    **kwargs):
+                                    **kwargs) -> None:
         """Return all attachments of a Project or Projects
 
         Get the size of attachments on an Issue, count those attachments collectively and return the total number
         on all Projects searched. JQL is used as a means to search for the project.
+        :param attachment_folder: A temp folder
+
+        :param attachment_file_name: A filename for the attachment
+
+        :param kwargs: Addition argument to supply.
+
+        :return: None
         """
         attach_list = deque()
         count_start_at = 0
@@ -277,7 +314,12 @@ class Projects:
                    "Attachment type", "Name of file", "Created on by user", "Attachment url"]
         file_writer(folder=attachment_folder, file_name=attachment_file_name, data=headers, **kwargs)
 
-        def pull_attachment_sequence() -> Optional:
+        def pull_attachment_sequence() -> None:
+            """
+            Pulls the data and transform into given results.
+
+            :return: None
+            """
             nonlocal attach_list
             for issues in result_data["issues"]:
                 keys = issues["key"]
@@ -295,7 +337,11 @@ class Projects:
                                 if "author" in attach:
                                     display_name = attach["author"]["displayName"]
 
-                                def pull_attachment() -> Optional:
+                                def pull_attachment() -> None:
+                                    """
+                                    Arranges extracts data
+                                    :return: None
+                                    """
                                     file_name = attach["filename"]  # name of the file
                                     created = attach["created"]  # datetime need to convert it
                                     attachment_size = attach["size"]  # in bytes, need to convert to mb
@@ -330,7 +376,11 @@ class Projects:
 
             count_start_at += 50
 
-        def re_write():
+        def re_write() -> None:
+            """
+            Rewrite and sort the extracted data
+            :return: None
+            """
             calc_made = self.grade_and_sort(attach_list, read_file)
             attach_list.clear()
             rd_file = read_file
@@ -370,6 +420,9 @@ class Projects:
         using megabyte MB, value is 1000^2
         mebibyte MiB, value is 1024^2
         Therefore total = val / MB
+        :param val: A value to supply
+
+        :return: strings
         """
         byte_size = val
         mega_byte = 1000 * 1000
@@ -378,13 +431,24 @@ class Projects:
 
     @staticmethod
     def date_converter(val) -> str:
-        """split the datetime value and output a string."""
+        """split the datetime value and output a string.
+        :param val: A value to be supplied
+
+        :return: string
+        """
         get_date_time = val.split("T")
         get_am_pm = get_date_time[1].split(".")
         return f"Created on {get_date_time[0]} {get_am_pm[0]}"
 
     @staticmethod
     def grade_and_sort(attach_list, read_file) -> Union[float, int]:
+        """
+        Arranges and sorts the data.
+
+        :param attach_list: A list of data
+        :param read_file: A data set
+        :return: A union of float and integers
+        """
         for node in read_file:
             pattern = re.compile(r"(\d*?[0-9]\.[0-9]*)")
             if pattern is not None:
@@ -422,7 +486,7 @@ class Projects:
                                           attach: int = 8,
                                           file: int = 6,
                                           last_cell: bool = True,
-                                          **kwargs):
+                                          **kwargs) -> None:
         """Ability to post an attachment into another Instance.
 
         given the data is extracted from a csv file which contains the below information
@@ -432,20 +496,30 @@ class Projects:
         we assume you're getting this from
         `def get_attachments_on_project()`
 
-        :param attach_folder a folder or directory path
-        :param attach_file a file to a file name
-        :param key a row index of the column
-        :param attach a row index of the column
-        :param file - integers to specify the index of the columns
-        :param last_cell is a boolean determines if the last cell should be counted.
+        :param attach_folder: a folder or directory path
+
+        :param attach_file: a file to a file name
+
+        :param key: a row index of the column
+
+        :param attach: a row index of the column
+
+        :param file:  integers to specify the index of the columns
+
+        :param last_cell: is a boolean determines if the last cell should be counted.
              e.g
-                * key=3,
-                * attach=6,
-                * file=8
+
+              * key=3,
+
+              * attach=6,
+
+              * file=8
 
         the above example corresponds with the index if using the
          `def get_attachments_on_project()` otherwise, specify your value in each
          keyword args when calling the method.
+
+         :return: None
         """
         read = file_reader(folder=attach_folder, file_name=attach_file, skip=True, **kwargs)
         add_log("Reading attachment {}".format(attach_file), "info")
@@ -481,20 +555,26 @@ class Projects:
                              download_path: str = "Downloads",
                              attach: int = 8,
                              file: int = 6,
-                             **kwargs):
+                             **kwargs) -> None:
         """Download the attachments to your local device read from a csv file.
 
         we assume you're getting this from   `def get_attachments_on_project()` method.
-              :param attach, file - integers to specify the index of the columns
-              :param file_folder a folder or directory where the file
-              :param download_path a directory where files are stored
-              :param file a row to the index of the column
-              :param file_name a file name to a file
+              :param attach: integers to specify the index of the columns
+
+              :param file_folder: a folder or directory where the file
+
+              :param download_path: a directory where files are stored
+
+              :param file: a row to the index of the column
+
+              :param file_name: a file name to a file
                 e.g
                   * attach=6,
                   * file=8
               the above example corresponds with the index if using the `def get_attachments_on_project()`
               otherwise, specify your value in each keyword args when calling the method.
+
+        :return: None
         """
         read = file_reader(folder=file_folder, file_name=file_name, **kwargs)
         add_log("Reading attachment {}".format(file_name), "info")
@@ -554,12 +634,20 @@ class Projects:
 
     @staticmethod
     def get_total_comments_on_issues(folder: str = "Comment", file_name: str = "comment_file.csv",
-                                     **kwargs):
+                                     **kwargs) -> None:
         """Return a report with the number of comments sent to or by a reporter (if any).
 
         This api will return comment count, the total comment sent by a reporter
         per issue and collectively sum up a total.
         It also shows how many comments other users sent on the issue.
+
+        :param folder: The name of a folder
+
+        :param file_name: The name of a file
+
+        :param kwargs: additional argument to supply
+
+        :return: None
         """
         comment_list = deque()
         pull = "active" if "pull" not in kwargs else kwargs["pull"]
@@ -593,8 +681,10 @@ class Projects:
         print("Searching with JQL:", search_issues)
         count_start_at = 0
 
-        def extract_issue():
-            """Find the comment in each issue and count it."""
+        def extract_issue() -> None:
+            """Find the comment in each issue and count it.
+            :return: None
+            """
             comment_by_users = 0
             comment_by_others = 0
             for issues in result_data["issues"]:
@@ -627,7 +717,11 @@ class Projects:
                                         if account_id != get_user:
                                             comment_by_others += 1
 
-                                def pull_comments() -> Optional:
+                                def pull_comments() -> None:
+                                    """
+                                    Pulls and arranges data
+                                    :return: None
+                                    """
                                     raw_dump = [project_id, project_key, project_name, keys,
                                                 comment_total, reporter_aid, reporter_name,
                                                 comment_by_users, comment_by_others]
@@ -656,6 +750,10 @@ class Projects:
             count_start_at += 50
 
         def count_and_total() -> Tuple[int, int, int]:
+            """
+            Sorts and arranges the extracted data
+            :return: A tuple of integers
+            """
             for row in read_file:
                 comment_list.append(row)
 
@@ -667,7 +765,11 @@ class Projects:
             calc_list_two = sum(col_list)
             return calc_list_zero, calc_list_one, calc_list_two
 
-        def write_result():
+        def write_result() -> None:
+            """
+            Sorts the result data
+            :return: None
+            """
             list_data = count_and_total()
             comment_list.clear()
             sorts = sorted(read_file, key=lambda rows: rows[3], reverse=False)
@@ -702,68 +804,112 @@ class Projects:
         add_log("File extraction for comments completed", "info")
 
     @staticmethod
-    def change_log(folder: str = "ChangeLog", file: str = "change_log.csv", **kwargs) -> NoReturn:
+    def change_log(folder: str = "ChangeLog", file: str = "change_log.csv",
+                   back_up: bool = False,
+                   allow_cp: bool = True,
+                   **kwargs: Union[str, bool]) -> None:
         """Extract the issue history of an issue.
 
         Query the changelog endpoint if using cloud instance or straight away define access to it on server.
         Extract the histories and export it to a CSV file.
 
-        :param: jql required A valid JQL query for projects or issues  datatype -> String
 
-        :param folder - A name of a folder datatype String
-        :param file - A name of a file datatype String
+
+        :param folder:  A name of a folder datatype String
+        :param file:  A name of a file datatype String
+        :param back_up: A boolean to check whether a history file is exist or not.
+        :param allow_cp: Allow or deny the ability to have a checkpoint.
+        :param kwargs: The other other kwargs that can be passed as below.
+
+               jql: (required) A valid JQL query for projects or issues.  datatype -> string
+
+               saved_file: The name of the file which saves the iteration. datatype -> string
+
+               show_output: Show a printable output on terminal. datatype -> boolean
+
+               field_name: Target a field name to render. datatype -> string
+
+        :return: None
         """
+        from jiraone.exceptions import JiraOneErrors
+        if LOGIN.get(endpoint.myself()).status_code > 300:
+            exit("Authentication failed. Please check your credentials.")
         changes = deque()
         item_list = deque()
-        jql = kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
+        jql: str = kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
+        saved_file: str = "iter_saves.json" if "saved_file" not in kwargs else kwargs["saved_file"]
         field_name = kwargs["field_name"] if "field_name" in kwargs else None
-        show_output: bool = kwargs["show_output"] if "show_output" in kwargs else True
+        show_output: bool = False if "show_output" in kwargs else True
         print("Extracting issue histories...")
         add_log("Extracting issue histories...", "info")
 
-        def changelog_search() -> NoReturn:
-            """Search the change history endpoint and extract data if exist."""
+        def changelog_search() -> None:
+            """Search the change history endpoint and extract data if exist.
+            :return: None
+            """
+            nonlocal loop
+            infinity_counter = count if back_up is False else data_brick["iter"]
             for issue in data["issues"]:
                 keys = issue["key"]
-                project_key = keys.split("-")[0]
-                # reach the changelog endpoint and extract the data of history for servers.
-                # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
-                get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=keys,
-                                                           query="expand=renderedFields,names,schema,operations,"
-                                                                 "editmeta,changelog,versionedRepresentations"))
-                if get_issue_keys.status_code == 200:
-                    key_data = json.loads(get_issue_keys.content)
-                    # Bug Fix to "Extraction Of Jira History Error #47" return value of None in some issue keys.
-                    # https://github.com/princenyeche/atlassian-cloud-api/issues/47
-                    load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=keys))
-                    _summary = None
-                    if load_summary.status_code < 300:
-                        _summary = json.loads(load_summary.content).get('fields').get('summary')
-                    if LOGIN.api is False:
-                        if "changelog" in key_data:
-                            _data = key_data["changelog"]
-                            # grab the change_histories on an issue
-                            print(f"Getting history from issue: {keys}")
-                            add_log(f"Getting history from issue: {keys}", "info")
-                            changelog_history(_data, proj=(keys, project_key, _summary))
-                            print("*" * 120)
-                    else:
-                        starter = 0
-                        while True:
-                            key_data = LOGIN.get(endpoint.issues(issue_key_or_id=keys,
-                                                                 query="changelog?startAt={}".format(starter),
-                                                                 event=True))
-                            loads = json.loads(key_data.content)
-                            if starter >= loads["total"]:
-                                break
-                            print(f"Getting history from issue: {keys}")
-                            add_log(f"Getting history from issue: {keys}", "info")
-                            changelog_history(loads, proj=(keys, project_key, _summary))
-                            print("*" * 120)
-                            starter += 100
 
-        def changelog_history(history: Any = Any, proj: tuple = (Any, Any, Any)) -> NoReturn:
-            """Structure the change history data after being retrieved."""
+                def re_instantiate(val: str) -> None:
+                    """
+                    Evaluate the issue key to run
+                    :param val: An issue key variable
+                    :return: None
+                    """
+                    # reach the changelog endpoint and extract the data of history for servers.
+                    # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
+                    get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=val,
+                                                               query="expand=renderedFields,names,schema,operations,"
+                                                                     "editmeta,changelog,versionedRepresentations"))
+                    if get_issue_keys.status_code == 200:
+                        key_data = json.loads(get_issue_keys.content)
+                        # Bug Fix to "Extraction Of Jira History Error #47" return value of None in some issue keys.
+                        # https://github.com/princenyeche/atlassian-cloud-api/issues/47
+                        load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=val))
+                        _summary = None
+                        if load_summary.status_code < 300:
+                            _summary = json.loads(load_summary.content).get('fields').get('summary')
+                        if LOGIN.api is False:
+                            if "changelog" in key_data:
+                                _data = key_data["changelog"]
+                                # grab the change_histories on an issue
+                                print(f"Getting history from issue: {val}")
+                                add_log(f"Getting history from issue: {val}", "info")
+                                changelog_history(_data, proj=(val, project_key, _summary))
+                                print("*" * 100)
+                        else:
+                            starter = 0
+                            while True:
+                                key_data = LOGIN.get(endpoint.issues(issue_key_or_id=val,
+                                                                     query="changelog?startAt={}".format(starter),
+                                                                     event=True))
+                                loads = json.loads(key_data.content)
+                                if starter >= loads["total"]:
+                                    break
+                                print(f"Getting history from issue: {val}")
+                                add_log(f"Getting history from issue: {val}", "info")
+                                changelog_history(loads, proj=(val, project_key, _summary))
+                                print("*" * 100)
+                                starter += 100
+
+                infinity_counter += 1
+                data_brick.update({"iter": infinity_counter, "key": keys})
+                project_key = keys.split("-")[0]
+                json.dump(data_brick, open(f"{path_builder(path=folder, file_name=saved_file)}",
+                                           encoding='utf-8', mode='w+'), indent=4) if allow_cp is True else None
+                if back_up is True and keys != set_up["key"] and loop is False:
+                    re_instantiate(set_up["key"])
+
+                loop = True
+                re_instantiate(keys)
+
+        def changelog_history(history: Any = Any, proj: tuple = (str, Any, Any)) -> None:
+            """Structure the change history data after being retrieved.
+
+            :return: None
+            """
             _keys = proj[0]
             _summary = proj[2]
 
@@ -835,22 +981,55 @@ class Projects:
                    "Field", "From", "From String", "To", "To String"] if LOGIN.api is False else \
             ["Issue Key", "Summary", "Author", "Created", "Field Type",
              "Field", "Field Id", "From", "From String", "To", "To String", "From AccountId", "To AccountId"]
-        file_writer(folder=folder, file_name=file, data=headers)
+        cycle: int = 0
+        # stores our iteration here
+        data_brick = {}
+        set_up = None
+        loop: bool = False
+        if allow_cp is True:
+            if os.path.isfile(path_builder(folder, file_name=saved_file)):
+                user_input = input("An existing save point exist from your last extraction, "
+                                   "do you want to use it? (Y/N) \n")
+                set_up = json.load(open(path_builder(path=folder, file_name=saved_file)))
+                if user_input.lower() in ["y", "yes"]:
+                    back_up = True
+                else:
+                    print("Starting extraction from scratch.")
+                    set_up = None
+        os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT) if allow_cp is True else None
+        file_writer(folder=folder, file_name=file, data=headers, mode="w+") if set_up is None else None
+        depth = 1
         while True:
-            load = LOGIN.get(endpoint.search_issues_jql(query=jql, start_at=count))
+            load = LOGIN.get(endpoint.search_issues_jql(query=set_up["jql"], start_at=set_up["iter"],
+                                                        max_results=100)) if back_up is True and depth == 1 else \
+                LOGIN.get(endpoint.search_issues_jql(query=jql, start_at=count, max_results=100))
             if load.status_code == 200:
                 data = json.loads(load.content)
+                cycle = 0
+                data_brick.update({
+                    "jql": jql,
+                    "iter": set_up["iter"] if back_up is True and depth == 1 else count
+                })
                 if count > data["total"]:
                     break
                 changelog_search()
+                depth += 1
             count += 100
+            if depth == 2 and back_up is True:
+                count = data_brick["iter"]
+            if load.status_code > 300:
+                cycle += 1
+                if cycle > 99:
+                    raise JiraOneErrors("value", "It seems that the search \"{}\" cannot be "
+                                                 "retrieved as we've attempted it {} times".format(jql, cycle))
 
         if show_output is True:
             print("A CSV file has been written to disk, find it here {}".format(
                 path_builder(folder, file_name=file)))
         add_log("File extraction for change log completed", "info")
+        os.remove(path_builder(path=folder, file_name=saved_file))
 
-    def comment_on(self, key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs):
+    def comment_on(self, key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs) -> Any:
         """Comment on a ticket or write on a description field.
 
         GET comments
@@ -859,6 +1038,8 @@ class Projects:
         POST add a comment
         DELETE delete a comment
         Do the same thing you do via the UI.
+
+        :return: Any
         """
         result_data = deque()
         start_at = kwargs["start_at"] if "start_at" in kwargs else 0
@@ -1111,25 +1292,38 @@ class Projects:
 
 class Users:
     """
-    Below methods helps to Generate the No of Users on Jira Cloud
+    This class helps to Generate the No of Users on Jira Cloud
 
     You can customize it to determine which user you're looking for.
-    >> The below method here displays active or inactive users, so you'll be getting all users
-    :param: pull (options)
-            -> both: pulls out inactive and active users
-            -> active: pulls out only active users
-            -> inactive: pulls out inactive users
-    :param: user_type (options)
-            -> atlassian: a normal Jira Cloud user
-            -> customer: this will be your JSM customers
-            -> app: this will be the bot users for any Cloud App
-            -> unknown: as the name suggest unknown user type probably from oAuth
+
+    * It's method such as `get_all_users` displays active or inactive users, so you'll be getting all users
+
     """
     user_list = deque()
 
     def get_all_users(self, pull: str = "both", user_type: str = "atlassian",
                       file: str = None, folder: str = Any, **kwargs) -> Any:
-        """Generates a list of users."""
+        """Generates a list of users.
+
+        :param pull: (options)
+            * both: pulls out inactive and active users
+            * active: pulls out only active users
+            * inactive: pulls out inactive users
+
+       :param user_type: (options)
+            * atlassian: a normal Jira Cloud user
+            * customer: this will be your JSM customers
+            * app: this will be the bot users for any Cloud App
+            * unknown: as the name suggest unknown user type probably from oAuth
+
+       :param file: String of the filename
+
+       :param folder: String of the folder name
+
+       :param kwargs: Additional keyword argument for the method.
+
+        :return: Any
+        """
         count_start_at = 0
         validate = LOGIN.get(endpoint.myself())
 
@@ -1149,19 +1343,24 @@ class Users:
             sys.exit(1)
 
         if file is not None:
-            self.report(category=folder, filename=file)
+            self.report(category=folder, filename=file, **kwargs)
 
-    def report(self, category: str = Any, filename: str = "users_report.csv") -> Optional:
-        """Creates a user report file in CSV format."""
+    def report(self, category: str = Any, filename: str = "users_report.csv", **kwargs) -> None:
+        """Creates a user report file in CSV format.
+        :return: None
+        """
         read = [d for d in self.user_list]
-        file_writer(folder=category, file_name=filename, data=read, mark="many")
+        file_writer(folder=category, file_name=filename, data=read, mark="many", **kwargs)
         add_log(f"Generating report file on {filename}", "info")
 
     def user_activity(self, status: str = Any, account_type: str = Any, results: List = Any) -> Any:
-        """Determines users activity."""
+        """Determines users activity.
+
+        :return: None
+        """
 
         # get both active and inactive users
-        def stack(c: Any, f: Any, s: Any) -> Any:
+        def stack(c: Any, f: List, s: Any) -> Any:
             if status == "both":
                 if s["accountType"] == account_type:
                     return c.user_list.append(f)
@@ -1178,8 +1377,10 @@ class Users:
             stack(self, list_user, each_user)
 
     def get_all_users_group(self, group_folder: str = "Groups", group_file_name: str = "group_file.csv",
-                            user_extraction_file: str = "group_extraction.csv", **kwargs):
-        """Get all users and the groups associated to them on the Instance."""
+                            user_extraction_file: str = "group_extraction.csv", **kwargs) -> None:
+        """Get all users and the groups associated to them on the Instance.
+        :return: None
+        """
         headers = ["Name", "AccountId", "Groups", "User status"]
         file_writer(folder=group_folder, file_name=group_file_name, data=headers, **kwargs)
         file_name = user_extraction_file
@@ -1238,8 +1439,12 @@ class Users:
 
         return self.user_list if len(self.user_list) != 0 else 0
 
-    def mention_user(self, name):
-        """Return a format that you can use to mention users on cloud."""
+    def mention_user(self, name) -> List[str]:
+        """Return a format that you can use to mention users on cloud.
+        :param name: The name of a user.
+
+        :return: List[str]
+        """
         data = []
         if "," in name:
             s = name.split(",")
@@ -1262,8 +1467,15 @@ class NextGen(object):
         print("Hello")
 
 
-def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
-    """Builds a dir path and file path in a directory."""
+def path_builder(path: str = "Report", file_name: str = Any, **kwargs) -> str:
+    """Builds a dir path and file path in a directory.
+
+    :param path: A path to declare absolute to where the script is executed.
+
+    :param file_name: The name of the file being created
+
+    :return: A string of the directory path or file path
+    """
     base_dir = os.path.join(WORK_PATH, path)
     if not os.path.exists(base_dir):
         os.mkdir(base_dir)
@@ -1274,7 +1486,26 @@ def path_builder(path: str = "Report", file_name: str = Any, **kwargs):
 
 def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = object,
                 mark: str = "single", mode: str = "a+", content: str = Any, **kwargs) -> Any:
-    """Reads and writes to a file, single or multiple rows or write as byte files."""
+    """Reads and writes to a file, single or multiple rows or write as byte files.
+
+    :param folder: A path to the name of the folder
+
+    :param file_name: The name of the file being created.
+
+    :param data: Iterable - an iterable data, usually in form of a list.
+
+    :param mark:  Helps evaluates how data is created, available options [“single”, “many”, “file”],
+              by default mark is set to “single”
+
+    :param mode: File mode, available options [“a”, “w”, “a+”, “w+”, “wb”],
+                   by default the mode is set to “a+”.
+
+    :param content: string - outputs the file in bytes.
+
+    :param kwargs: Use encoding - defaults to “utf-8”
+
+    :return: Any
+    """
     file = path_builder(path=folder, file_name=file_name)
     encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
     if mode:
@@ -1291,7 +1522,21 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
 
 def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
                 skip: bool = False, content: bool = False, **kwargs) -> Union[List[List[str]], str]:
-    """Reads a CSV file and returns a list comprehension of the data or reads a byte into strings."""
+    """Reads a CSV file and returns a list comprehension of the data or reads a byte into strings.
+
+    :param folder: string - a path to the name of the folder
+
+    :param file_name: string - the name of the file being created
+
+    :param mode: string - file mode, available options [“r”, “rb”]
+
+    :param skip: bool - True allows you to skip the header if the file has any. Otherwise defaults to False
+
+    :param content: bool - True allows you to read a byte file. By default it is set to False
+
+    :param kwargs: Use encoding - standard encoding strings. e.g “utf-8”
+
+    """
     file = path_builder(path=folder, file_name=file_name)
     encoding = kwargs["encoding"] if "encoding" in kwargs else None
     if mode:
@@ -1311,16 +1556,22 @@ def replacement_placeholder(string: str = Any, data: list = Any,
                             row: int = 2) -> Any:
     """Return multiple string replacement.
 
-    :param string  a string that needs to be checked
-    :param data  a list of strings with one row in the string being checked.
-    :param iterable an iterable data that needs to be replaced with.
-    :param row an indicator of the column to check.
+    :param string:  A string that needs to be checked
 
-    # Usage:
+    :param data:  A list of strings with one row in the string being checked.
+
+    :param iterable: An iterable data that needs to be replaced with.
+
+    :param row: An indicator of the column to check.
+
+    * Usage
+    ```
+    # previous statement
     hold = ["Hello", "John doe", "Post mortem"]
     text = ["<name> <name>, welcome to the <name> of what is to come"]
     cb = replacement_placeholder("<name>", text, hold, 0)
     print(cb)
+    ```
     """
     result = None
     count = 0

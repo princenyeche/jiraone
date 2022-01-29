@@ -8,7 +8,7 @@
 - friendly name to PrettyPrint
 """
 from requests.auth import HTTPBasicAuth
-from typing import Any, Optional, Union, Dict
+from typing import Any, Optional, Union, Dict, Mapping, List
 from pprint import PrettyPrinter
 import requests
 import sys
@@ -22,31 +22,78 @@ class Credentials(object):
     headers = None
     api = True
 
-    def __init__(self, user: str, password: str, url: str = Any) -> Optional:
-        """Instantiate the login."""
+    def __init__(self, user: str, password: str, url: str = None) -> None:
+        """
+        Instantiate the login.
+
+        :param user:  A username or email address
+
+        :param password:  A user password or API token
+
+        :param url: A server url or cloud instance url
+        :return: None
+        """
         self.base_url = url
         self.user = user
         self.password = password
         self.token_session(email=self.user, token=self.password)
 
     # produce a session for the script and save the session
-    def token_session(self, email: Any = None, token: Any = None) -> Any:
+    def token_session(self, email: str = None, token: str = None) -> None:
+        """
+        A session initializer to HTTP request.
+
+        :param email: An email address or username
+
+        :param token: An API token or user password
+        :return: None
+        """
         self.auth_request = HTTPBasicAuth(email, token)
         self.headers = {"Content-Type": "application/json"}
 
-    def get(self, url, *args, payload=None, **kwargs):
+    def get(self, url, *args, payload=None, **kwargs) -> requests.Response:
+        """
+        A get request to HTTP request
+        :param url: A valid URL
+        :param args: Additional arguments if any
+        :param payload: A JSON data representation
+        :param kwargs: Additional keyword arguments to `requests` module
+        :return: A HTTP response
+        """
         response = requests.get(url, *args, auth=self.auth_request, json=payload, headers=self.headers, **kwargs)
         return response
 
-    def post(self, url, *args, payload=None, **kwargs):
+    def post(self, url, *args, payload=None, **kwargs) -> requests.Response:
+        """
+        A post  request to HTTP request
+        :param url: A valid URL
+        :param args: Additional arguments if any
+        :param payload: A JSON data representation
+        :param kwargs: Additional keyword arguments to `requests` module
+        :return: A HTTP response
+        """
         response = requests.post(url, *args, auth=self.auth_request, json=payload, headers=self.headers, **kwargs)
         return response
 
-    def put(self, url, *args, payload=None, **kwargs):
+    def put(self, url, *args, payload=None, **kwargs) -> requests.Response:
+        """
+        A put request to HTTP request
+        :param url: A valid URL
+        :param args: Additional arguments if any
+        :param payload: A JSON data representation
+        :param kwargs: Additional keyword arguments to `requests` module
+        :return: A HTTP response
+        """
         response = requests.put(url, *args, auth=self.auth_request, json=payload, headers=self.headers, **kwargs)
         return response
 
-    def delete(self, url, **kwargs):
+    def delete(self, url, **kwargs) -> requests.Response:
+        """
+        A delete request to HTTP request
+        :param url: A valid URL
+        :param kwargs: Additional keyword arguments to `requests` module
+        :return: A HTTP response
+        """
         response = requests.delete(url, auth=self.auth_request, headers=self.headers, **kwargs)
         return response
 
@@ -54,15 +101,28 @@ class Credentials(object):
 class Echo(PrettyPrinter):
     """A Class used to inherit from PrettyPrinter."""
 
-    def __init__(self, *args, **kwargs):
-        """Inherit from the parent."""
+    def __init__(self, *args, **kwargs) -> None:
+        """
+        Inherit from the parent
+
+        :param args: postional arguments
+        :param kwargs: additional arguments
+        :return: None
+        """
         super(Echo, self).__init__(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
+        """Makes our class callable."""
         return self.__init__(*args, **kwargs)
 
-    def echo(self, raw):
-        """Prints the formatted representation of object on stream, followed by a newline."""
+    def echo(self, raw: Any):
+        """
+        Prints the formatted representation of object on stream, followed by a newline.
+
+        :param raw: Any object data
+
+        :return: None
+        """
         return self.pprint(object=raw)
 
 
@@ -72,11 +132,22 @@ class InitProcess(Credentials):
     Object values are entered directly when called because of the __call__
     dunder method."""
 
-    def __init__(self, user=None, password=None, url=None):
-        """A Call to the Credential Class."""
+    def __init__(self, user=None, password=None, url=None) -> None:
+        """
+        A Call to the Credential Class.
+
+        :param user: A username or email address
+
+        :param password: A password or user API token
+
+        :param url: A valid URL
+
+        :return: None
+        """
         super(InitProcess, self).__init__(user=user, password=password, url=url)
 
     def __call__(self, *args, **kwargs):
+        """Help to make our class callable."""
         return self.__init__(*args, **kwargs)
 
 
@@ -87,37 +158,43 @@ class EndPoints:
     """A Structural way to dynamically load urls that is fed to other functions."""
 
     @classmethod
-    def myself(cls):
-        """Return data on your own user."""
+    def myself(cls) -> str:
+        """Return data on your own user.
+        :return: A string of the url
+        """
         return "{}/rest/api/{}/myself".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def search_users(cls, query: int = 0):
+    def search_users(cls, query: int = 0) -> str:
         """Search multiple users and retrieve the data
 
-        :param query
+        :param query: An integer record row
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/users/search?startAt={}&maxResults=50".format(LOGIN.base_url,
                                                                              "3" if LOGIN.api is True else "latest",
                                                                              query)
 
     @classmethod
-    def get_user_group(cls, account_id: Any):
+    def get_user_group(cls, account_id: Any) -> str:
         """Search for the groups a user belongs to
 
-        :param account_id required
+        :param account_id: An alphanumeric required string
+
+        :return: A string of the url
         """
         return f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/user/groups?accountId={account_id}"
 
     @classmethod
-    def get_projects(cls, *args: Any, start_at=0, max_results=50):
+    def get_projects(cls, *args: Any, start_at=0, max_results=50) -> str:
         """Return a list of Projects available on an Instance
 
         How to use this endpoint /rest/api/3/project/search  is mentioned here
         https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/
            #api-rest-api-3-project-search-get
 
-        :param args
+        :param args:
              Query Parameters that are useful mostly.
            a) query, example: query=key,name {caseInsensitive}
            b) searchBy, example: searchBy=key,name
@@ -128,9 +205,11 @@ class EndPoints:
            e). expand, example: expand=insight
                  i. available options [insight, description, projectKeys, url, issueTypes, lead]
 
-        :param start_at  defaults as keyword args,example startAt=0
+        :param start_at:  defaults as keyword args,example startAt=0
 
-        :param max_results defaults as keyword args, example maxResults=50
+        :param max_results: defaults as keyword args, example maxResults=50
+
+        :return: A string of the url
         """
         if args:
             nos = len(args)
@@ -144,37 +223,48 @@ class EndPoints:
                 .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", start_at, max_results)
 
     @classmethod
-    def find_users_with_permission(cls, *args):
+    def find_users_with_permission(cls, *args) -> str:
         """Find users with permissions to a Project
 
-        :param args 1st accountId
+        :param args: 1st accountId
         2nd projectKey
         3rd permissions that needs checking all in caps e.g "BROWSE", "CREATE_ISSUE" etc
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/user/permission/search?accountId={}&projectKey={}&permissions={}" \
             .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", *args)
 
     @classmethod
-    def get_roles_for_project(cls, id_or_key: Any):
+    def get_roles_for_project(cls, id_or_key: Any) -> str:
         """Returns a list of project roles for the project returning the name and self URL for each role.
 
-        :param id_or_key
+        :param id_or_key: An issue key or id
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/project/{}/role".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                                                        id_or_key)
 
     @classmethod
-    def get_project_role(cls, *args):
+    def get_project_role(cls, *args) -> str:
         """Returns a project role's details and actors associated with the project.
 
-        :param args projectKey or Id of the Project
+        :param args: projectKey or Id of the Project
         id of the role
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/project/{}/role/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", *args)
 
     @classmethod
-    def get_all_permission_scheme(cls, query: str = None):
-        """Returns all permission schemes."""
+    def get_all_permission_scheme(cls, query: str = None) -> str:
+        """Returns all permission schemes.
+
+        :param query: A search term for this resource.
+
+        :return: A string of the url
+        """
         if query is not None:
             return "{}/rest/api/{}/permissionscheme?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                                                                query)
@@ -182,10 +272,19 @@ class EndPoints:
             return "{}/rest/api/{}/permissionscheme".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def get_all_issue_type_schemes(cls, query: Optional[str] = None, start_at=0, max_results=50):
+    def get_all_issue_type_schemes(cls, query: Optional[str] = None, start_at=0, max_results=50) -> str:
         """Returns a paginated list of issue type schemes.
 
-        Only issue type schemes used in classic projects are returned"""
+        Only issue type schemes used in classic projects are returned
+
+        :param query: A search term
+
+        :param start_at: A row record
+
+        :param max_results: A maximum number to display
+
+        :return: A string of the url
+        """
         if query is not None:
             return "{}/rest/api/{}/issuetypescheme?{}&startAt={}&maxResults={}".format(LOGIN.base_url,
                                                                                        "3" if LOGIN.api is True
@@ -198,35 +297,45 @@ class EndPoints:
                                                                                     start_at, max_results)
 
     @classmethod
-    def get_all_issue_types(cls):
+    def get_all_issue_types(cls) -> str:
         """Returns all issue types.
 
         If the user has the Administer Jira global permission, all issue types are returned.
 
         If the user has the Browse projects project permission for one or more projects,
         the issue types associated with the projects the user has permission to browse are returned.
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/issuetype".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def get_all_issue_security_scheme(cls):
-        """Returns all issue security schemes."""
+    def get_all_issue_security_scheme(cls) -> str:
+        """Returns all issue security schemes.
+
+        :return: A string of the url
+        """
         return "{}/rest/api/{}/issuesecurityschemes".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def get_all_priorities(cls):
-        """Returns the list of all issue priorities."""
+    def get_all_priorities(cls) -> str:
+        """Returns the list of all issue priorities.
+
+        :return: A string of the url
+        """
         return "{}/rest/api/{}/priority".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def search_all_notification_schemes(cls, query: Optional[str] = None, start_at=0, max_results=50):
+    def search_all_notification_schemes(cls, query: Optional[str] = None, start_at=0, max_results=50) -> str:
         """Returns a paginated list of notification schemes ordered by display name.
 
-        :param query  1st String value for expand= {all, field, group, user, projectRole, notificationSchemeEvents}
+        :param query:  1st String value for expand= {all, field, group, user, projectRole, notificationSchemeEvents}
 
-        :param start_at has default value of 0
+        :param start_at: has default value of 0
 
-        :param max_results has default value of 50
+        :param max_results: has default value of 50
+
+        :return: A string of the url
         """
         if query is not None:
             return "{}/rest/api/{}/notificationscheme?{}&startAt={}&maxResults={}".format(LOGIN.base_url,
@@ -240,16 +349,17 @@ class EndPoints:
                                                                                        start_at, max_results)
 
     @classmethod
-    def get_field(cls, query: Optional[str] = None, start_at: int = 0, max_results: int = 50, system: str = None):
+    def get_field(cls, query: Optional[str] = None, start_at: int = 0, max_results: int = 50, system: str = None) \
+            -> str:
         """Returns a paginated list of fields for Classic Jira projects. The list can include:
 
-        :param query accepted options -> string type=custom (use to search for custom fields)
+        :param query: accepted options -> string type=custom (use to search for custom fields)
 
-        :param start_at defaults to 0
+        :param start_at: defaults to 0
 
-        :param max_results defaults to 50
+        :param max_results: defaults to 50
 
-        :param system string accepts any string e.g. field (use any string to denote as system)
+        :param system: string accepts any string e.g. field (use any string to denote as system)
 
         *  all fields.
         *  specific fields, by defining id.
@@ -266,6 +376,8 @@ class EndPoints:
 
         *  For all other fields, this operation only returns the fields that the user has permission to view
         (that is, the field is used in at least one project that the user has Browse Projects project permission for.)
+
+         :return: A string of the url
          """
         if query is not None and system is None:
             return "{}/rest/api/{}/field/search?{}&startAt={}&maxResults={}".format(LOGIN.base_url,
@@ -281,14 +393,16 @@ class EndPoints:
                                                                                  start_at, max_results)
 
     @classmethod
-    def get_attachment_meta_data(cls, query: str, warning: Any = None):
+    def get_attachment_meta_data(cls, query: str, warning: Any = None) -> str:
         """Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
-         :param query of the attachment
+         :param query: of the attachment
 
-         :param warning deprecation notice
+         :param warning: deprecation notice
 
          Use issue search endpoint in conjunction to grab the attachment id
+
+         :return: A string of the url
          """
         import warnings
         message = "We will be removing this endpoint soon\n use endpoint.issue_attachments() instead."
@@ -300,7 +414,7 @@ class EndPoints:
 
     @classmethod
     def issue_attachments(cls, id_or_key: str = None, attach_id: str = None, uri: Optional[str] = None,
-                          query: Optional[str] = None):
+                          query: Optional[str] = None) -> str:
         """Returns the attachment content.
 
         :request GET - Get Jira attachment settings
@@ -310,14 +424,14 @@ class EndPoints:
                  :request GET - Get attachment Meta data
         Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
-        :param attach_id required (id of the attachment), datatype -> string
+        :param attach_id: required (id of the attachment), datatype -> string
                 :request DELETE - Deletes an attachment from an issue.
 
-        :param attach_id required (id of the attachment), datatype -> string
+               attach_id required (id of the attachment), datatype -> string
 
                :request GET - Get all metadata for an expanded attachment
 
-               :param query, datatype -> string
+               :param query:, datatype -> string
 
                available options
                 * expand/human -Returns the metadata for the contents of an attachment, if it is an archive,
@@ -332,11 +446,13 @@ class EndPoints:
 
         :request POST - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
 
-        :param id_or_key required, datatype -> string
+        :param id_or_key: required, datatype -> string
 
-        :param uri various endpoint to attachment
+        :param uri: various endpoint to attachment
 
         The ID or key of the issue that attachments are added to.
+
+        :return: A string of the url
         """
         if uri is not None:
             return "{}/rest/api/{}/attachment/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri)
@@ -353,15 +469,24 @@ class EndPoints:
                                                              attach_id)
 
     @classmethod
-    def search_issues_jql(cls, query, start_at: int = 0, max_results: int = 50):
-        """Searches for issues using JQL."""
+    def search_issues_jql(cls, query, start_at: int = 0, max_results: int = 50) -> str:
+        """Searches for issues using JQL.
+
+        :param query: A search term.
+
+        :param start_at: A record start row
+
+        :param max_results: A max result to return
+
+        :return: A string of the url
+        """
         return "{}/rest/api/{}/search?jql={}&startAt={}&maxResults={}".format(LOGIN.base_url,
                                                                               "3" if LOGIN.api is True
                                                                               else "latest", query,
                                                                               start_at, max_results)
 
     @classmethod
-    def search_for_filters(cls, query: Optional[str] = None, start_at: int = 0):
+    def search_for_filters(cls, query: Optional[str] = None, start_at: int = 0) -> str:
         """Returns a paginated list of filters. Use this operation to get:
 
         *  specific filters, by defining id only.
@@ -371,11 +496,13 @@ class EndPoints:
            for a user with a particular word in their name. When multiple attributes are
            specified only filters matching all attributes are returned.
 
-        :param query 1st String value filterName, accountId, owner, groupname, projectId
+        :param query: 1st String value filterName, accountId, owner, groupname, projectId
 
-        :param start_at  has default value of 0
+        :param start_at:  has default value of 0
 
-        :param: filled - maxResults=50 (default)
+        :param: filled: - maxResults=50 (default)
+
+        :return: A string of the url
          """
         if query is not None:
             return "{}/rest/api/{}/filter/search?{}&startAt={}&maxResults=50".format(LOGIN.base_url,
@@ -387,7 +514,7 @@ class EndPoints:
                                                                                   else "latest", start_at)
 
     @classmethod
-    def search_for_dashboard(cls, query: Optional[str] = None, start_at: int = 0):
+    def search_for_dashboard(cls, query: Optional[str] = None, start_at: int = 0) -> str:
         """Returns a paginated list of dashboards. This operation is similar to
 
         Get dashboards except that the results can be refined to include dashboards that
@@ -395,11 +522,13 @@ class EndPoints:
         When multiple attributes are specified only filters matching all attributes
         are returned.
 
-        :param query 1st String value dashboardName, accountId, owner, groupname, projectId
+        :param query: 1st String value dashboardName, accountId, owner, groupname, projectId
 
-        :param start_at  has default value of 0
+        :param start_at:  has default value of 0
 
-        :param: filled - maxResult=20 (default)
+        :param: filled: - maxResult=20 (default)
+
+        :return: A string of the url
         """
         if query is not None:
             return "{}/rest/api/{}/dashboard/search?{}&startAt={}&maxResults=20".format(LOGIN.base_url,
@@ -411,85 +540,107 @@ class EndPoints:
                                                                                      else "latest", start_at)
 
     @classmethod
-    def get_dashboard(cls, dashboard_id: int):
-        """Gets the dashboard."""
+    def get_dashboard(cls, dashboard_id: int) -> str:
+        """Gets the dashboard.
+
+        :param dashboard_id: An id for the dashboard
+
+        :return: A string of the url
+        """
         return "{}/rest/api/{}/dashboard/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                                                     dashboard_id)
 
     @classmethod
-    def get_all_application_role(cls):
+    def get_all_application_role(cls) -> str:
         """
         Returns all application roles.
 
-        In Jira, application roles are managed using the Application access configuration page."""
+        In Jira, application roles are managed using the Application access configuration page.
+
+        :return: A string of the url
+        """
         return "{}/rest/api/{}/applicationrole".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def search_all_workflows(cls, query: int = 0):
+    def search_all_workflows(cls, query: int = 0) -> str:
         """
         Returns a paginated list of published classic workflows. When workflow names are specified.
 
         details of those workflows are returned. Otherwise, all published classic workflows are returned.
         This operation does not return next-gen workflows.
 
-        :param query  has default value of 0
+        :param query:  has default value of 0
 
-        :param: filled - maxResults=50 (default)
+                      filled - maxResults=50 (default)
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/workflow/search?startAt={}&maxResults=50".format(LOGIN.base_url,
                                                                                 "3" if LOGIN.api is True
                                                                                 else "latest", query)
 
     @classmethod
-    def search_all_workflow_schemes(cls, query: int = 0):
+    def search_all_workflow_schemes(cls, query: int = 0) -> str:
         """Returns a paginated list of all workflow schemes, not including draft workflow schemes.
 
-        :param query has default value of 0
+        :param query: has default value of 0
 
-        :param: filled - maxResults=50 (default)
+               filled - maxResults=50 (default)
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/workflowscheme?startAt={}&maxResults=50".format(LOGIN.base_url,
                                                                                "3" if LOGIN.api is True
                                                                                else "latest", query)
 
     @classmethod
-    def search_all_screens(cls, query: int = 0):
+    def search_all_screens(cls, query: int = 0) -> str:
         """Returns a paginated list of all screens or those specified by one or more screen IDs.
 
-        :param query has default value of 0
+        :param query: has default value of 0
 
-        :param: maxResults=100 (default)
+                maxResults=100 (default)
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/screens?startAt={}&maxResults=100".format(LOGIN.base_url,
                                                                          "3" if LOGIN.api is True else "latest", query)
 
     @classmethod
-    def search_for_screen_schemes(cls, query: int = 0):
+    def search_for_screen_schemes(cls, query: int = 0) -> str:
         """Returns a paginated list of screen schemes.
 
         Only screen schemes used in classic projects are returned.
 
-        :param query has default value of 0
+        :param query: has default value of 0
 
-        :param: maxResults=25 (default)
+               maxResults=25 (default)
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/screenscheme?startAt={}&maxResults=25".format(LOGIN.base_url,
                                                                              "3" if LOGIN.api is True
                                                                              else "latest", query)
 
     @classmethod
-    def get_project_component(cls, id_or_key):
+    def get_project_component(cls, id_or_key) -> str:
         """Returns all components in a project. See the Get project components paginated
 
         resource if you want to get a full list of components with pagination.
         The project ID or project key (case sensitive).
+
+        :param id_or_key: An issue key or id
+
+        :return: A string of the url
         """
         return "{}/rest/api/{}/project/{}/components".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                                                              id_or_key)
 
     @classmethod
-    def get_resolutions(cls):
-        """Returns a list of all issue resolution values."""
+    def get_resolutions(cls) -> str:
+        """Returns a list of all issue resolution values.
+        :return: A string of the url
+        """
         return "{}/rest/api/{}/resolution".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     ################################################
@@ -497,7 +648,7 @@ class EndPoints:
     ################################################
     # BACKLOG -> API for backlog
     @classmethod
-    def move_issues_to_backlog(cls):
+    def move_issues_to_backlog(cls) -> str:
         """Move issues to the backlog.
 
         This operation is equivalent to remove future and active sprints from a given set of issues.
@@ -506,11 +657,13 @@ class EndPoints:
         :request POST
         :body param: issues, datatype -> Array<string>
         Send a POST request within API.
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/backlog/issue".format(LOGIN.base_url)
 
     @classmethod
-    def move_issues_to_backlog_from_board(cls, board_id):
+    def move_issues_to_backlog_from_board(cls, board_id) -> str:
         """Move issues to the backlog of a particular board (if they are already on that board).
 
         This operation is equivalent to remove future and active sprints from a given set of issues
@@ -519,18 +672,20 @@ class EndPoints:
 
         :request POST:
 
-        :param board_id required
+        :param board_id: required
 
         :body param: issues, datatype -> Array<string>,
                    : rankBeforeIssue, rankAfterIssue, type -> string
                    : rankCustomFieldId, type -> integer
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/backlog/{}/issue".format(LOGIN.base_url, board_id)
 
     # BOARD -> API for Boards
 
     @classmethod
-    def create_board(cls):
+    def create_board(cls) -> str:
         """Creates a new board. Board name, type and filter ID is required.
 
         :request POST:
@@ -538,6 +693,7 @@ class EndPoints:
         :body param: name, type, datatype -> string
                    : filterId, datatype -> integer
                    : location, datatype -> object
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/board".format(LOGIN.base_url)
 
@@ -556,17 +712,23 @@ class EndPoints:
         :param start_at defaults to 0
 
         :param max_results defaults to 50
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/board/filter/{}?startAt={}&maxResults={}" \
             .format(LOGIN.base_url, filter_id, start_at, max_results)
 
     @classmethod
-    def get_board(cls, board_id):
+    def get_board(cls, board_id) -> str:
         """Returns the board for the given board ID.
 
         This board will only be returned if the user has permission to view it.
         Admins without the view permission will see the board as a private one,
         so will see only a subset of the board's data (board location for instance).
+
+        :param board_id: A board id
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/board/{}".format(LOGIN.base_url, board_id)
 
@@ -577,13 +739,13 @@ class EndPoints:
         This only includes issues that the user has permission to view.
         The backlog contains incomplete issues that are not assigned to any future or active sprint.
 
-        :param board_id required
+        :param board_id: required
 
-        :param start_at defaults to 0,
+        :param start_at: defaults to 0,
 
-                    :param max_results defaults to 50
+        :param max_results: defaults to 50
 
-                    :param query -> includes other query parameters such as
+        :param query: -> includes other query parameters such as
 
                          Query           Datatypes
                         ----------------------------
@@ -591,6 +753,8 @@ class EndPoints:
                          validateQuery | boolean
                          fields        | Array<string>
                          expand        | string
+
+        :return: A string of the url
         """
         if query is not None:
             return "{}/rest/agile/1.0/board/{}/backlog?{}&startAt={}&maxResults={}" \
@@ -606,13 +770,13 @@ class EndPoints:
         This only includes issues that the user has permission to view.
         An issue belongs to the board if its status is mapped to the board's column.
 
-        :param board_id required
+        :param board_id: required
 
-        :param start_at defaults to 0,
+        :param start_at: defaults to 0,
 
-                    :param max_results defaults to 50
+        :param max_results: defaults to 50
 
-                    :param query -> includes other query parameters such as
+        :param query: -> includes other query parameters such as
 
                          Query           Datatypes
                         ----------------------------
@@ -620,6 +784,8 @@ class EndPoints:
                          validateQuery | boolean
                          fields        | Array<string>
                          expand        | string
+
+        :return: A string of the url
         """
         if query is not None:
             return "{}/rest/agile/1.0/board/{}/issue?{}&startAt={}&maxResults={}" \
@@ -629,7 +795,7 @@ class EndPoints:
                 .format(LOGIN.base_url, board_id, start_at, max_results)
 
     @classmethod
-    def move_issues_to_board(cls, board_id):
+    def move_issues_to_board(cls, board_id) -> str:
         """Move issues from the backog to the board (if they are already in the backlog of that board).
 
         This operation either moves an issue(s) onto a board from the backlog (by adding it to the issueList
@@ -637,11 +803,13 @@ class EndPoints:
 
         :request POST:
 
-        :param board_id required
+        :param board_id: required
 
         :body param: rankBeforeIssue, rankAfterIssue, datatype -> string
                    : rankCustomFieldId, datatype -> integer
                    : issues, datatype -> Array<string>
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/board/{}/issue".format(LOGIN.base_url, board_id)
 
@@ -652,11 +820,13 @@ class EndPoints:
          If the user does not have permission to view the board, no projects will be returned at all.
          Returned projects are ordered by the name.
 
-         :param board_id required
+         :param board_id: required
 
-         :param start_at defaults 0
+         :param start_at: defaults 0
 
-         :param max_results defaults 50
+         :param max_results: defaults 50
+
+         :return: A string of the url
         """
         return "{}/rest/agile/1.0/board/{}/project?startAt={}&maxResults={}" \
             .format(LOGIN.base_url, board_id, start_at, max_results)
@@ -665,31 +835,46 @@ class EndPoints:
     def get_all_quick_filters(cls, board_id, start_at: int = 0, max_results: int = 50) -> str:
         """Returns all quick filters from a board, for a given board ID.
 
-        :param board_id required
+        :param board_id: required
 
-        :param start_at defaults 0
+        :param start_at: defaults 0
 
-        :param max_results defaults 50
+        :param max_results: defaults 50
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/board/{}/quickfilter?startAt={}&maxResults={}" \
             .format(LOGIN.base_url, board_id, start_at, max_results)
 
     @classmethod
-    def get_quick_filter(cls, board_id, quick_filter_id):
+    def get_quick_filter(cls, board_id, quick_filter_id) -> str:
         """Returns the quick filter for a given quick filter ID.
 
         The quick filter will only be returned if the user can view the board that the
         quick filter belongs to.
 
-        :param board_id required,
+        :param board_id: required,
 
-        :param quick_filter_id required
+        :param quick_filter_id: required
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/board/{}/quickfilter/{}".format(LOGIN.base_url, board_id, quick_filter_id)
 
     @classmethod
     def get_all_sprints(cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50) -> str:
-        """Get all Sprint on a Board."""
+        """Get all Sprint on a Board.
+
+        :param board_id: A board id
+
+        :param start_at: defaults to 0
+
+        :param max_results: defaults to 50
+
+        :param query: A search term
+
+        :return: A string of the url
+        """
         if query is not None:
             return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}" \
                 .format(LOGIN.base_url, board_id, query, start_at, max_results)
@@ -699,7 +884,7 @@ class EndPoints:
 
     # SPRINT -> API for Sprints
     @classmethod
-    def create_sprint(cls):
+    def create_sprint(cls) -> str:
         """Creates a future sprint. Sprint name and origin board id are required.
 
         Start date, end date, and goal are optional.
@@ -707,40 +892,49 @@ class EndPoints:
 
         :body param: name, startDate, endDate, goal, datatype -> string
                    : originBoardId, datatype -> integer
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/sprint".format(LOGIN.base_url)
 
     @classmethod
-    def get_sprint(cls, sprint_id):
+    def get_sprint(cls, sprint_id) -> str:
         """Returns the sprint for a given sprint ID.
 
         The sprint will only be returned if the user can view the board that the sprint was created on,
         or view at least one of the issues in the sprint.
-        :param sprint_id required
+
+        :param sprint_id:  required
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/sprint/{}".format(LOGIN.base_url, sprint_id)
 
     @classmethod
-    def update_sprint(cls, sprint_id):
+    def update_sprint(cls, sprint_id) -> str:
         """Performs a full update of a sprint.
 
         A full update means that the result will be exactly the same as the request body.
         Any fields not present in the request JSON will be set to null.
 
         :request PUT:
-        :param sprint_id required
+        :param sprint_id: required
         :body param: name, state, startDate, endDate, goal, self (format: uri), completeDate, datatype -> string
                    : id, originBoardId, datatype -> integer
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/sprint/{}".format(LOGIN.base_url, sprint_id)
 
     @classmethod
-    def delete_sprint(cls, sprint_id):
+    def delete_sprint(cls, sprint_id) -> str:
         """Deletes a sprint.
 
         Once a sprint is deleted, all open issues in the sprint will be moved to the backlog.
         :request DELETE:
-        :param sprint_id required
+        :param sprint_id: required
+
+        :return: A string of the url
         """
         return "{}/rest/agile/1.0/sprint/{}".format(LOGIN.base_url, sprint_id)
 
@@ -748,7 +942,7 @@ class EndPoints:
     # Jira Service Management Specific API endpoints
     ################################################
     @classmethod
-    def create_customer(cls):
+    def create_customer(cls) -> str:
         """This method adds a customer to the Jira Service Management.
 
         instance by passing a JSON file including an email address and display name.
@@ -756,14 +950,19 @@ class EndPoints:
         :request POST
 
         :body param: email, displayName, datatype -> string
+
+        :return: A string of the url
         """
         return "{}/rest/servicedeskapi/customer".format(LOGIN.base_url)
 
     @classmethod
-    def get_server_info(cls):
+    def get_server_info(cls) -> str:
         """This method retrieves information about the Jira Service Management.
 
-        instance such as software version, builds, and related links."""
+        instance such as software version, builds, and related links.
+
+        :return: A string of the url
+        """
         return "{}/rest/servicedeskapi/info".format(LOGIN.base_url)
 
     @classmethod
@@ -772,11 +971,13 @@ class EndPoints:
 
         Use this method when you want to present a list of organizations or want to locate an organization by name.
 
-        :param start defaults to 0
+        :param start: defaults to 0
 
-                    :param limit defaults to 50
+        :param limit: defaults to 50
 
-                    :param account_id, datatype string. e.g. 5b10ac8d82e05b22cc7d4ef5
+        :param account_id: datatype string. e.g. 5b10ac8d82e05b22cc7d4ef5
+
+        :return: A string of the url
         """
         if account_id is not None:
             return "{}/rest/servicedeskapi/organization?accountId={}&start={}&limit={}" \
@@ -785,25 +986,27 @@ class EndPoints:
             return "{}/rest/servicedeskapi/organization?start={}&limit={}".format(LOGIN.base_url, start, limit)
 
     @classmethod
-    def create_organization(cls):
+    def create_organization(cls) -> str:
         """This method creates an organization by passing the name of the organization.
 
         :request POST:
 
         :body param: name, datatype -> string
-        
+
+        :return: A string of the url
         """
         return "{}/rest/servicedeskapi/organization".format(LOGIN.base_url)
 
     @classmethod
-    def get_organization(cls, org_id):
+    def get_organization(cls, org_id) -> str:
         """This method returns details of an organization.
 
         Use this method to get organization details whenever your application component is passed an organization ID
         but needs to display other organization details.
 
         :param org_id: required
-        
+
+        :return: A string of the url
         """
         return "{}/rest/servicedeskapi/organization/{}".format(LOGIN.base_url, org_id)
 
@@ -835,7 +1038,7 @@ class EndPoints:
         return "{}/rest/servicedeskapi/servicedesk/{}".format(LOGIN.base_url, service_desk_id)
 
     @classmethod
-    def delete_organization(cls, org_id):
+    def delete_organization(cls, org_id) -> str:
         """This method deletes an organization.
 
         Note that the organization is deleted regardless of other associations it may have.
@@ -843,7 +1046,9 @@ class EndPoints:
 
         :request DELETE:
 
-        :param org_id required
+        :param org_id: required
+
+        :return: A string of the url
         """
         return "{}/rest/servicedeskapi/organization/{}".format(LOGIN.base_url, org_id)
 
@@ -854,11 +1059,13 @@ class EndPoints:
         Use this method where you want to provide a list of users for an organization
         or determine if a user is associated with an organization.
 
-        :param org_id required
+        :param org_id: required
 
-        :param start datatype integer
+        :param start: datatype integer
 
-        :param limit datatype integer
+        :param limit: datatype integer
+
+        :return: A string of the url
         """
         return "{}/rest/servicedeskapi/organization/{}/user?start={}&limit={}".format(LOGIN.base_url, org_id,
                                                                                       start, limit)
@@ -869,9 +1076,11 @@ class EndPoints:
 
         :request POST:
 
-        :param org_id required
+        :param org_id: required
 
         :body param: usernames, accountIds, datatypes -> Array<string>
+
+        :return: A string of the url
         """
         return "{}/rest/servicedeskapi/organization/{}/user".format(LOGIN.base_url, org_id)
 
@@ -881,23 +1090,27 @@ class EndPoints:
 
         :request DELETE:
 
-        :param org_id required
+        :param org_id: required
 
         :body param: usernames, accountIds, datatypes -> Array<string>
+
+        :return: A string of the url
         """
         return "{}/rest/servicedeskapi/organization/{}/user".format(LOGIN.base_url, org_id)
 
     @classmethod
-    def get_sd_organizations(cls, service_desk_id, start: int = 0, limit: int = 50, account_id: str = None):
+    def get_sd_organizations(cls, service_desk_id, start: int = 0, limit: int = 50, account_id: str = None) -> str:
         """This method returns a list of all organizations associated with a service desk.
 
-        :param service_desk_id required
+        :param service_desk_id: required
 
-        :param start defaults to 0
+        :param start: defaults to 0
 
-                    :param limit defaults to 50
+        :param limit: defaults to 50
 
-                    :param account_id, datatype string. e.g. 5b10ac8d82e05b22cc7d4ef5
+        :param account_id: datatype string. e.g. 5b10ac8d82e05b22cc7d4ef5
+
+        :return: A string of the url
         """
         if account_id is not None:
             return "{}/rest/servicedeskapi/servicedesk/{}/organization?{}&start={}&limit={}" \
@@ -907,7 +1120,7 @@ class EndPoints:
                 .format(LOGIN.base_url, service_desk_id, start, limit)
 
     @classmethod
-    def add_sd_organization(cls, service_desk_id):
+    def add_sd_organization(cls, service_desk_id) -> str:
         """This method adds an organization to a service desk.
 
         If the organization ID is already associated with the service desk,
@@ -915,14 +1128,16 @@ class EndPoints:
 
         :request POST:
 
-        :param service_desk_id required
+        :param service_desk_id: required
 
         :body param: organizationId, datatype -> integer
+
+        :return: A string of the url
         """
         return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(LOGIN.base_url, service_desk_id)
 
     @classmethod
-    def remove_sd_organization(cls, service_desk_id):
+    def remove_sd_organization(cls, service_desk_id) -> str:
         """This method removes an organization from a service desk.
 
         If the organization ID does not match an organization associated with the service desk,
@@ -930,9 +1145,11 @@ class EndPoints:
 
         :request DELETE:
 
-        :param service_desk_id required
+        :param service_desk_id: required
 
         :body param: organizationId, datatype -> integer
+
+        :return: A string of the url
         """
         return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(LOGIN.base_url, service_desk_id)
 
@@ -940,20 +1157,22 @@ class EndPoints:
     # SERVICEDESK -> API specific to servicedesk
     ############################################
     @classmethod
-    def get_customers(cls, service_desk_id, start: int = 0, limit: int = 50, query: str = None):
+    def get_customers(cls, service_desk_id, start: int = 0, limit: int = 50, query: str = None) -> str:
         """This method returns a list of the customers on a service desk.
 
         The returned list of customers can be filtered using the query parameter.
         The parameter is matched against customers' displayName, name, or email.
         This API is experimental
 
-        :param service_desk_id required
+        :param service_desk_id: required
 
-        :param start defaults to 0
+        :param start: defaults to 0
 
-                    :param limit defaults to 50
+        :param limit: defaults to 50
 
-                    :param query, datatype string.
+        :param query: datatype string.
+
+        :return: A string of the url
         """
         if query is not None:
             return "{}/rest/servicedeskapi/servicedesk/{}/customer?{}&start={}&limit={}" \
@@ -963,7 +1182,7 @@ class EndPoints:
                 .format(LOGIN.base_url, service_desk_id, start, limit)
 
     @classmethod
-    def add_customers(cls, service_desk_id):
+    def add_customers(cls, service_desk_id) -> str:
         """Adds one or more customers to a service desk.
 
         If any of the passed customers are associated with the service desk,
@@ -971,14 +1190,17 @@ class EndPoints:
 
         :request POST:
 
-        :param service_desk_id required
+        :param service_desk_id: required
 
-        :body param: usernames, accountIds,  datatype -> Array<string>
+               :body param: usernames, accountIds,  datatype -> Array<string>
+
+
+        :return: A string of the url
                 """
         return "{}/rest/servicedeskapi/servicedesk/{}/customer".format(LOGIN.base_url, service_desk_id)
 
     @classmethod
-    def remove_customers(cls, service_desk_id):
+    def remove_customers(cls, service_desk_id) -> str:
         """This method removes one or more customers from a service desk.
 
         The service desk must have closed access. If any of the passed customers are not associated with
@@ -986,9 +1208,11 @@ class EndPoints:
 
         :request DELETE:
 
-        :param service_desk_id required
+        :param service_desk_id: required
 
-        :body param: usernames, accountIds,  datatype -> Array<string>
+               :body param: usernames, accountIds,  datatype -> Array<string>
+
+        :return: A string of the url
                 """
         return "{}/rest/servicedeskapi/servicedesk/{}/customer".format(LOGIN.base_url, service_desk_id)
 
@@ -996,7 +1220,7 @@ class EndPoints:
     # Jira Specific API endpoints
     ################################################
     @classmethod
-    def jira_user(cls, account_id: str = None):
+    def jira_user(cls, account_id: str = None) -> str:
         """API for User creation, deletion and retrieval.
 
         :request POST - Creates a user. This resource is retained for legacy compatibility.
@@ -1015,7 +1239,9 @@ class EndPoints:
 
                        :body param: accountId, expand, datatypes -> string
 
-                :param account_id - string for a user account
+                :param account_id: - string for a user account
+
+        :return: A string of the url
         """
         if account_id is not None:
             return "{}/rest/api/{}/user?accountId={}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
@@ -1024,7 +1250,7 @@ class EndPoints:
             return "{}/rest/api/{}/user".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def jira_group(cls, group_name: str = None, swap_group: str = None):
+    def jira_group(cls, group_name: str = None, swap_group: str = None) -> str:
         """Used for Creation and deletion of Jira groups.
 
         :request  POST - Creates a group.
@@ -1038,9 +1264,11 @@ class EndPoints:
                      :query param: group_name required, swap_group,  datatype -> string
                      returns 200 if successful
 
-                    :param group_name name of group
+                    :param group_name: name of group
 
-                    :param swap_group group name to swap
+                    :param swap_group: group name to swap
+
+        :return: A string of the url
         """
         if group_name is not None and swap_group is None:
             return "{}/rest/api/{}/group?groupname={}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
@@ -1053,7 +1281,7 @@ class EndPoints:
             return "{}/rest/api/{}/group".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def group_jira_users(cls, group_name: str, account_id: str = None):
+    def group_jira_users(cls, group_name: str, account_id: str = None) -> str:
         """Used for addition and removal of users to and from groups.
 
         :request POST - Adds a user to a group.
@@ -1065,9 +1293,11 @@ class EndPoints:
                      :query param: group_name required, account_id required,  datatype -> string
                      returns 200 if successful
 
-                    :param group_name name of group
+                    :param group_name: name of group
 
-                    :param account_id string of a user account
+                    :param account_id: string of a user account
+
+        :return: A string of the url
         """
         if account_id is not None:
             return "{}/rest/api/{}/group/user?groupname={}&accountId={}".format(LOGIN.base_url,
@@ -1085,9 +1315,9 @@ class EndPoints:
         :request: POST - for project creations.
                          The project types are available according to the installed Jira features as follows:
 
-        :param id_or_key required
+        :param id_or_key: required
 
-              :param uri optional for accessing other project endpoints -> string
+              :param uri: optional for accessing other project endpoints -> string
 
                    endpoint: /rest/api/3/project/{projectIdOrKey}/{archive}
                    available options [archive, delete, restore, statuses]
@@ -1113,7 +1343,7 @@ class EndPoints:
 
                : PUT - Updates the project details for a project.
 
-                  :param query  expand, datatype -> string
+                  :param query:  expand, datatype -> string
 
                   :body param: projectTypeKey and projectTemplateKey required, datatype -> string
                              : name, key, description, leadAccountId, url, assigneeType, datatype -> string
@@ -1122,8 +1352,9 @@ class EndPoints:
 
               : DELETE - Deletes a project.
 
-                   :param enable_undo, datatype -> boolean
+                   :param enable_undo:  datatype -> boolean
 
+        :return: A string of the url
         """
         if uri is not None:
             return "{}/rest/api/{}/project/{}/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
@@ -1151,19 +1382,19 @@ class EndPoints:
 
         :request POST - Creates an issue or, where the option to create subtasks is enabled in Jira, a subtask.
 
-        :param uri, datatype -> string
+        :param uri: datatype -> string
 
                    * available options [bulk, createmeta]
                    * e.g. endpoint: /rest/api/3/issue/bulk
                    * e.g. endpoint /rest/api/3/issue/createmeta
 
-        :param query, datatype -> string
+        :param query: datatype -> string
 
                  * use the query keyword argument and structure a parameter
                  * e.g. query="notifyUsers=false"
                  OR in the case of changelog the endpoint of "changelog"
 
-        :param event, datatype -> boolean
+        :param event: datatype -> boolean
 
                  * determine if you can get a changelog from the issue. default is false
                  if True required parameters are:
@@ -1171,7 +1402,7 @@ class EndPoints:
                  :param query:
                     /rest/api/3/issue/{issueIdOrKey}/changelog
 
-        :param issue_key_or_id -> string or integer
+        :param issue_key_or_id: -> string or integer
 
                  * The body parameter has to be a bundled data that should be posted to the desired endpoint.
 
@@ -1219,6 +1450,8 @@ class EndPoints:
 
                   :query param: issue_key_or_id required
                               : deleteSubtasks, datatype -> string, values = (true | false)
+
+        :return: A string of the url
         """
         if uri is not None and query is None:
             return "{}/rest/api/{}/issue/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri)
@@ -1244,7 +1477,7 @@ class EndPoints:
         """Create, update, delete or get a comment.
 
         :request POST - Returns a paginated list of just the comments for a list of comments specified by comment IDs.
-           :param query datatype -> string
+           :param query: datatype -> string
 
             :query param: expand datatype -> string
 
@@ -1260,9 +1493,9 @@ class EndPoints:
 
         :request GET - Returns all comments for an issue.
 
-             :param key_or_id datatype -> string required
-             :param start_at datatype -> integer defaults to 0
-             :param max_results datatyoe -> integer defaults to 50
+             :param key_or_id: datatype -> string required
+             :param start_at: datatype -> integer defaults to 0
+             :param max_results: datatyoe -> integer defaults to 50
              :query param: orderBy datatype -> string
                    Valid values: created, -created, +created
 
@@ -1281,7 +1514,7 @@ class EndPoints:
                   Additional Properties datatype ->anything
 
         :request GET - Returns a comment.
-                :param ids datatype integers - The ID of the comment.
+                :param ids: datatype integers - The ID of the comment.
                 :query param: expand
 
         :request PUT - Updates a comment.
@@ -1301,6 +1534,7 @@ class EndPoints:
                 ids required
 
 
+        :return: A string of the url
         """
         if key_or_id is not None and ids is None:
             return f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment" \
@@ -1419,8 +1653,13 @@ class Field(object):
     }
 
     @staticmethod
-    def search_field(find_field: str = None):
-        """Search for custom fields"""
+    def search_field(find_field: str = None) -> Any:
+        """Search for custom fields.
+
+        :param find_field: A field name to search.
+
+        :return: A dictionary if field is found else None
+        """
         fields = find_field if find_field is not None else sys.exit("You must enter a field name")
         count_start_at = 0
         while True:
@@ -1440,8 +1679,13 @@ class Field(object):
                     break
 
     @staticmethod
-    def get_field(find_field: str = None):
-        """Search for system fields or custom fields"""
+    def get_field(find_field: str = None) -> Any:
+        """Search for system fields or custom fields.
+
+        :param find_field: A field name to search.
+
+        :return: A dictionary if field is found else None
+        """
         fields = find_field if find_field is not None else sys.exit("You must enter a field name")
         load = LOGIN.get(endpoint.get_field(system="type=system"))
         data = load.json()
@@ -1469,29 +1713,30 @@ class Field(object):
                             }
 
     def update_field_data(self, data: Any = None, find_field: str = None, field_type: str = "custom",
-                          key_or_id: Union[str, int] = None, show: bool = True, **kwargs):
+                          key_or_id: Union[str, int] = None, show: bool = True, **kwargs) -> Any:
         """Field works for.
 
         All field types mentioned on the Field class attributes.
 
         :request PUT
 
-        :param data datatype[Any] the data you're trying to process, depending on what field it could be any object.
+        :param data: datatype[Any] the data you're trying to process, depending on what field it could be any object.
 
-        :param find_field datatype[String] name of the custom field or system field to find in strings.
+        :param find_field: datatype[String] name of the custom field or system field to find in strings.
 
-        :param field_type datatype[String] available options - system or custom.
+        :param field_type: datatype[String] available options - system or custom.
 
-        :param key_or_id datatype[String or Integer] issue key or id of an issue.
+        :param key_or_id: datatype[String or Integer] issue key or id of an issue.
 
-        :param show datatype[Bool] allows you to print out a formatted field that was searched.
+        :param show: datatype[Bool] allows you to print out a formatted field that was searched.
 
-        :param kwargs datatype[String] perform other operations with keyword args
+        :param kwargs: datatype[String] perform other operations with keyword args
 
                    * options arg is a string and has two values "add" or "remove".
                    * query arg is a string and it can have any value that is stated on the endpoint.issue() method
                          e.g. query="notifyUsers=false"
 
+        :return: Any
         """
         search = None
         options = None if "options" not in kwargs else kwargs["options"]
@@ -1844,12 +2089,14 @@ class Field(object):
         return response
 
     @staticmethod
-    def data_load(data: Any = Any, s: Any = None):
+    def data_load(data: Any = Any, s: Any = None) -> Dict:
         """Process the received data into a dict.
 
-        :param s Any object to change s to not None
+        :param s: Any object to change s to not None
 
-        :param data any object
+        :param data: any object
+
+        :return: A dictionary content
         """
         if s is None:
             payload = {
@@ -1862,15 +2109,17 @@ class Field(object):
         return payload
 
     @staticmethod
-    def multi_field(data: Any = Any, s: str = "value"):
+    def multi_field(data: Any = Any, s: str = "value") -> List:
         """Transform any given string separated by comma into an acceptable multi value string.
 
-        :param data any string object data.
+        :param data: any string object data.
 
-        :param s is a placeholder to determine the object key.
+        :param s: is a placeholder to determine the object key.
 
                * e.g. required output [{"value": "hello"}] -> for Multicheckboxes type of field.
                * e.g. required output [{"name": "hello"}] -> for Components or Fix versions type of field.
+
+        :return: A list of data
         """
         m = data
         f = s
@@ -1885,8 +2134,13 @@ class Field(object):
             return c
 
     @staticmethod
-    def cascading(data: Any = Any):
-        """Transform a string or a list into a cascading select type."""
+    def cascading(data: Any = Any) -> Any:
+        """Transform a string or a list into a cascading select type.
+
+        :param data: A string or list content
+
+        :return: A list object or none.
+        """
         m = str(data)
         if isinstance(data, list):
             if len(data) == 1:
@@ -1909,26 +2163,33 @@ class Field(object):
 
     @staticmethod
     def extract_issue_field_options(key_or_id: Union[str, int] = None, search: Dict = None,
-                                    amend: str = None, data: Any = Any):
+                                    amend: str = None, data: Any = Any) -> Any:
         """Get the option from an issue.
 
         Use this method to extract and amend changes to system fields such as
         Components or fix versions, labels or custom fields such a multicheckboxes or multiselect.
 
-        :param key_or_id datatype[String, Integer] issue key or id of an issue.
+        :param key_or_id: datatype[String, Integer] issue key or id of an issue.
 
-        :param search datatype[Dict] issue data of an issue or issue payload.
+        :param search: datatype[Dict] issue data of an issue or issue payload.
 
-        :param amend datatype[String] available option "add" or "remove" condition to decide action for appending.
+        :param amend: datatype[String] available option "add" or "remove" condition to decide action for appending.
 
-        :param data datatype[string] our object data that will be processed.
+        :param data: datatype[string] our object data that will be processed.
+
+        :return: List or None
         """
         collect = []
         field_type = False if "customType" not in search else True
         value = field.get_field_value(search["name"], key_or_id)
 
         def determine(content: Any = None) -> None:
-            """Determine the type of value to query depending on the data type."""
+            """Determine the type of value to query depending on the data type.
+
+            :param content: A List or Dict data content
+
+            :return: None
+            """
             if isinstance(content, list):
                 for x in content:
                     if "value" in x:
@@ -1975,8 +2236,11 @@ class Field(object):
     def get_field_value(self, name: str, keys: Union[str, int]) -> Any:
         """Return the value of a field on an issue.
 
-        :param name The name of a field
-        :param keys The issue key or issue id of an issue
+        :param name: The name of a field.
+
+        :param keys: The issue key or issue id of an issue.
+
+        :return: Any datatype is returned
         """
         var = self.get_field(name)
         get_value = LOGIN.get(endpoint.issues(keys)).json()
@@ -1988,11 +2252,28 @@ class Field(object):
             if isinstance(i, AttributeError):
                 return f"<Error: {i} - options: Most probably the field '{name}' cannot be found >"
             if isinstance(i, KeyError):
-                return f"<Error: KeyError on {i} - options: It seems that the field '{name}' doesn't exist within {keys}>"
+                return f"<Error: KeyError on {i} - options: It seems that the field '{name}' " \
+                       f"doesn't exist within {keys}>"
+
+    def get_all_field_value(self, field_set: Mapping, key: Union[str, int]) -> Any:
+        """Return all the field present on an issue.
+
+        :param field_set:
+
+        :param key:
+
+        :return: Any
+        """
+        pass
 
 
-def echo(obj):
-    """A Call to the Echo Class."""
+def echo(obj) -> Any:
+    """A Call to the Echo Class.
+
+    :param obj: Any data type to process
+
+    :return: Any
+    """
     e = Echo()
     return e.echo(raw=obj)
 

@@ -2,6 +2,7 @@
 [![Downloads](https://pepy.tech/badge/jiraone)](https://pepy.tech/project/jiraone)
 [![PyPI version](https://badge.fury.io/py/jiraone.svg)](https://badge.fury.io/py/jiraone)
 ![PyPI - License](https://img.shields.io/pypi/l/jiraone)
+![Build Doc](https://readthedocs.org/projects/jiraone/badge/?version=latest)
 
 # Jira one
 A REST API Implementation to Jira Cloud APIs for creating reports and for performing other Jira queries.
@@ -19,22 +20,36 @@ links to classes and functions. The major ones to take note of are the ones show
 For further knowledge on how to use the classes, methods or functions. Open the jiraone package and read the docstring on the
 aforementioned methods or functions above to get further information.
 
+If you're connecting to Jira server or datacenter, you will need to change the API endpoint to point to server instances. To do that, simply change
+the attribute `LOGIN.api = False` this helps to use the endpoint `/rest/api/latest` which is compatible for Jira server or datacenter.
+
+```python
+from jiraone import LOGIN
+
+data = "username", "password", "https://server.jiraserver.com"
+LOGIN.api = False
+LOGIN(*data)
+```
+
+The above login method applies only when you need to access a Jira server or datacenter type instances. The above has no little or no effect on cloud instance and will work normally.
+
 # Directory
-* [Using the API](https://princenyeche.github.io/jiraone/api#using-the-api)
-  * [endpoint](https://princenyeche.github.io/jiraone/api#endpoint)
-  * [LOGIN](https://princenyeche.github.io/jiraone/api#login)
-  * [echo](https://princenyeche.github.io/jiraone/api#echo)
-  * [add_log](https://princenyeche.github.io/jiraone/api#add-log)
-  * [file_writer](https://princenyeche.github.io/jiraone/api#file-writer)
-  * [file_reader](https://princenyeche.github.io/jiraone/api#file-reader)
-  * [path_builder](https://princenyeche.github.io/jiraone/api#path-builder)
-  * [For](https://princenyeche.github.io/jiraone/api#for)
-  * [replacement_placeholder](https://princenyeche.github.io/jiraone/api#replacement-placeholder)
-  * [field](https://princenyeche.github.io/jiraone/api#field)
-  * [comment](https://princenyeche.github.io/jiraone/api#comment)
-  * [manage](https://princenyeche.github.io/jiraone/api#manage)
-* [Basic report usage](https://princenyeche.github.io/jiraone/report#basic-report-usage)
-  * [PROJECT API](https://princenyeche.github.io/jiraone/report#project-api)
-  * [USER API](https://princenyeche.github.io/jiraone/report#user-api)
-  * [Module API](https://princenyeche.github.io/jiraone/report#module-api)
-  * [Support](https://princenyeche.github.io/jiraone/report#support)
+* [Using the API](https://jiraone.readthedocs.io/en/latest/api.html)
+  * [endpoint](https://jiraone.readthedocs.io/en/latest/api.html#endpoint)
+  * [LOGIN](https://jiraone.readthedocs.io/en/latest/api.html#login)
+  * [echo](https://jiraone.readthedocs.io/en/latest/api.html#id4)
+  * [add_log](https://jiraone.readthedocs.io/en/latest/api.html#id5)
+  * [file_writer](https://jiraone.readthedocs.io/en/latest/api.html#id6)
+  * [file_reader](https://jiraone.readthedocs.io/en/latest/api.html#id7)
+  * [path_builder](https://jiraone.readthedocs.io/en/latest/api.html#id8)
+  * [For](https://jiraone.readthedocs.io/en/latest/api.html#id9)
+  * [replacement_placeholder](https://jiraone.readthedocs.io/en/latest/api.html#id10)
+  * [field](https://jiraone.readthedocs.io/en/latest/api.html#id11)
+  * [comment](https://jiraone.readthedocs.io/en/latest/api.html#id12)
+  * [manage](https://jiraone.readthedocs.io/en/latest/api.html#id13)
+  * [Other Variables](https://jiraone.readthedocs.io/en/latest/api.html#id14)
+* [Basic report usage](https://jiraone.readthedocs.io/en/latest/report.html)
+  * [USER API](https://jiraone.readthedocs.io/en/latest/report.html#user-api)
+  * [PROJECT API](https://jiraone.readthedocs.io/en/latest/report.html#project-api)
+  * [Module API](https://jiraone.readthedocs.io/en/latest/report.html#module-api)
+  * [Support](https://jiraone.readthedocs.io/en/latest/report.html#support)
