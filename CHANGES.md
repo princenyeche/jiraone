@@ -1,5 +1,9 @@
 # Jira one change log
 
+**Release 0.5.2** - 2022-01-29
+### Macro update #67
+* Removed encoding argument for `file_writer`
+
 **Release 0.5.1** - 2022-01-29
 ### Macro update #66
 * Added a save point to `PROJECT.change_log()` method
