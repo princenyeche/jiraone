@@ -31,7 +31,7 @@ LOGIN.api = False
 LOGIN(*data)
 ```
 
-The above login method applies only when you need to access a Jira server or datacenter type instances. The above has no little or no effect on cloud instance and will work normally.
+The above login method applies only when you need to access a Jira server or datacenter type instances. The above has little or no effect on cloud instance and will work normally.
 
 # Directory
 * [Using the API](https://jiraone.readthedocs.io/en/latest/api.html)

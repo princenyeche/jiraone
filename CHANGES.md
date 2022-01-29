@@ -1,5 +1,10 @@
 # Jira one change log
 
+**Release 0.5.3** - 2022-01-29
+### Macro update #69
+* Fixed a regression in `time_in_status()` which caused the data not to
+be written to the file.
+
 **Release 0.5.2** - 2022-01-29
 ### Macro update #67
 * Removed encoding argument for `file_writer`
