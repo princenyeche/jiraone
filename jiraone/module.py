@@ -227,7 +227,6 @@ def time_in_status(
             break
 
     data_collection = deque()
-    collect_data.clear()
     
     def matrix_loop(proxy) -> None:
         """Repeat of ``if`` steps validating the status.
