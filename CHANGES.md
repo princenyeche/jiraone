@@ -1,5 +1,11 @@
 # Jira one change log
 
+**Release 0.5.1** - 2022-01-29
+### Macro update #66
+* Added a save point to `PROJECT.change_log()` method
+* Added type hint to the entire `jiraone` module, classes and functions.
+
+
 **Release 0.5.0** - 2022-01-04
 ### Macro update #65 
 * Corrected URL for codacy on `README.md` file.
