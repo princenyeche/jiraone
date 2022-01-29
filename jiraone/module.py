@@ -228,13 +228,14 @@ def time_in_status(
 
     data_collection = deque()
     
-    def matrix_loop(proxy) -> None:
+    def matrix_loop(proxy, rev: bool = True) -> None:
         """Repeat of ``if`` steps validating the status.
         :param proxy: The name of the iterable data within the dict
+        :param rev: Changes context of dict value for proxy argument
         :return: None
         """
         matrix = [proxy['issue_key'], proxy['summary'], proxy['author'], proxy['time_status'],
-                  proxy['status_name']]
+                  proxy['status_name'] if rev is True else proxy['from_string']]
         data_collection.append(matrix)
 
     if status is not None:
@@ -245,7 +246,7 @@ def time_in_status(
                         matrix_loop(name)
                 else:
                     if name['from_string'] == status:
-                        matrix_loop(name)
+                        matrix_loop(name, rev=False)
         else:
             raise JiraOneErrors("wrong", "Expecting `status` argument to be a string value "
                                          "got {} instead".format(type(status)))
@@ -254,7 +255,7 @@ def time_in_status(
             if "status_name" in name:
                 matrix_loop(name)
             else:
-                matrix_loop(name)
+                matrix_loop(name, rev=False)
 
     collect_data.clear()
     from jiraone import file_writer, path_builder
