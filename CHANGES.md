@@ -1,5 +1,11 @@
 # Jira one change log
 
+**Release 0.5.4** - 2022-01-29
+### Macro update #70
+* Fixed a regression in `time_in_status()`
+* Patch v3
+
+
 **Release 0.5.3** - 2022-01-29
 ### Macro update #69
 * Fixed a regression in `time_in_status()` which caused the data not to
