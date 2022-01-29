@@ -1,7 +1,7 @@
 # Jira one change log
 
 **Release 0.5.4** - 2022-01-29
-### Macro update #70
+### Macro update #69
 * Fixed a regression in `time_in_status()`
 * Patch v3
 
