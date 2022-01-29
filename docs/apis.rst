@@ -20,3 +20,7 @@ API Documentation
    :members:
 .. autoclass:: report.PROJECT
    :members:
+.. autofunction:: module.time_in_status
+.. autofunction:: module.field_update
+.. autofunction:: module.bulk_change_email
+.. autofunction:: module.bulk_change_swap_email
