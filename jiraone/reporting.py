@@ -5,7 +5,7 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
-from typing import Any, Optional, List, Iterable, Tuple, Union, Callable, Dict, NoReturn
+from typing import Any, List, Iterable, Tuple, Union, Callable, Dict
 from collections import deque, namedtuple, OrderedDict
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
@@ -804,24 +804,42 @@ class Projects:
         add_log("File extraction for comments completed", "info")
 
     @staticmethod
-    def change_log(folder: str = "ChangeLog", file: str = "change_log.csv", **kwargs) -> None:
+    def change_log(folder: str = "ChangeLog", file: str = "change_log.csv",
+                   back_up: bool = False,
+                   allow_cp: bool = True,
+                   **kwargs: Union[str, bool]) -> None:
         """Extract the issue history of an issue.
 
         Query the changelog endpoint if using cloud instance or straight away define access to it on server.
         Extract the histories and export it to a CSV file.
 
-        :param: jql: required A valid JQL query for projects or issues  datatype -> String
 
-        :param folder: - A name of a folder datatype String
-        :param file: - A name of a file datatype String
+
+        :param folder:  A name of a folder datatype String
+        :param file:  A name of a file datatype String
+        :param back_up: A boolean to check whether a history file is exist or not.
+        :param allow_cp: Allow or deny the ability to have a checkpoint.
+        :param kwargs: The other other kwargs that can be passed as below.
+
+               jql: (required) A valid JQL query for projects or issues.  datatype -> string
+
+               saved_file: The name of the file which saves the iteration. datatype -> string
+
+               show_output: Show a printable output on terminal. datatype -> boolean
+
+               field_name: Target a field name to render. datatype -> string
 
         :return: None
         """
+        from jiraone.exceptions import JiraOneErrors
+        if LOGIN.get(endpoint.myself()).status_code > 300:
+            exit("Authentication failed. Please check your credentials.")
         changes = deque()
         item_list = deque()
-        jql = kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
+        jql: str = kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
+        saved_file: str = "iter_saves.json" if "saved_file" not in kwargs else kwargs["saved_file"]
         field_name = kwargs["field_name"] if "field_name" in kwargs else None
-        show_output: bool = kwargs["show_output"] if "show_output" in kwargs else True
+        show_output: bool = False if "show_output" in kwargs else True
         print("Extracting issue histories...")
         add_log("Extracting issue histories...", "info")
 
@@ -829,44 +847,63 @@ class Projects:
             """Search the change history endpoint and extract data if exist.
             :return: None
             """
+            nonlocal loop
+            infinity_counter = count if back_up is False else data_brick["iter"]
             for issue in data["issues"]:
                 keys = issue["key"]
+
+                def re_instantiate(val: str) -> None:
+                    """
+                    Evaluate the issue key to run
+                    :param val: An issue key variable
+                    :return: None
+                    """
+                    # reach the changelog endpoint and extract the data of history for servers.
+                    # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
+                    get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=val,
+                                                               query="expand=renderedFields,names,schema,operations,"
+                                                                     "editmeta,changelog,versionedRepresentations"))
+                    if get_issue_keys.status_code == 200:
+                        key_data = json.loads(get_issue_keys.content)
+                        # Bug Fix to "Extraction Of Jira History Error #47" return value of None in some issue keys.
+                        # https://github.com/princenyeche/atlassian-cloud-api/issues/47
+                        load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=val))
+                        _summary = None
+                        if load_summary.status_code < 300:
+                            _summary = json.loads(load_summary.content).get('fields').get('summary')
+                        if LOGIN.api is False:
+                            if "changelog" in key_data:
+                                _data = key_data["changelog"]
+                                # grab the change_histories on an issue
+                                print(f"Getting history from issue: {val}")
+                                add_log(f"Getting history from issue: {val}", "info")
+                                changelog_history(_data, proj=(val, project_key, _summary))
+                                print("*" * 100)
+                        else:
+                            starter = 0
+                            while True:
+                                key_data = LOGIN.get(endpoint.issues(issue_key_or_id=val,
+                                                                     query="changelog?startAt={}".format(starter),
+                                                                     event=True))
+                                loads = json.loads(key_data.content)
+                                if starter >= loads["total"]:
+                                    break
+                                print(f"Getting history from issue: {val}")
+                                add_log(f"Getting history from issue: {val}", "info")
+                                changelog_history(loads, proj=(val, project_key, _summary))
+                                print("*" * 100)
+                                starter += 100
+
+                infinity_counter += 1
+                data_brick.update({"iter": infinity_counter, "key": keys})
                 project_key = keys.split("-")[0]
-                # reach the changelog endpoint and extract the data of history for servers.
-                # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
-                get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=keys,
-                                                           query="expand=renderedFields,names,schema,operations,"
-                                                                 "editmeta,changelog,versionedRepresentations"))
-                if get_issue_keys.status_code == 200:
-                    key_data = json.loads(get_issue_keys.content)
-                    # Bug Fix to "Extraction Of Jira History Error #47" return value of None in some issue keys.
-                    # https://github.com/princenyeche/atlassian-cloud-api/issues/47
-                    load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=keys))
-                    _summary = None
-                    if load_summary.status_code < 300:
-                        _summary = json.loads(load_summary.content).get('fields').get('summary')
-                    if LOGIN.api is False:
-                        if "changelog" in key_data:
-                            _data = key_data["changelog"]
-                            # grab the change_histories on an issue
-                            print(f"Getting history from issue: {keys}")
-                            add_log(f"Getting history from issue: {keys}", "info")
-                            changelog_history(_data, proj=(keys, project_key, _summary))
-                            print("*" * 120)
-                    else:
-                        starter = 0
-                        while True:
-                            key_data = LOGIN.get(endpoint.issues(issue_key_or_id=keys,
-                                                                 query="changelog?startAt={}".format(starter),
-                                                                 event=True))
-                            loads = json.loads(key_data.content)
-                            if starter >= loads["total"]:
-                                break
-                            print(f"Getting history from issue: {keys}")
-                            add_log(f"Getting history from issue: {keys}", "info")
-                            changelog_history(loads, proj=(keys, project_key, _summary))
-                            print("*" * 120)
-                            starter += 100
+                json.dump(data_brick, open(f"{path_builder(path=folder, file_name=saved_file)}",
+                                           encoding='utf-8', mode='w+'), indent=4) if allow_cp is True else None
+                if back_up is True and keys != set_up["key"] and loop is False:
+                    re_instantiate(set_up["key"])
+
+                loop = True
+                re_instantiate(keys)
 
         def changelog_history(history: Any = Any, proj: tuple = (str, Any, Any)) -> None:
             """Structure the change history data after being retrieved.
@@ -944,20 +981,53 @@ class Projects:
                    "Field", "From", "From String", "To", "To String"] if LOGIN.api is False else \
             ["Issue Key", "Summary", "Author", "Created", "Field Type",
              "Field", "Field Id", "From", "From String", "To", "To String", "From AccountId", "To AccountId"]
-        file_writer(folder=folder, file_name=file, data=headers)
+        cycle: int = 0
+        # stores our iteration here
+        data_brick = {}
+        set_up = None
+        loop: bool = False
+        if allow_cp is True:
+            if os.path.isfile(path_builder(folder, file_name=saved_file)):
+                user_input = input("An existing save point exist from your last extraction, "
+                                   "do you want to use it? (Y/N) \n")
+                set_up = json.load(open(path_builder(path=folder, file_name=saved_file)))
+                if user_input.lower() in ["y", "yes"]:
+                    back_up = True
+                else:
+                    print("Starting extraction from scratch.")
+                    set_up = None
+        os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT) if allow_cp is True else None
+        file_writer(folder=folder, file_name=file, data=headers, mode="w+") if set_up is None else None
+        depth = 1
         while True:
-            load = LOGIN.get(endpoint.search_issues_jql(query=jql, start_at=count))
+            load = LOGIN.get(endpoint.search_issues_jql(query=set_up["jql"], start_at=set_up["iter"],
+                                                        max_results=100)) if back_up is True and depth == 1 else \
+                LOGIN.get(endpoint.search_issues_jql(query=jql, start_at=count, max_results=100))
             if load.status_code == 200:
                 data = json.loads(load.content)
+                cycle = 0
+                data_brick.update({
+                    "jql": jql,
+                    "iter": set_up["iter"] if back_up is True and depth == 1 else count
+                })
                 if count > data["total"]:
                     break
                 changelog_search()
+                depth += 1
             count += 100
+            if depth == 2 and back_up is True:
+                count = data_brick["iter"]
+            if load.status_code > 300:
+                cycle += 1
+                if cycle > 99:
+                    raise JiraOneErrors("value", "It seems that the search \"{}\" cannot be "
+                                                 "retrieved as we've attempted it {} times".format(jql, cycle))
 
         if show_output is True:
             print("A CSV file has been written to disk, find it here {}".format(
                 path_builder(folder, file_name=file)))
         add_log("File extraction for change log completed", "info")
+        os.remove(path_builder(path=folder, file_name=saved_file))
 
     def comment_on(self, key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs) -> Any:
         """Comment on a ticket or write on a description field.
