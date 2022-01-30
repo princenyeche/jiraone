@@ -184,10 +184,11 @@ def time_in_status(
         "to_string": 0,
         "summary": 0
     }):
-        def initialize(t, f) -> None:
+        def initialize(t, f, d: bool = False) -> None:
             """Rerun the data for time extraction.
             :param t: A timedelta object showing the present or future datetime
             :param f: A timedelta object showing the previous datetime
+            :param d: A decision maker option
             :return: none
             """
             difference = t - f
@@ -195,7 +196,7 @@ def time_in_status(
                 "time_status": pretty_format(difference, pprint),
                 "issue_key": items['issue_key'],
                 "from_string": items['from_string'],
-                "to_string": items['to_string'],
+                "to_string" if d is False else "status_name": items['to_string'],
                 "summary": items['summary'],
                 "author": items['author']
             }
@@ -222,7 +223,7 @@ def time_in_status(
                 from_time = dt.strptime(items['created'], "%Y-%m-%dT%H:%M:%S.%f%z")
                 present = dt.strftime(dt.astimezone(dt.now()), "%Y-%m-%dT%H:%M:%S.%f%z")
                 today = dt.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
-                initialize(today, from_time)
+                initialize(today, from_time, d=True)
         if rows >= number_of_history_items:
             break
 
