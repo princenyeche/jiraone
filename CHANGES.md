@@ -1,28 +1,33 @@
 # Jira one change log
 
+**Release 0.5.5** - 2022-01-30
+### Patch update #72
+* Patch v4 to `time_in_status()`. Noticed the current status not updated on result file.
+
+
 **Release 0.5.4** - 2022-01-29
-### Macro update #69
+### Micro update #69
 * Fixed a regression in `time_in_status()`
 * Patch v3
 
 
 **Release 0.5.3** - 2022-01-29
-### Macro update #69
+### Micro update #69
 * Fixed a regression in `time_in_status()` which caused the data not to
 be written to the file.
 
 **Release 0.5.2** - 2022-01-29
-### Macro update #67
+### Micro update #67
 * Removed encoding argument for `file_writer`
 
 **Release 0.5.1** - 2022-01-29
-### Macro update #66
+### Micro update #66
 * Added a save point to `PROJECT.change_log()` method
 * Added type hint to the entire `jiraone` module, classes and functions.
 
 
 **Release 0.5.0** - 2022-01-04
-### Macro update #65 
+### Micro update #65 
 * Corrected URL for codacy on `README.md` file.
 
 
