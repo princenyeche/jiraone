@@ -107,12 +107,12 @@ def time_in_status(
     across different sets of issues. Display the output or send the output into
     a file either in CSV or JSON.
 
-    :param var: Alias to the `PROJECT.change_log` method
+    :param var: Alias to the ``PROJECT`` which can invoke the ``change_log()`` method
 
     :param key_or_id: An issue key or id or keys put in a list to derive multiples values
                     or use a jql format in dictionary
 
-    :param reader: `file_reader` function needs to be passed here
+    :param reader: ``file_reader`` function needs to be passed here
 
     :param report_file: A string of the name of the file
 
@@ -149,7 +149,8 @@ def time_in_status(
             form.format(ins="in" if len(determine) > 1 else "=", determine=tuple(determine)
             if len(determine) > 1 else determine[0]) if isinstance(determine, list) else \
                 exit("Unexpected data type received as issue key. Exiting")
-    var.change_log(folder=report_folder, file=report_file, jql=jql, field_name="status", show_output=False)
+    var.change_log(folder=report_folder, file=report_file, jql=jql, field_name="status", show_output=False,
+                   fix=True, allow_cp=False)
     data_dog = namedtuple("data_dog", ["IssueKey", "Summary", "Author", "created", "FieldType",
                                        "Field", "From", "fromString", "To", "toString"]) if login.api is False else \
         namedtuple("data_dog", ["IssueKey", "Summary", "Author", "created", "FieldType",
@@ -167,7 +168,8 @@ def time_in_status(
             "from_string": items.fromString,
             "summary": items.Summary,
             "author": items.Author,
-            "to_string": items.toString
+            "to_string": items.toString,
+            "blank_data": items.FieldType
         }
         log_data.append(time_stat)
 
@@ -175,30 +177,34 @@ def time_in_status(
     rows = 0
     number_of_history_items = len(log_data)
     history_copy = deepcopy(log_data)
-    del history_copy[0]
+    if len(history_copy) > 0:
+        del history_copy[0]
+    else:
+        exit("No data to read.Quiting...")
     for items, item in zip_longest(log_data, history_copy, fillvalue={
         "issue_key": 0,
         "created": 0,
         "author": 0,
         "from_string": 0,
         "to_string": 0,
-        "summary": 0
+        "summary": 0,
+        "blank_data": 0
     }):
-        def initialize(t, f, d: bool = False) -> None:
+        def initialize(to_, from_) -> None:
             """Rerun the data for time extraction.
-            :param t: A timedelta object showing the present or future datetime
-            :param f: A timedelta object showing the previous datetime
-            :param d: A decision maker option
+            :param to_: A timedelta object showing the present or future datetime
+            :param from_: A timedelta object showing the previous datetime
             :return: none
             """
-            difference = t - f
+            difference = to_ - from_
             data_bundle = {
                 "time_status": pretty_format(difference, pprint),
                 "issue_key": items['issue_key'],
                 "from_string": items['from_string'],
-                "to_string" if d is False else "status_name": items['to_string'],
+                "to_string": items['to_string'],
                 "summary": items['summary'],
-                "author": items['author']
+                "author": items['author'],
+                "blank_data": items['blank_data']
             }
             collect_data.append(data_bundle)
 
@@ -223,12 +229,12 @@ def time_in_status(
                 from_time = dt.strptime(items['created'], "%Y-%m-%dT%H:%M:%S.%f%z")
                 present = dt.strftime(dt.astimezone(dt.now()), "%Y-%m-%dT%H:%M:%S.%f%z")
                 today = dt.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
-                initialize(today, from_time, d=True)
+                initialize(today, from_time)
         if rows >= number_of_history_items:
             break
 
     data_collection = deque()
-    
+
     def matrix_loop(proxy, rev: bool = True) -> None:
         """Repeat of ``if`` steps validating the status.
         :param proxy: The name of the iterable data within the dict
@@ -236,27 +242,26 @@ def time_in_status(
         :return: None
         """
         matrix = [proxy['issue_key'], proxy['summary'], proxy['author'], proxy['time_status'],
-                  proxy['status_name'] if rev is True else proxy['from_string']]
+                  proxy['from_string' if proxy['blank_data'] == "" else 'to_string'] if rev is True else
+                  proxy['to_string']]
         data_collection.append(matrix)
 
     if status is not None:
         if isinstance(status, str):
             for name in collect_data:
-                if "status_name" in name:
-                    if name['status_name'] == status:
+                if name['blank_data'] == "":
+                    if name['from_string'].lower() == status.lower():
                         matrix_loop(name)
                 else:
-                    if name['from_string'] == status:
-                        matrix_loop(name, rev=False)
+                    if name['to_string'].lower() == status.lower():
+                        matrix_loop(name)
+
         else:
             raise JiraOneErrors("wrong", "Expecting `status` argument to be a string value "
                                          "got {} instead".format(type(status)))
     elif status is None:
         for name in collect_data:
-            if "status_name" in name:
-                matrix_loop(name)
-            else:
-                matrix_loop(name, rev=False)
+            matrix_loop(name)
 
     collect_data.clear()
     from jiraone import file_writer, path_builder
