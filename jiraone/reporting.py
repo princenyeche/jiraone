@@ -813,8 +813,6 @@ class Projects:
         Query the changelog endpoint if using cloud instance or straight away define access to it on server.
         Extract the histories and export it to a CSV file.
 
-
-
         :param folder:  A name of a folder datatype String
         :param file:  A name of a file datatype String
         :param back_up: A boolean to check whether a history file is exist or not.
@@ -833,7 +831,7 @@ class Projects:
         """
         from jiraone.exceptions import JiraOneErrors
         if LOGIN.get(endpoint.myself()).status_code > 300:
-            exit("Authentication failed. Please check your credentials.")
+            raise JiraOneErrors("login", "Authentication failed. Please check your credentials.")
         changes = deque()
         item_list = deque()
         jql: str = kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
@@ -842,15 +840,44 @@ class Projects:
         show_output: bool = False if "show_output" in kwargs else True
         print("Extracting issue histories...")
         add_log("Extracting issue histories...", "info")
+        # Indicates the first iteration in the main loop sequence.
+        attempt: int = 1
+        _fix_status_: bool = True if "fix" in kwargs else False
+
+        def blank_data(key_val: str, sums: str, item_val: Any, name_: str) -> None:
+            """
+            Write the created date of an issue to a file.
+            This is used for ``time_in_status()`` to accurately calculate the difference in status time.
+            :param key_val: An issue key
+            :param sums: A summary of an issue
+            :param item_val: An dictionary of values
+            :param name_: displayName of the user
+            :return: None
+            """
+            nonlocal attempt
+
+            if _fix_status_ is True and attempt == 1:
+                create = LOGIN.get(endpoint.issues(key_val))
+                if create.status_code < 300:
+                    adjust = create.json().get("fields").get("created")
+                    raw_ = [key_val, sums, name_, adjust, "", item_val.field,
+                            item_val.from_, item_val.fromString, item_val.to, item_val.toString] if LOGIN.api is \
+                                                                                                    False else [
+                        key_val, sums, name_, adjust, "", item_val.field,
+                        item_val.field_id, item_val.from_, item_val.fromString, item_val.to, item_val.toString,
+                        item_val.tmpFromAccountId, item_val.tmpToAccountId]
+                    file_writer(folder, file, data=raw_, mode="a+")
+                    attempt += 2
 
         def changelog_search() -> None:
             """Search the change history endpoint and extract data if exist.
             :return: None
             """
-            nonlocal loop
+            nonlocal loop, attempt
             infinity_counter = count if back_up is False else data_brick["iter"]
             for issue in data["issues"]:
                 keys = issue["key"]
+                attempt = 1
 
                 def re_instantiate(val: str) -> None:
                     """
@@ -858,6 +885,7 @@ class Projects:
                     :param val: An issue key variable
                     :return: None
                     """
+                    nonlocal attempt
                     # reach the changelog endpoint and extract the data of history for servers.
                     # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
                     get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=val,
@@ -953,6 +981,8 @@ class Projects:
                                                     "to", "toString", "tmpFromAccountId", "tmpToAccountId"])
                         for _ in item_list:
                             issue = ItemList._make(_)
+                            # Fix for time in status
+                            blank_data(_keys, _summary, issue, name)
                             raw_vision = [_keys, _summary, name, created, issue.field_type, issue.field,
                                           issue.from_, issue.fromString, issue.to, issue.toString] if LOGIN.api is \
                                                                                                       False else [
@@ -1008,7 +1038,8 @@ class Projects:
                 cycle = 0
                 data_brick.update({
                     "jql": jql,
-                    "iter": set_up["iter"] if back_up is True and depth == 1 else count
+                    "iter": set_up["iter"] if back_up is True and depth == 1 else count,
+                    "save": set_up["save"] if back_up is True and depth == 1 else attempt
                 })
                 if count > data["total"]:
                     break
@@ -1027,7 +1058,7 @@ class Projects:
             print("A CSV file has been written to disk, find it here {}".format(
                 path_builder(folder, file_name=file)))
         add_log("File extraction for change log completed", "info")
-        os.remove(path_builder(path=folder, file_name=saved_file))
+        os.remove(path_builder(path=folder, file_name=saved_file)) if allow_cp is True else None
 
     def comment_on(self, key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs) -> Any:
         """Comment on a ticket or write on a description field.
@@ -1067,13 +1098,14 @@ class Projects:
                 This calls the comment endpoint and returns a list of the data.
                 Depending on what method you're calling. It is either you call the
                 method `comment()` or you call a property within the method.
-                Example:
+                Example::
                     iss_key = "COM-42"
                     get_com = comment(iss_key).comment("body").result
                     echo(get_com)
                     # This will return the data of the body content
                 OR
-                Example:
+                
+                Example::
                     iss_key = "COM-42"
                     get_com = comment(iss_key).data
                     echo(get_com)
@@ -1085,7 +1117,7 @@ class Projects:
                 iii) text - returns a Array of strings of the text in the comment.
                 iv) author - returns the author who triggered the comment.
 
-                Example:
+                Example::
                     iss_key = "COM-42"
                     get_com = comment(iss_key).comment("body").text
                     echo(get_com)
@@ -1563,14 +1595,13 @@ def replacement_placeholder(string: str = Any, data: list = Any,
 
     :param row: An indicator of the column to check.
 
-    * Usage
-    ```
-    # previous statement
-    hold = ["Hello", "John doe", "Post mortem"]
-    text = ["<name> <name>, welcome to the <name> of what is to come"]
-    cb = replacement_placeholder("<name>", text, hold, 0)
-    print(cb)
-    ```
+    * Usage::
+     # previous statement
+     hold = ["Hello", "John doe", "Post mortem"]
+     text = ["<name> <name>, welcome to the <name> of what is to come"]
+     cb = replacement_placeholder("<name>", text, hold, 0)
+     print(cb)
+  
     """
     result = None
     count = 0
