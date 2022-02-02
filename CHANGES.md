@@ -1,5 +1,16 @@
 # Jira one change log
 
+
+**Release 0.5.6** - 2022-02-02
+### Patch update #73
+* Patch v5 to `time_in_status()`. Noticed that the statuses time were wrong. There seems to be
+a change in the way the previous API payload was retrieved. Tweaked the logic for retrieving 
+accurate difference in time. 
+* The statuses and their time can now be retrieved accurately.
+* The save check_point is turned off for the `time_in_status()` function as a slight logic needs
+to be added to account for when a breakpoint happens between checkpoint to retain
+accurate difference in time between statuses.
+
 **Release 0.5.5** - 2022-01-30
 ### Patch update #72
 * Patch v4 to `time_in_status()`. Noticed the current status not updated on result file.
