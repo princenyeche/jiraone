@@ -2,6 +2,10 @@ API Documentation
 =============
 
 .. module:: jiraone
+.. module:: access
+.. module:: reporting
+.. module:: management
+.. module:: module
 
 .. autoclass:: access.Endpoints
    :members:
@@ -9,27 +13,27 @@ API Documentation
 
 .. autofunction:: access.add_log
 
-.. autofunction:: report.file_reader
+.. autofunction:: reporting.file_reader
 
-.. autofunction:: report.file_writer
+.. autofunction:: reporting.file_writer
 
-.. autofunction:: report.path_builder
+.. autofunction:: reporting.path_builder
 
-.. autofunction:: report.replacement_placeholder
+.. autofunction:: reporting.replacement_placeholder
 
 .. autoclass:: access.field
    :members:
    
-.. autoclass:: user.manage
+.. autoclass:: management.manage
    :members:
    
 .. autoclass:: access.For
    :members:
    
-.. autoclass:: report.USER
+.. autoclass:: reporting.USER
    :members:
    
-.. autoclass:: report.PROJECT
+.. autoclass:: reporting.PROJECT
    :members:
    
 .. autofunction:: module.time_in_status
