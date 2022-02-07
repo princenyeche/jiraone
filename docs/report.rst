@@ -1,5 +1,5 @@
 .. _basic-report-usage:
-.. currentmodule:: jiraone.reporting
+.. currentmodule:: jiraone
 
 Basic Report Usage
 =================
@@ -256,7 +256,7 @@ The API from the ``jiraone.module`` uses functions
 
 * Generate a report of time in status of Jira issue.
 
-.. autofunction:: time_in_status
+.. autofunction:: module.time_in_status
 
 .. code-block:: python
 
@@ -316,7 +316,7 @@ Once you run the script, you will end up with a report that looks like the one b
 
 * Update custom field or system fields using a field update function. Please ensure that the fields you want to update is visible on screen in your projects, if not you will get a 400 error response instead. The API doesn't override the screen functions.
 
-.. autofunction:: field_update
+.. autofunction:: module.field_update
 
 .. code-block:: python
 
@@ -422,7 +422,7 @@ Another example is given below to update multiple value set to a field. Use the 
 
 This function helps with changing the email addresses in bulk of organization users. The target email address must not exist as an Atlassian account for the change to be effective. All domains needing the bulk change needs to be verified within your organization for the changes to work.
 
-.. autofunction:: bulk_change_email
+.. autofunction:: module.bulk_change_email
 
 For example
 
@@ -444,7 +444,7 @@ For example
 
 This function helps to bulk change email address but only on the condition that the target email address already exist as an Atlassian account. To use this function, you must verify all the domains you wish to swap.
 
-.. autofunction:: bulk_change_swap_email
+.. autofunction:: module.bulk_change_swap_email
 
 For example
 
