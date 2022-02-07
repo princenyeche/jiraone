@@ -1,4 +1,5 @@
 .. _basic-report-usage:
+.. currentmodule:: jiraone.reporting
 
 Basic Report Usage
 =================
