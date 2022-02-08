@@ -38,16 +38,12 @@ This is an alias to the ``EndPoints`` class and it has many methods that can be 
 
 Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 
-.. autoclass:: endpoint
-   :members:
-
 
 .. _login:
 
 LOGIN
 --------
 
-.. autoclass:: LOGIN 
 
 This is a call to the `Credentials` class and the accepted parameters are
   * user - string
@@ -143,7 +139,7 @@ Example usage:
 
 .. _file_writer:
 file_writer
---------
+-------------
 
 .. autofunction:: file_writer
 
@@ -168,7 +164,7 @@ This function helps in creating a csv file or a normal file. It comes with the b
 
 .. _file_reader:
 file_reader
---------
+------------
  
 .. autofunction:: file_reader
 
@@ -192,7 +188,7 @@ parameter include
 
 .. _path_builder:
 path_builder
---------
+-------------
 
 .. autofunction:: path_builder
 
@@ -218,9 +214,9 @@ parameters include
 
 
 .. _for:
+
 For
---------
-.. autoclass:: For
+------
 
 It contains one required parameter called ``data`` which it uses to receive the various datatype and translate them into a list of items, 
 retaining their own unique datatype.
@@ -244,7 +240,7 @@ Example usage:
 
 .. _replacement_placeholder:
 replacement_placeholder
---------
+------------------------
  
 .. autofunction:: replacement_placeholder
 
@@ -268,11 +264,11 @@ Example usage:
  
  
 .. _field:
+
 field
 --------
 Alias to the ``Field`` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. 
 
-.. autofunction:: field
    
 Example usage: 
 
@@ -311,9 +307,9 @@ Example usage:
 
 
 .. _comment:
+
 comment
 --------
-.. autofunction:: comment
 
 
 * POST a comment to a Jira issue and mention users sequentially on a comment.
@@ -337,16 +333,11 @@ comment
 
 
 .. _manage:
+
 manage
 --------
 
 The ``manage`` API brings organization and user REST API features to jiraone. With this API, you can manage your organization and users by making calls to the entire API endpoints used for organization management.
-
-.. autoclass:: manage
-   :members:
-
-                
-.. autofunction:: manage.add_token
 
 
 This API requires that you enter a API token for your organization.
@@ -359,8 +350,6 @@ This API requires that you enter a API token for your organization.
  manage.add_token(token)
 
 
-                
-.. autofunction:: manage.get_user_permission
 
 Returns the set of permissions you have for managing the specified Atlassian account. The `account_id` is required and query is an ``Array<string>`` which can be any of the values below:
 
@@ -381,12 +370,10 @@ You can be able to call various methods by altering the ``method`` keyword argum
      * Body parameter
           e.g. {"email": "prince.nyeche@elfapp.website"}
                 
-.. autofunction:: manage.api_token
 
 
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
                   
-.. autofunction:: manage.manage_user
 
 
 Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
@@ -408,7 +395,6 @@ Enables the specified user account.The permission to make use of this resource i
  # <Response 204>
   
                 
-.. autofunction:: manage.get_organization
 
 
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
@@ -447,8 +433,6 @@ Get the data from the list of policies
  # <Response 204>
 
                 
-.. autofunction:: manage.manage_organization 
-
 
 Create, put and delete organization data, create a policy for an org, send a post request by using ``method="post"`` as keyword args.Update a policy for an org.
 Send a put request by using ``method="put"`` as keyword args.
