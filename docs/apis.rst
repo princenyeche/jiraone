@@ -1,45 +1,39 @@
 API Documentation
 =============
 
-.. currentmodule:: jiraone
+.. module:: jiraone.access
 
-.. autoclass:: endpoint
+.. autoclass:: EndPoints
    :members:
 
-.. autoclass:: LOGIN
+.. autoclass:: Credentials
    :members:
-   
-.. autofunction:: echo
 
-.. autofunction:: add_log :noindex:
-
-.. autofunction:: file_reader :noindex:
-
-.. autofunction:: file_writer :noindex:
-
-.. autofunction:: path_builder :noindex:
-
-.. autofunction:: replacement_placeholder :noindex:
-
-.. autoclass:: field
-   :members:
-   
-.. autoclass:: manage
+.. autoclass:: Field
    :members:
    
 .. autoclass:: For
    :members:
    
-.. autoclass:: USER
+.. module:: jiraone.access
+
+.. autoclass:: management.UserManagement
    :members:
    
-.. autoclass:: PROJECT
+.. module:: jiraone.reporting
+   
+.. autoclass:: User
    :members:
    
-.. autofunction:: module.time_in_status
+.. autoclass:: Project
+   :members:
+   
+.. module:: jiraone.module
 
-.. autofunction:: module.field_update
+.. autofunction:: time_in_status
 
-.. autofunction:: module.bulk_change_email
+.. autofunction:: field_update
 
-.. autofunction:: module.bulk_change_swap_email
+.. autofunction:: bulk_change_email
+
+.. autofunction:: bulk_change_swap_email
