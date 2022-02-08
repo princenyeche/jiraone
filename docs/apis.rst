@@ -1,5 +1,5 @@
 API Documentation
-=============
+=====================
 
 .. module:: jiraone.access
 
@@ -26,7 +26,6 @@ You can access this classmethod by calling ``jiraone.endpoint``.
   
 
 .. autoclass:: EndPoints
-
    :members:
 
 
@@ -56,7 +55,6 @@ Once a login session starts, you can join other classes and make a call directly
 
 
 .. autoclass:: Credentials
-
    :members:
 
 
@@ -81,7 +79,6 @@ You can access this class and make updates to Jira fields.
 
 
 .. autoclass:: Field
-
    :members:
    
  
@@ -92,13 +89,11 @@ You can access this class and make updates to Jira fields.
  helps with dictionary indexing.
  
 .. autoclass:: For
-
    :members:
    
  
  
 .. module:: jiraone.management
-
 
 manage
 ----------
@@ -116,30 +111,11 @@ user and organization management. The authentication is different as it uses a b
   
 
 .. autoclass:: UserManagement
-
    :members:
    
  
 .. module:: jiraone.reporting
 
- USER
- ------
- 
- This is an alias to the ``Users`` class of the ``reporting`` module. It contains methods that are used to easily get user details.
- 
-.. code-block:: python
-
-   from jiraone import LOGIN, USER
-  
-   # previous login statement
-   USER.get_all_users(file="user.csv", folder="USERS")
-   
- 
-   
-.. autoclass:: Users
-
-   :members:
-   
 
 PROJECT
 -----------
@@ -156,8 +132,26 @@ This is an alias to the ``Projects`` class of the ``reporting`` module. It perfo
    
 
 .. autoclass:: Projects
-
    :members:
+   
+   
+ USER
+ ------
+ 
+ This is an alias to the ``Users`` class of the ``reporting`` module. It contains methods that are used to easily get user details.
+ 
+.. code-block:: python
+
+   from jiraone import LOGIN, USER
+  
+   # previous login statement
+   USER.get_all_users(file="user.csv", folder="USERS")
+   
+ 
+   
+.. autoclass:: Users
+   :members:
+   
    
 
 Module
@@ -189,9 +183,9 @@ as possible, so you can easily make calls to Jira's endpoint and get the require
 
 .. module:: jiraone.module
 
-.. autofunction:: time_in_status
-
 .. autofunction:: field_update
+
+.. autofunction:: time_in_status
 
 .. autofunction:: bulk_change_email
 
