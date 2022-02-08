@@ -69,6 +69,7 @@ Directory
    
    api
    report
+   apis
 
 
 API Reference
