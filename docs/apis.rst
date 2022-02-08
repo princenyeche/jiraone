@@ -77,11 +77,9 @@ You can access this class and make updates to Jira fields.
       c = field.update_field_data(data=value, find_field=fields, key_or_id=issue, options="add", show=False)
       echo(c)
 
-
 .. autoclass:: Field
    :members:
    
- 
  
  For
  -------
@@ -130,13 +128,13 @@ This is an alias to the ``Projects`` class of the ``reporting`` module. It perfo
    jql = "project = ABC ORDER BY Rank DESC"
    PROJECT.change_log(jql)
    
-
+   
 .. autoclass:: Projects
    :members:
    
    
  USER
- ------
+ -------
  
  This is an alias to the ``Users`` class of the ``reporting`` module. It contains methods that are used to easily get user details.
  
@@ -153,6 +151,8 @@ This is an alias to the ``Projects`` class of the ``reporting`` module. It perfo
    :members:
    
    
+   
+.. module:: jiraone.module
 
 Module
 ---------
@@ -161,6 +161,7 @@ The ``module`` module contains functions that are specific towards certain task.
 as possible, so you can easily make calls to Jira's endpoint and get the required data.
 
 .. code-block:: python
+
  from jiraone import LOGIN, USER, echo, field
  from jiraone.module import field_update
  import json
@@ -180,8 +181,6 @@ as possible, so you can easily make calls to Jira's endpoint and get the require
  # output
  # <Response [204]>
 
-
-.. module:: jiraone.module
 
 .. autofunction:: field_update
 
