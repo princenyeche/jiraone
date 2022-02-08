@@ -5,17 +5,21 @@ API Documentation
 
 .. autoclass:: endpoint
    :members:
+
+.. autoclass:: LOGIN
+   :members:
+   
 .. autofunction:: echo
 
-.. autofunction:: add_log
+.. autofunction:: add_log :noindex:
 
-.. autofunction:: file_reader
+.. autofunction:: file_reader :noindex:
 
-.. autofunction:: file_writer
+.. autofunction:: file_writer :noindex:
 
-.. autofunction:: path_builder
+.. autofunction:: path_builder :noindex:
 
-.. autofunction:: replacement_placeholder
+.. autofunction:: replacement_placeholder :noindex:
 
 .. autoclass:: field
    :members:
@@ -32,7 +36,6 @@ API Documentation
 .. autoclass:: PROJECT
    :members:
    
-.. module:: jiraone
 .. autofunction:: module.time_in_status
 
 .. autofunction:: module.field_update
