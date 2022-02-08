@@ -58,7 +58,6 @@ Once a login session starts, you can join other classes and make a call directly
    :members:
 
 
-
 field
 ---------
 
@@ -81,8 +80,8 @@ You can access this class and make updates to Jira fields.
    :members:
    
  
- For
- -------
+For
+-------
  The ``For`` class shows an implementation of a ``for`` loop. It comes with a special method that
  helps with dictionary indexing.
  
@@ -133,8 +132,8 @@ This is an alias to the ``Projects`` class of the ``reporting`` module. It perfo
    :members:
    
    
- USER
- -------
+USER
+------
  
  This is an alias to the ``Users`` class of the ``reporting`` module. It contains methods that are used to easily get user details.
  
