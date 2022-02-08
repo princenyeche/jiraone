@@ -38,9 +38,6 @@ This is an alias to the ``EndPoints`` class and it has many methods that can be 
 
 Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 
-.. autoclass:: endpoint
-   :members:
-
 
 .. _login:
 
@@ -217,6 +214,7 @@ parameters include
 
 
 .. _for:
+
 For
 ------
 
@@ -266,6 +264,7 @@ Example usage:
  
  
 .. _field:
+
 field
 --------
 Alias to the ``Field`` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. 
@@ -308,6 +307,7 @@ Example usage:
 
 
 .. _comment:
+
 comment
 --------
 
@@ -333,6 +333,7 @@ comment
 
 
 .. _manage:
+
 manage
 --------
 
