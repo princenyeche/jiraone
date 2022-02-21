@@ -5,7 +5,7 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
-from typing import Any, List, Iterable, Tuple, Union, Callable, Dict
+from typing import Any, List, Iterable, Tuple, Union, Callable, Dict, Optional
 from collections import deque, namedtuple, OrderedDict
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
@@ -202,9 +202,13 @@ class Projects:
         role within the project.
 
         :param roles_folder: A folder
+
         :param roles_file_name: A file to store temp data
+
         :param user_extraction: Data extraction file holder
+
         :param kwargs: Addition argument
+
         :return: None
         """
         count_start_at = 0
@@ -300,6 +304,7 @@ class Projects:
 
         Get the size of attachments on an Issue, count those attachments collectively and return the total number
         on all Projects searched. JQL is used as a means to search for the project.
+
         :param attachment_folder: A temp folder
 
         :param attachment_file_name: A filename for the attachment
@@ -420,6 +425,7 @@ class Projects:
         using megabyte MB, value is 1000^2
         mebibyte MiB, value is 1024^2
         Therefore total = val / MB
+
         :param val: A value to supply
 
         :return: strings
@@ -432,6 +438,7 @@ class Projects:
     @staticmethod
     def date_converter(val) -> str:
         """split the datetime value and output a string.
+
         :param val: A value to be supplied
 
         :return: string
@@ -446,7 +453,9 @@ class Projects:
         Arranges and sorts the data.
 
         :param attach_list: A list of data
+
         :param read_file: A data set
+
         :return: A union of float and integers
         """
         for node in read_file:
@@ -467,6 +476,11 @@ class Projects:
         using megabyte MB, value is 1000^2
         mebibyte MiB, value is 1024^2
         Therefore total = val / MB
+
+        :param val: An integer value
+
+        :return: string
+
         """
         byte_size = val
         kilo_byte = 1000
@@ -494,7 +508,7 @@ class Projects:
          * file name
          * attachment url
         we assume you're getting this from
-        `def get_attachments_on_project()`
+        ``def get_attachments_on_project()``
 
         :param attach_folder: a folder or directory path
 
@@ -516,7 +530,7 @@ class Projects:
               * file=8
 
         the above example corresponds with the index if using the
-         `def get_attachments_on_project()` otherwise, specify your value in each
+         ``def get_attachments_on_project()`` otherwise, specify your value in each
          keyword args when calling the method.
 
          :return: None
@@ -558,7 +572,7 @@ class Projects:
                              **kwargs) -> None:
         """Download the attachments to your local device read from a csv file.
 
-        we assume you're getting this from   `def get_attachments_on_project()` method.
+        we assume you're getting this from   ``def get_attachments_on_project()`` method.
               :param attach: integers to specify the index of the columns
 
               :param file_folder: a folder or directory where the file
@@ -568,10 +582,11 @@ class Projects:
               :param file: a row to the index of the column
 
               :param file_name: a file name to a file
+
                 e.g
                   * attach=6,
                   * file=8
-              the above example corresponds with the index if using the `def get_attachments_on_project()`
+              the above example corresponds with the index if using the ``def get_attachments_on_project()``
               otherwise, specify your value in each keyword args when calling the method.
 
         :return: None
@@ -752,6 +767,7 @@ class Projects:
         def count_and_total() -> Tuple[int, int, int]:
             """
             Sorts and arranges the extracted data
+
             :return: A tuple of integers
             """
             for row in read_file:
@@ -768,6 +784,7 @@ class Projects:
         def write_result() -> None:
             """
             Sorts the result data
+
             :return: None
             """
             list_data = count_and_total()
@@ -814,9 +831,13 @@ class Projects:
         Extract the histories and export it to a CSV file.
 
         :param folder:  A name of a folder datatype String
+
         :param file:  A name of a file datatype String
+
         :param back_up: A boolean to check whether a history file is exist or not.
+
         :param allow_cp: Allow or deny the ability to have a checkpoint.
+
         :param kwargs: The other other kwargs that can be passed as below.
 
                jql: (required) A valid JQL query for projects or issues.  datatype -> string
@@ -1098,14 +1119,13 @@ class Projects:
                 This calls the comment endpoint and returns a list of the data.
                 Depending on what method you're calling. It is either you call the
                 method `comment()` or you call a property within the method.
-                Example::
+                .. Example::
                     iss_key = "COM-42"
                     get_com = comment(iss_key).comment("body").result
                     echo(get_com)
                     # This will return the data of the body content
                 OR
-                
-                Example::
+                .. Example::
                     iss_key = "COM-42"
                     get_com = comment(iss_key).data
                     echo(get_com)
@@ -1117,7 +1137,7 @@ class Projects:
                 iii) text - returns a Array of strings of the text in the comment.
                 iv) author - returns the author who triggered the comment.
 
-                Example::
+                .. Example::
                     iss_key = "COM-42"
                     get_com = comment(iss_key).comment("body").text
                     echo(get_com)
@@ -1317,7 +1337,7 @@ class Projects:
                       *args,
                       csv_file: Callable = None,
                       **kwargs):
-        """"""
+        """TODO:"""
         columns = csv_file(*args) if "column" in kwargs else exit("Unable to extract columns from CSV file")
         self.byte_converter(columns)
 
@@ -1536,12 +1556,16 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
 
     :param kwargs: Additional parameters
 
+               *options*
+               delimiter: defaults to comma.
+
     :return: Any
     """
+    delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
     file = path_builder(path=folder, file_name=file_name)
     if mode:
         with open(file, mode) as f:
-            write = csv.writer(f, delimiter=",")
+            write = csv.writer(f, delimiter=delimiter)
             if mark == "single":
                 write.writerow(data)
             if mark == "many":
@@ -1565,14 +1589,21 @@ def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
 
     :param content: bool - True allows you to read a byte file. By default it is set to False
 
-    :param kwargs: Use encoding - standard encoding strings. e.g “utf-8”
+    :param kwargs: Additional parameters
 
+              *options*
+              encoding - standard encoding strings. e.g “utf-8”.
+              delimiter: defaults to comma.
+
+
+    :return: A list comprehension data or binary data
     """
     file = path_builder(path=folder, file_name=file_name)
-    encoding = kwargs["encoding"] if "encoding" in kwargs else None
+    encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
+    delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
     if mode:
         with open(file, mode) as f:
-            read = csv.reader(f, delimiter=",")
+            read = csv.reader(f, delimiter=delimiter)
             if skip is True:
                 next(read, None)
             if content is True:
@@ -1595,13 +1626,14 @@ def replacement_placeholder(string: str = Any, data: list = Any,
 
     :param row: An indicator of the column to check.
 
-    * Usage::
-     # previous statement
-     hold = ["Hello", "John doe", "Post mortem"]
-     text = ["<name> <name>, welcome to the <name> of what is to come"]
-     cb = replacement_placeholder("<name>", text, hold, 0)
-     print(cb)
-  
+    .. usage::
+
+      # previous statement
+      hold = ["Hello", "John doe", "Post mortem"]
+      text = ["<name> <name>, welcome to the <name> of what is to come"]
+      cb = replacement_placeholder("<name>", text, hold, 0)
+      print(cb)
+
     """
     result = None
     count = 0
@@ -1617,6 +1649,642 @@ def replacement_placeholder(string: str = Any, data: list = Any,
         if count > length:
             break
     return result
+
+
+def delete_attachments(
+        file: Optional[str] = None,
+        search: Union[str, Dict, List, int] = None,
+        delete: bool = True,
+        extension: Union[str, List] = None,
+        by_user: Optional[List] = None,
+        by_size: Optional[str] = None,
+        by_date: Optional[str] = None,
+        **kwargs: Union[str, bool]
+) -> None:
+    """
+    A function that helps to delete attachments on Jira issues. You can export a JQL search of issues
+    containing the ``Attachment`` column either in CSV or xlsx from your advanced filter search
+    or you can search using a JQL search query to delete attachments.
+
+    .. Example 1 ::
+
+       from jiraone LOGIN, delete_attachments
+       import json
+
+       config = json.load(open('config.json'))
+       LOGIN(**config)
+
+       delete_attachments(file="data_file.csv")
+
+    .. Example 2 ::
+
+       from jiraone LOGIN, delete_attachments
+       import json
+
+       config = json.load(open('config.json'))
+       LOGIN(**config)
+
+       jql = "project in (CT) ORDER BY Rank DESC"
+       # search for only these file extensions and delete them
+       ext = ["png", "zip", "pdf"]
+       # search for attachments done by these users. Please use accountId only
+       users = ["557058:5bcedf04-xxxx-4c40-b707-xxxxxd8bd8d", "5bcedf04-XXXXXX"]
+       delete_attachments(search=jql, extension=ext, by_user=users)
+
+    :param file: A file export of issues from Jira which includes the ``attachment columns``
+
+    :param search: A search parameter for issues e.g issue key or JQL query
+
+    :param extension: A file extension to focus on while deleting.
+
+    :param by_user: Search by user accountId and delete attachments. You can also combine the extension parameter.
+                    This will only work when using the ``search`` parameter.
+
+    :param by_size: Search by allocated file size and delete the attachment. You can combine the extension and by_user
+                    parameter with this argument.
+
+
+    :param by_date: Search by date_range from when the attachment was created until the initiator's current time.
+                    Then delete the attachment. You can combine this argument with all
+                    other arguments provided with the search parameter.
+
+    :param delete: A decision to delete or not delete the attachments. defaults to ``True``
+
+    :param kwargs: Additional arguments
+
+                 *Available options*
+                 * allow_cp - Allows the ability to trigger and save a checkpoint.
+                 * back_up - Allows the recall of checkpoint at least once during any iteration if ``allow_cp`` is True.
+                 * saved_file - Provides a generic name for the checkpoint save file.
+                 * delimiter - Allows you to change the delimiter used to read the file used by ``file`` parameter.
+
+    :return: None
+    """
+    from jiraone.exceptions import JiraOneErrors
+    from datetime import datetime, timedelta
+    if LOGIN.get(endpoint.myself()).status_code > 300:
+        add_log("Authentication failed. Please check your credential data to determine what went wrong.", "error")
+        raise JiraOneErrors("login", "Authentication failed. Please check your credentials.")
+    search_path = None
+    folder: str = "DATA"
+    allow_cp: bool = True if "allow_cp" not in kwargs else False
+    saved_file: str = "data_block.json" if "saved_file" not in kwargs else kwargs["saved_file"]
+    back_up: bool = False if "back_up" not in kwargs else True
+    attach_load = []
+
+    def time_share(_time: str, _items=None) -> bool:
+        """
+        Calculate the time difference it takes with the date and now to determine if deletion is possible.
+        :param _time: A string of date range to check
+        :param _items: An iterable of available date of attachment creation.
+
+        :return: True or False
+        """
+        minutes = 1  # defaults to minute
+        hours = 1  # defaults to hour
+        # defaults to days
+        days = 1
+        weeks = 7
+        months = 30
+        years = 365
+        selection = None
+        time_factor = {}
+        time_hold_one = {"minute": minutes, "hour": hours, "day": days,
+                         "week": weeks, "month": months, "year": years}
+        time_factors = {}
+        time_hold_two = {"minutes": minutes, "hours": hours, "days": days,
+                         "weeks": weeks, "months": months, "years": years}
+
+        times = []
+        if isinstance(_time, str):
+            number = re.compile(r"(?:\d+)")
+            string_one = re.compile(r"(?:[a-z]{4,7})")
+            if number.search(_time) is not None:
+                times.append(number.search(_time).group())
+            if string_one.search(_time) is not None:
+                times.append(string_one.search(_time).group())
+        else:
+            add_log("Invalid time parameter received. Expected a string but got \"{}\"".format(type(_time)), "debug")
+            raise JiraOneErrors("wrong", "Invalid time parameter received. Expected a string but got \"{}\""
+                                .format(type(_time)))
+
+        if times[1]:
+            if times[1] in time_hold_one:
+                time_factor = time_hold_one
+                selection = "time_factor"
+            elif times[1] in time_hold_two:
+                time_factors = time_hold_two
+                selection = "time_factors"
+            else:
+                add_log("Invalid option \"{}\" detected as `time_info` for \"by_date\" argument".format(by_date),
+                        "error")
+                raise JiraOneErrors("value", "We're unable to determine your precise date range with \"{}\""
+                                    .format(by_date))
+
+        def time_delta(val: int, cet: str) -> tuple:
+            """
+            Return a tuple to determine what the expected datetimes are.
+
+            :param val: An integer of the datetime.
+
+            :param cet: A string denoting the name to time.
+
+            :return: A tuple of probably time factor.
+            """
+            _time_ = None
+            time_check_ = time_factor if selection == "time_factor" else time_factors
+            if cet in time_check_:
+                _time_ = val * time_check_[cet]
+            return _time_, list(time_check_.keys())[list(time_check_.keys()).index(cet)]
+
+        if len(times) > 0:
+            issue_time = datetime.strptime(_items.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z")
+            present = datetime.strftime(datetime.astimezone(datetime.now()), "%Y-%m-%dT%H:%M:%S.%f%z")
+            parse_present = datetime.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
+            time_check = time_factor if selection == "time_factor" else time_factors
+            if times[1] in time_check:
+                ask_time = time_delta(int(times[0]), times[1])
+                d_range = ["days", "months", "years", "weeks"] if selection == "time_factors" else \
+                    ["day", "month", "year", "week"]
+                d_min = "minute" if selection == "time_factor" else "minutes"
+                past_time = timedelta(days=ask_time[0]) if ask_time[1] in d_range else \
+                    timedelta(minutes=ask_time[0]) if ask_time[1] == d_min \
+                        else timedelta(hours=ask_time[0])
+                diff = parse_present - past_time
+                if diff < issue_time:
+                    return True
+        return False
+
+    def regulator(size: str, block=None) -> bool:
+        """
+        Determine the size of an attachment.
+
+        :param size: The size in byte of an attachment.
+
+        :param block: An iterable that contains the attachment data
+
+        :return: Returns a boolean output to determine if an attachment is greater or lesser than size parameter.
+        """
+        chars = []
+        giga_byte = 1000 * 1000 * 1000
+        mega_byte = 1000 * 1000
+        kilo_byte = 1000
+        if isinstance(size, str):
+            sign = re.compile(r"(?:[\<|\>])")
+            number = re.compile(r"(?:\d+)")
+            string_ = re.compile(r"(?:[a-z]{2})")
+            if sign.search(size) is not None:
+                chars.append(sign.search(size).group())
+            if number.search(size) is not None:
+                chars.append(number.search(size).group())
+            if string_.search(size) is not None:
+                chars.append(string_.search(size).group())
+            else:
+                chars.append("")
+        else:
+            add_log("Invalid size parameter received. Expected a string but got \"{}\"".format(type(size)), "debug")
+            raise JiraOneErrors("wrong", "Invalid size parameter received. Expected a string but got \"{}\""
+                                .format(type(size)))
+
+        if len(chars) > 0:
+            symbol = chars[0]
+            my_num = int(chars[1])
+            this = chars[2].lower()
+            if this in ["mb", "kb", "gb"]:
+                byte_size = my_num * mega_byte if this == "mb" else my_num * giga_byte \
+                    if this == "gb" else my_num * kilo_byte if this == "kb" else my_num
+                if symbol == ">":
+                    if block.get("size") > byte_size:
+                        return True
+                elif symbol == "<":
+                    if block.get("size") < byte_size:
+                        return True
+            else:
+                byte_size = my_num
+                if symbol == ">":
+                    if block.get("size") > byte_size:
+                        return True
+                elif symbol == "<":
+                    if block.get("size") < byte_size:
+                        return True
+        return False
+
+    def get_ext(ex) -> Union[str, List]:
+        """
+        Determine the extension and cycle through it.
+
+        :param ex: An extension checker
+
+        :return: A string or a list item
+        """
+        if isinstance(ex, str):
+            if "," in ex:
+                ex = ex.lower().split(",")
+                return ex
+            return ex.lower()
+        elif isinstance(ex, list):
+            return [x.lower() for x in ex]
+
+    def ex_validator(func, _item=None, tp: bool = True) -> bool:
+        """
+        Determines if an extension supplied is equivalent to what it is all about prior to deletion.
+
+        :param func: A str or list value of extensions
+
+        :param _item: An iterable of a file extension
+
+        :param tp: Changes context between file or search mode parameter for this function.
+
+        :return: True or False for the query
+        """
+        if isinstance(func, str):
+            _ex_name = (f".{_item.get('filename').split('.')[-1].lower()}" if "." in func else
+                        _item.get('filename').split('.')[-1].lower()) if tp is True else \
+                (f".{_item[-1].split('.')[-1].lower()}" if "." in func else
+                 _item[-1].split('.')[-1].lower())
+            return _ex_name == func
+        elif isinstance(func, list):
+            _ex_name = (f".{_item.get('filename').split('.')[-1].lower()}" if [f for f in func if "." in f] else
+                        _item.get('filename').split('.')[-1].lower()) if tp is True else \
+                (f".{_item[-1].split('.')[-1].lower()}" if [f for f in func if "." in f] else
+                 _item[-1].split('.')[-1].lower())
+            return _ex_name in func
+        return False
+
+    def get_attachments(items: Dict) -> None:
+        """
+        Helps to get a list of attachments on an issue.
+
+        :param items: A dictionary of search results
+
+        :return: None
+        """
+        nonlocal attach_load, count, depth
+        infinity_point = data_brick["point"]
+        issues = items["issues"][data_brick["point"]:]
+        attach_load = data_brick["data_block"] if back_up is True else attach_load
+        count = set_up["iter"] if back_up is True and depth == 1 else data_brick["iter"]
+
+        def inf_block(atl: bool = False):
+            """
+            A function that updates data_brick.
+
+            :param atl: Indicates whether a condition exist that favours search attachment or not.
+
+            :return: None
+            """
+            data_brick.update({
+                "data_block": attach_load,
+                "key": keys,
+                "status": "in_progress",
+                "point": infinity_point
+            }) if atl is False else \
+                data_brick.update({
+                    "key": keys,
+                    "status": "in_progress",
+                    "point": infinity_point
+                })
+
+        for each_issue in issues:
+            keys = each_issue["key"]
+            _data = LOGIN.get(endpoint.issues(keys))
+            if _data.status_code < 300:
+                attachments = _data.json()["fields"]["attachment"]
+                if len(attachments) > 0:
+                    for attach in attachments:
+                        attach_item = {
+                            "key": keys,
+                            "filename": attach.get("filename"),
+                            "id": attach.get("id"),
+                            "size": attach.get("size"),
+                            "content": attach.get("content"),
+                            "mimetype": attach.get("mimeType"),
+                            "created": attach.get("created"),
+                            "author": attach.get("author").get("displayName"),
+                            "accountid": attach.get("author").get("accountId")
+                        }
+                        print("Accessing attachments {} | Key: {}".format(attach.get("filename"), keys))
+                        add_log("Accessing attachments {} | Key: {}".format(attach.get("filename"), keys), "info")
+                        attach_load.append(attach_item)
+                        inf_block()
+                else:
+                    inf_block(atl=True)
+            else:
+                inf_block(atl=True)
+            json.dump(data_brick, open(path_builder(folder, saved_file), mode="w+", encoding="utf-8"),
+                      indent=4) if allow_cp is True else None
+            infinity_point += 1
+
+    data_brick = {}
+    set_up = {}
+
+    def data_wipe(del_, counts_, usr: bool = False, fl: bool = False, _items_=None) -> None:
+        """
+        Trigger the delete mode.
+
+        :param del_: The response delete request
+        :param counts_: A continuous counter
+        :param usr: User entity available or not. Default is false
+        :param fl: File entity available or not. Defaults is false
+        :param _items_: An iterable data
+
+        :return: None
+        """
+        if del_.status_code < 300:
+            data_brick.update({"saves" if fl is False else "iter": counts_})
+            print("Deleting attachment \"{}\" | Key: {}".format(_items_.get("filename") if fl is False
+                                                                else _items_[0],
+                                                                _items_.get("key") if fl is False else _items_[1]
+                                                                )) if usr is False \
+                else print("Deleting attachment by user {} \"{}\" | Key: {}"
+                           .format(_items_.get("author"), _items_.get("filename"),
+                                   _items_.get("key")))
+            add_log("The Attachments \"{}\" has been deleted | Key: {}".format(_items_.get("filename")
+                                                                               if fl is False else
+                                                                               _items_[0],
+                                                                               _items_.get("key") if fl is False
+                                                                               else _items_[1]), "info")
+        else:
+            data_brick.update({"saves" if fl is False else "iter": counts_})
+            print("Unable to delete attachment \"{}\" | Key: {}".format(_items_.get("filename") if fl is False else
+                                                                        _items_[0],
+                                                                        _items_.get("key") if fl is False
+                                                                        else _items_[1])) if usr is \
+                                                                                             False \
+                else print("Unable to delete attachment by user {} \"{}\" | Key: {}"
+                           .format(_items_.get("author"), _items_.get("filename"),
+                                   _items_.get("key")))
+            add_log("Attachment deletion of \"{}\" failed with reason \"{}\" | Key: {}"
+                    .format(_items_.get("filename") if fl is False else _items_[0],
+                            del_.reason, _items_.get("key") if fl is False else _items_[1]), "info")
+
+    if allow_cp is True:
+        if os.path.isfile(path_builder(folder, file_name=saved_file)):
+            user_input = input("An existing save point exist from your last search, "
+                               "do you want to use it? (Y/N) \n")
+            set_up = json.load(open(path_builder(path=folder, file_name=saved_file)))
+            if user_input.lower() in ["y", "yes"]:
+                back_up = True
+            else:
+                print("Starting search from scratch.")
+                add_log("Starting search from scratch, any previous data will be removed", "info")
+    os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT) if allow_cp is True else None
+    count, cycle, step = 0, 0, 0
+    if file is None:
+        if search is None:
+            add_log("The search parameter can't be None when you have not provided a file input data.", "debug")
+            raise JiraOneErrors("value", "Search parameter can't be None if a file is not provided.")
+        search_path = search
+    elif file is not None:
+        key_index = 0
+        attach_index = []
+        temp_reader = file_reader(file_name=file, **kwargs)
+        loop = 1
+        for _row in temp_reader:
+            _loop_count = -1
+            loop += 1
+            for inner_row in _row:
+                _loop_count += 1
+                if inner_row == "Issue key":
+                    key_index = _loop_count
+                if inner_row == "Attachment":
+                    img_index = _loop_count
+                    attach_index.append(img_index)
+            if loop > 1:
+                break
+
+        reader = file_reader(file_name=file, skip=True, **kwargs)
+        new_data_form = deque()
+        do_once = 0
+        for issue in reader:
+            _attach_ = {}
+            key = issue[key_index]
+            attach_pattern = re.compile(r"(?:\w{4,5}:\/\/\w*\.+\w+.\w+\/[s]\w*\/.\w.+\.\w+)")
+            if len(attach_index) > 0:
+                attach_loop = 0
+                for column in attach_index:
+                    attach_loop += 1
+                    _attach_.update({
+                        "attach_{}".format(attach_loop): issue[column]
+                    })
+            # Find every attachment in the attachment column to determine the attachments
+            for each_attach, attach_ in _attach_.items():
+                if ";" in attach_:
+                    break_ = attach_.split(";")
+                    files_ = break_[-1]
+                    new_data_form.append([key, files_])
+            do_once += 1
+            if len(_attach_) == 0 and do_once == 1:
+                print("Attachment not processed, file structure could be empty or not properly formatted.")
+                add_log(f"It seems that the attachments URL could not be determined from the {file}", "debug")
+            # Use regex to find other attachments links that are in other fields.
+            # The below would likely find one or more links or none if it can't.
+            for data in issue:
+                if attach_pattern.match(data) is not None:
+                    _files = attach_pattern.match(data).group()
+                    new_data_form.append([key, _files])
+
+        new_list = []
+        for arrange_attach in new_data_form:
+            if arrange_attach[1] is not None:
+                new_list.append([arrange_attach[0], arrange_attach[1]])
+        new_data_form.clear()
+        split_file = file.split('.')[-2]
+        new_file = f"{split_file}_temp.csv"
+        file_writer(folder, file_name=new_file, data=new_list, mark="many", mode="w+")
+        read_file = file_reader(folder, file_name=new_file)
+        step = 0 if back_up is False else set_up["iter"]
+        count = step
+        for item in read_file[step:]:
+            attach_ = item[1].split("/")
+            attach_id = attach_[-2]
+            if delete is True:
+                if extension is not None:
+                    if ex_validator(get_ext(extension), attach_, tp=False):
+                        delete_ = LOGIN.delete(endpoint.issue_attachments(attach_id=attach_id))
+                        data_wipe(delete_, count, fl=True, _items_=[attach_[-1], item[0]])
+                else:
+                    delete_ = LOGIN.delete(endpoint.issue_attachments(attach_id=attach_id))
+                    data_wipe(delete_, count, fl=True, _items_=[attach_[-1], item[0]])
+            else:
+                data_brick.update({"iter": count})
+                print("Safe mode on: Attachment will not be deleted \"{}\" | Key: {}".format(attach_[-1], item[0]))
+                add_log("Safe mode on: Attachment will not be deleted \"{}\" | Key: {}".format(attach_[-1], item[0]),
+                        "info")
+            count += 1
+            json.dump(data_brick, open(path_builder(folder, saved_file), mode="w+", encoding="utf-8"),
+                      indent=4) if allow_cp is True else None
+        os.remove(path_builder(folder, file_name=new_file))
+    if search_path is not None:
+        query = f"key in ({search_path})" if isinstance(search_path, (str, int)) \
+            else "key in {}".format(tuple(search_path)) \
+            if isinstance(search_path, list) else search_path["jql"] if isinstance(search_path, dict) else \
+            sys.stderr.write("Unexpected datatype received. Example on https://jiraone.readthedocs.io ")
+        data_brick["status"] = set_up["status"] if "status" in set_up and back_up is True else "in_progress"
+        depth: int = 1
+        while True:
+            load = LOGIN.get(endpoint.search_issues_jql(query=set_up["query"], start_at=set_up["iter"],
+                                                        max_results=100)) if back_up is True and depth == 1 else \
+                LOGIN.get(endpoint.search_issues_jql(query=query, start_at=count,
+                                                     max_results=100))
+            if data_brick["status"] == "complete":
+                open_ = json.load(open(path_builder(folder, saved_file)))
+                attach_load = open_["data_block"] if "data_block" in open_ else []
+                break
+            if load.status_code < 300:
+                data_ = load.json()
+                cycle = 0
+                print("Extracting attachment details on row {}".
+                      format(set_up["iter"] if back_up is True and depth == 1 else count))
+                print("*" * 100)
+                add_log("Extracting attachment details on row {}".
+                        format(set_up["iter"] if back_up is True and depth == 1 else count), "info")
+                data_brick.update(
+                    {
+                        "iter": set_up["iter"] if back_up is True and depth == 1 else count,
+                        "query": set_up["query"] if back_up is True and depth == 1 else query,
+                        "data_block": set_up["data_block"] if back_up is True and depth == 1 else attach_load,
+                        "point": set_up["point"] + 1 if back_up is True and depth == 1 else 0
+                    }
+                )
+                if count > data_["total"]:
+                    data_brick.update({"status": "complete"})
+                    json.dump(data_brick, open(path_builder(folder, saved_file), mode="w+", encoding="utf-8"),
+                              indent=4) if allow_cp is True else None
+                    add_log("Extraction is completed, deletion of attachments on the next step", "info")
+                    break
+                get_attachments(data_)
+            count += 100
+            if back_up is True and depth == 1:
+                data_brick["iter"] = count
+                back_up = False
+            depth += 2
+            if load.status_code > 300:
+                cycle += 1
+                if cycle > 99:
+                    add_log("Trying to search for the issues with query \"{}\" returned a \"{}\" "
+                            "error with reason \"{}\".".format(query, load.status_code, load.reason), "error")
+                    raise JiraOneErrors("value", "It seems that the search \"{}\" cannot be "
+                                                 "retrieved as we've attempted it {} times".format(query, cycle))
+
+        length = len(attach_load)
+        if length > 0:
+            _open_ = json.load(open(path_builder(folder, saved_file)))
+            data_brick["data_block"] = attach_load
+            data_brick["iter"] = _open_["iter"] if "iter" in _open_ else 0
+            data_brick["query"] = _open_["query"] if "query" in _open_ else query
+            data_brick["saves"] = _open_["saves"] if "saves" in _open_ else 0
+            step = 0 if back_up is False else data_brick["saves"]
+            count = step
+            for each_item in attach_load[step:]:
+                if delete is True:
+                    if extension is not None:
+                        if ex_validator(get_ext(extension), each_item):
+                            if by_user is not None:
+                                if each_item.get("accountid") in by_user:
+                                    if by_size is not None:
+                                        if regulator(by_size, each_item):
+                                            if by_date is not None:
+                                                if time_share(by_date, each_item):
+                                                    delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                           (attach_id=each_item.get("id")))
+                                                    data_wipe(delete_, count, usr=True, _items_=each_item)
+                                            else:
+                                                delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                       (attach_id=each_item.get("id")))
+                                                data_wipe(delete_, count, usr=True, _items_=each_item)
+                                    else:
+                                        if by_date is not None:
+                                            if time_share(by_date, each_item):
+                                                delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                       (attach_id=each_item.get("id")))
+                                                data_wipe(delete_, count, usr=True, _items_=each_item)
+                                        else:
+                                            delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                   (attach_id=each_item.get("id")))
+                                            data_wipe(delete_, count, usr=True, _items_=each_item)
+                            else:
+                                if by_size is not None:
+                                    if regulator(by_size, each_item):
+                                        if by_date is not None:
+                                            if time_share(by_date, each_item):
+                                                delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                       (attach_id=each_item.get("id")))
+                                                data_wipe(delete_, count, _items_=each_item)
+                                        else:
+                                            delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                   (attach_id=each_item.get("id")))
+                                            data_wipe(delete_, count, _items_=each_item)
+                                else:
+                                    if by_date is not None:
+                                        if time_share(by_date, each_item):
+                                            delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                   (attach_id=each_item.get("id")))
+                                            data_wipe(delete_, count, _items_=each_item)
+                                    else:
+                                        delete_ = LOGIN.delete(
+                                            endpoint.issue_attachments(attach_id=each_item.get("id")))
+                                        data_wipe(delete_, count, _items_=each_item)
+                    else:
+                        if by_user is not None:
+                            if each_item.get("accountid") in by_user:
+                                if by_size is not None:
+                                    if regulator(by_size, each_item):
+                                        if by_date is not None:
+                                            if time_share(by_date, each_item):
+                                                delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                       (attach_id=each_item.get("id")))
+                                                data_wipe(delete_, count, usr=True, _items_=each_item)
+                                        else:
+                                            delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                   (attach_id=each_item.get("id")))
+                                            data_wipe(delete_, count, usr=True, _items_=each_item)
+                                else:
+                                    if by_date is not None:
+                                        if time_share(by_date, each_item):
+                                            delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                   (attach_id=each_item.get("id")))
+                                            data_wipe(delete_, count, usr=True, _items_=each_item)
+                                    else:
+                                        delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                               (attach_id=each_item.get("id")))
+                                        data_wipe(delete_, count, usr=True, _items_=each_item)
+                        else:
+                            if by_size is not None:
+                                if regulator(by_size, each_item):
+                                    if by_date is not None:
+                                        if time_share(by_date, each_item):
+                                            delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                                   (attach_id=each_item.get("id")))
+                                            data_wipe(delete_, count, _items_=each_item)
+                                    else:
+                                        delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                               (attach_id=each_item.get("id")))
+                                        data_wipe(delete_, count, _items_=each_item)
+                            elif by_date is not None:
+                                if time_share(by_date, each_item):
+                                    delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                           (attach_id=each_item.get("id")))
+                                    data_wipe(delete_, count, _items_=each_item)
+                            else:
+                                delete_ = LOGIN.delete(endpoint.issue_attachments
+                                                       (attach_id=each_item.get("id")))
+                                data_wipe(delete_, count, _items_=each_item)
+                else:
+                    data_brick.update({"saves": count})
+                    print("Safe mode on: Attachment will not be deleted \"{}\" | Key: {}".
+                          format(each_item.get("filename"), each_item.get("key")))
+
+                count += 1
+                json.dump(data_brick, open(path_builder(folder, saved_file), mode="w+", encoding="utf-8"),
+                          indent=4) if allow_cp is True else None
+
+        else:
+            print("The data search seems to be empty. Please recheck your search criteria.")
+            add_log("Searching for attachment did not yield any result. It seems the search criteria"
+                    " does not have attachments.", "debug")
+
+    os.remove(path_builder(folder, file_name=saved_file)) if allow_cp is True else None
 
 
 USER = Users()

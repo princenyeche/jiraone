@@ -31,6 +31,7 @@ class Credentials(object):
         :param password:  A user password or API token
 
         :param url: A server url or cloud instance url
+
         :return: None
         """
         self.base_url = url
@@ -46,6 +47,7 @@ class Credentials(object):
         :param email: An email address or username
 
         :param token: An API token or user password
+
         :return: None
         """
         self.auth_request = HTTPBasicAuth(email, token)
@@ -53,11 +55,16 @@ class Credentials(object):
 
     def get(self, url, *args, payload=None, **kwargs) -> requests.Response:
         """
-        A get request to HTTP request
+        A get request to HTTP request.
+
         :param url: A valid URL
+
         :param args: Additional arguments if any
+
         :param payload: A JSON data representation
-        :param kwargs: Additional keyword arguments to `requests` module
+
+        :param kwargs: Additional keyword arguments to ``requests`` module
+
         :return: A HTTP response
         """
         response = requests.get(url, *args, auth=self.auth_request, json=payload, headers=self.headers, **kwargs)
@@ -65,11 +72,16 @@ class Credentials(object):
 
     def post(self, url, *args, payload=None, **kwargs) -> requests.Response:
         """
-        A post  request to HTTP request
+        A post  request to HTTP request.
+
         :param url: A valid URL
+
         :param args: Additional arguments if any
+
         :param payload: A JSON data representation
-        :param kwargs: Additional keyword arguments to `requests` module
+
+        :param kwargs: Additional keyword arguments to ``requests`` module
+
         :return: A HTTP response
         """
         response = requests.post(url, *args, auth=self.auth_request, json=payload, headers=self.headers, **kwargs)
@@ -77,11 +89,16 @@ class Credentials(object):
 
     def put(self, url, *args, payload=None, **kwargs) -> requests.Response:
         """
-        A put request to HTTP request
+        A put request to HTTP request.
+
         :param url: A valid URL
+
         :param args: Additional arguments if any
+
         :param payload: A JSON data representation
-        :param kwargs: Additional keyword arguments to `requests` module
+
+        :param kwargs: Additional keyword arguments to ``requests`` module
+
         :return: A HTTP response
         """
         response = requests.put(url, *args, auth=self.auth_request, json=payload, headers=self.headers, **kwargs)
@@ -89,9 +106,12 @@ class Credentials(object):
 
     def delete(self, url, **kwargs) -> requests.Response:
         """
-        A delete request to HTTP request
+        A delete request to HTTP request.
+
         :param url: A valid URL
-        :param kwargs: Additional keyword arguments to `requests` module
+
+        :param kwargs: Additional keyword arguments to ``requests`` module
+
         :return: A HTTP response
         """
         response = requests.delete(url, auth=self.auth_request, headers=self.headers, **kwargs)
@@ -103,10 +123,12 @@ class Echo(PrettyPrinter):
 
     def __init__(self, *args, **kwargs) -> None:
         """
-        Inherit from the parent
+        Inherit from the parent.
 
-        :param args: postional arguments
+        :param args: positional arguments
+
         :param kwargs: additional arguments
+
         :return: None
         """
         super(Echo, self).__init__(*args, **kwargs)
@@ -160,6 +182,7 @@ class EndPoints:
     @classmethod
     def myself(cls) -> str:
         """Return data on your own user.
+
         :return: A string of the url
         """
         return "{}/rest/api/{}/myself".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
@@ -194,8 +217,7 @@ class EndPoints:
         https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/
            #api-rest-api-3-project-search-get
 
-        :param args:
-             Query Parameters that are useful mostly.
+        :param args: Query Parameters that are useful mostly.
            a) query, example: query=key,name {caseInsensitive}
            b) searchBy, example: searchBy=key,name
            c) action, example: action=browse
@@ -224,11 +246,11 @@ class EndPoints:
 
     @classmethod
     def find_users_with_permission(cls, *args) -> str:
-        """Find users with permissions to a Project
+        """Find users with permissions to a Project.
 
         :param args: 1st accountId
-        2nd projectKey
-        3rd permissions that needs checking all in caps e.g "BROWSE", "CREATE_ISSUE" etc
+                     2nd projectKey
+                     3rd permissions that needs checking all in caps e.g "BROWSE", "CREATE_ISSUE" etc
 
         :return: A string of the url
         """
@@ -250,8 +272,7 @@ class EndPoints:
     def get_project_role(cls, *args) -> str:
         """Returns a project role's details and actors associated with the project.
 
-        :param args: projectKey or Id of the Project
-        id of the role
+        :param args: projectKey or Id of the Project id of the role
 
         :return: A string of the url
         """
@@ -274,8 +295,7 @@ class EndPoints:
     @classmethod
     def get_all_issue_type_schemes(cls, query: Optional[str] = None, start_at=0, max_results=50) -> str:
         """Returns a paginated list of issue type schemes.
-
-        Only issue type schemes used in classic projects are returned
+           Only issue type schemes used in classic projects are returned
 
         :param query: A search term
 
@@ -1570,7 +1590,7 @@ class For(object):
     def __iter__(self) -> Any:
         return self
 
-    def __next__(self) -> Optional[Any]:
+    def __next__(self) -> Any:
         if self.limit == self.index:
             raise StopIteration
         marker = self.limit
@@ -1589,12 +1609,13 @@ class Field(object):
     """Field class helps with Jira fields.
 
     It helps with posting, putting and getting various fields or field type.
+
+    * It comes with two attributes
+      * field_type
+      * field_search_key
+
     """
-    """
-    *****************************************
-                 field type listing
-    *****************************************
-    """
+    # field type listing
     field_type = {
         "cascadingselect": "com.atlassian.jira.plugin.system.customfieldtypes:cascadingselect",
         "datepicker": "com.atlassian.jira.plugin.system.customfieldtypes:datepicker",
@@ -1631,11 +1652,7 @@ class Field(object):
         "versions": "versions"
 
     }
-    """
-    *****************************************
-            field search key listing
-    *****************************************
-    """
+    # field search key listing
     field_search_key = {
         "cascadingselectsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:cascadingselectsearcher",
         "daterange": "com.atlassian.jira.plugin.system.customfieldtypes:daterange",

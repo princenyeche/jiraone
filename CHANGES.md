@@ -1,6 +1,14 @@
 # Jira one change log
 
 
+**Release 0.5.7** - 2022-02-21
+### Update 
+* Added a new function `delete_attachments()` that can perform deletion of attachments with filtering.
+* Provided a checkpoint in the iteration of the above function, so it can start from the last known point.
+* Corrected some docs in `access.py` module
+* `file_writer` and `file_reader` functions now has the ability to enter a delimiter as a parameter.
+
+
 **Release 0.5.6** - 2022-02-02
 ### Patch update #73
 * Patch v5 to `time_in_status()`. Noticed that the statuses time were wrong. There seems to be
