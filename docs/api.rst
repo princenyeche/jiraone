@@ -238,6 +238,13 @@ Example usage:
 
 
 
+.. delete_attachments:
+delete_attachments
+----------------------------
+
+.. autofunction:: delete_attachments
+
+
 .. _replacement_placeholder:
 replacement_placeholder
 ------------------------
