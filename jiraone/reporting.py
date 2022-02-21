@@ -1887,7 +1887,7 @@ def delete_attachments(
 
     def ex_validator(func, _item=None, tp: bool = True) -> bool:
         """
-        Determines if an extension supplied is equivalent to what is about to be deleted.
+        Determines if an extension supplied is equivalent to what it is all about prior to deletion.
 
         :param func: A str or list value of extensions
 
