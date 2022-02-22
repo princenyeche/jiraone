@@ -1592,7 +1592,9 @@ def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
     :param kwargs: Additional parameters
 
               *options*
+
               encoding - standard encoding strings. e.g “utf-8”.
+
               delimiter: defaults to comma.
 
 
@@ -1666,7 +1668,7 @@ def delete_attachments(
     containing the ``Attachment`` column either in CSV or xlsx from your advanced filter search
     or you can search using a JQL search query to delete attachments.
 
-    .. Example 1 ::
+    .. code-block:: python
 
        from jiraone LOGIN, delete_attachments
        import json
@@ -1676,7 +1678,7 @@ def delete_attachments(
 
        delete_attachments(file="data_file.csv")
 
-    .. Example 2 ::
+    .. code-block:: python
 
        from jiraone LOGIN, delete_attachments
        import json
@@ -1713,10 +1715,14 @@ def delete_attachments(
     :param kwargs: Additional arguments
 
                  *Available options*
-                 * allow_cp - Allows the ability to trigger and save a checkpoint.
-                 * back_up - Allows the recall of checkpoint at least once during any iteration if ``allow_cp`` is True.
-                 * saved_file - Provides a generic name for the checkpoint save file.
-                 * delimiter - Allows you to change the delimiter used to read the file used by ``file`` parameter.
+
+                 * allow_cp: Allows the ability to trigger and save a checkpoint.
+
+                 * back_up: Allows the recall of checkpoint at least once during any iteration if ``allow_cp`` is True.
+
+                 * saved_file: Provides a generic name for the checkpoint save file.
+
+                 * delimiter: Allows you to change the delimiter used to read the file used by ``file`` parameter.
 
     :return: None
     """
@@ -1985,7 +1991,7 @@ def delete_attachments(
         :param del_: The response delete request
         :param counts_: A continuous counter
         :param usr: User entity available or not. Default is false
-        :param fl: File entity available or not. Defaults is false
+        :param fl: File entity available or not. Default is false
         :param _items_: An iterable data
 
         :return: None
@@ -2128,7 +2134,7 @@ def delete_attachments(
                 LOGIN.get(endpoint.search_issues_jql(query=query, start_at=count,
                                                      max_results=100))
             if data_brick["status"] == "complete":
-                open_ = json.load(open(path_builder(folder, saved_file)))
+                open_ = json.load(open(path_builder(folder, saved_file))) if allow_cp is True else {}
                 attach_load = open_["data_block"] if "data_block" in open_ else []
                 break
             if load.status_code < 300:
@@ -2169,7 +2175,7 @@ def delete_attachments(
 
         length = len(attach_load)
         if length > 0:
-            _open_ = json.load(open(path_builder(folder, saved_file)))
+            _open_ = json.load(open(path_builder(folder, saved_file))) if allow_cp is True else {}
             data_brick["data_block"] = attach_load
             data_brick["iter"] = _open_["iter"] if "iter" in _open_ else 0
             data_brick["query"] = _open_["query"] if "query" in _open_ else query
