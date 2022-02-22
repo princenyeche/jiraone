@@ -150,7 +150,7 @@ This function helps in creating a csv file or a normal file. It comes with the b
   * ``mark``: string - helps evaluates how data is created, available options ["single", "many", "file"], by default mark is set to "single"
   * ``mode``: string - file mode, available options ["a", "w", "a+", "w+", "wb"], by default the mode is set to "a+".
   * ``content``: string - outputs the file in bytes.
-  * ``encoding``: string - defaults to "utf-8"
+  * ``delimiter``: string - a file separator. Defaults to ","
  Example usage:
  
 .. code-block:: python
@@ -174,8 +174,10 @@ parameter include
   * ``file_name``:  string - the name of the file being created
   * ``mode``: string - file mode, available options ["r", "rb"]
   * ``skip``: bool - True allows you to skip the header if the file has any. Otherwise defaults to False
-  * ``content``: bool - True allows you to read a byte file. By default it is set to False <br />
-  * ``encoding``: string - standard encoding strings. e.g "utf-8"
+  * ``content``: bool - True allows you to read a byte file. By default it is set to False
+  * ``encoding``: string - standard encoding strings. e.g “utf-8”.
+  * ``delimter``: string - a file separator. Defaults to ","
+  
   Example usage: 
   
 .. code-block:: python
@@ -243,6 +245,182 @@ delete_attachments
 ----------------------------
 
 .. autofunction:: delete_attachments
+
+Using Search Method
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the ``file`` argument is provided, the search argument is ignored. If the file argument is not provided the search argument has to be provided else an error will be returned. e.g.
+
+.. code-block:: python
+
+ from jiraone import LOGIN, delete_attachments
+ import json
+
+ config = json.load(open('config.json'))
+ LOGIN(**config)
+
+ ext = [".png", ".pdf"]
+ users = ["5abcXXX", "617bcvXXX"]
+ size = ">30MB"
+ jql = {"jql": "project in (COM) ORDER BY Rank DESC"}
+ delete_attachments(search=jql, extension=ext, by_user=users, by_size=size)
+
+
+The above example is one of the ways you can make a request. You can make a request using the below search criteria
+
+.. code-block:: python
+
+ # previous expression
+
+ key = "COM-120" # a string as issue key
+ key = "COM-120,TP-15" # a string separated by comma
+ key = ["COM-120", "IP-18", 10034] # a list of issue keys or issue id
+ key = {"jql": "project in (COM) ORDER BY Rank DESC"} # a dict with a valid jql
+ 
+The above will enable you to search for viable issues that has an attachment value. The extension argument can be used as below
+
+.. code-block:: python
+
+ # previous expression
+
+ ext = ".png" # a string
+ ext = ".png,.pdf" a string separated by comma
+ ext = [".png", ".zip", ".csv"] # a list of extensions
+ 
+You can also use it without the “dot” prefix on the extension but make sure that if the dot is not being used for multiple extensions either by string or list, the dot prefix is not maintained at all. E.g
+
+*Valid* :check_mark:
+
+.. code-block:: python
+
+ # previous expression
+ ext = [".png", ".zip", ".csv"] # a list of extensions
+ 
+*Valid* :check_mark:
+
+.. code-block:: python
+
+ # previous expression
+ ext = ["png", "zip", "csv"] # a list of extensions
+ ext = "png,zip,pdf" # a string separated by comma
+
+*Invalid* :check_mark:
+
+.. code-block:: python
+
+ # previous expression
+ ext = [".png", "zip", ".csv"] # a list of extension
+ 
+In the case of the invalid example, notice that one of the extensions doesn’t have a “dot” prefix! When such happens the file extension is skipped and won’t be deleted in the final execution of the API.
+
+The ``by_user`` argument allows you to use accountId to filter the deletion by such users. This argument expects a list of users
+
+.. code-block:: python
+
+ # previous expression
+
+ users = ["5abcXXX", "617bcvXXX"]
+ 
+When the user that matches is found, then the deletion will occur.
+
+The ``by_size`` argument helps with deletion by byte size. You can specify the limit by using the below format. The acceptable format for by_size uses this mechanism
+
+size = [condition][number][byte type]
+
+* Condition uses the *greater than (>)* or *lesser than (<)* symbols
+
+* Number could be any digit that you can come up with.
+
+* Byte type refers to the byte size allocation. Either in *kb*, *mb*, *gb* or blank representing sizes in *bytes*
+
+.. code-block:: python
+ 
+ # previous expression
+
+ size = ">12mb" # greater than 12mb in size
+ size = "<150mb" # lesser than 150mb in size
+ size = ">400kb" # greater than 400kb in size
+ size = "<20000" # lesser than 20000 bytes without the suffix byte type specified
+
+Using the ``by_date`` argument within this function helps to determine if and when an attachment should be removed. It uses the initiator's current local time derived from your machine to determine the time and date; down to the last second. Then it compares, that current time to the issue time when the attachment was created and then determine a time delta of the difference. If it can determine that the time period or range is lesser than the DateTime the attachment existed, then it returns true otherwise returns false. You can make the request by performing any of the below tasks.
+
+.. code-block:: python
+ 
+ # previous expression
+
+ dates = "3 days ago"
+ dates = "3 months ago" # you can say 3 months
+ dates = "15 weeks" # the ago part can be left out and it won't matter.
+ 
+The accepted format of using this argument is given below and only strings are accepted.
+
+dates = "[number] <space> [time_info] <space> ago"
+
+The ago part is optional (i.e not needed but looks visually pleasing) but the number and time_info part are crucial. These are the expected values for time_info
+
+* ``minute or minutes`` , ``hour or hours``, ``day or days``, ``week or weeks``, ``month or months``, ``year or years``
+
+Depending on the context and which one makes the most accurate depiction in the English language.
+
+.. code-block:: python
+
+ # previous expression
+
+ dates = "14 hours ago"
+ dates = "1 year ago"
+ 
+Besides using the standard way to call this function, you can always mix and match your search criteria using these four arguments. ``extension``, ``by_user``, ``by_size``, ``by_date``
+The hierarchy follows the same way as they are arranged above.
+
+
+Using File Method
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Subsequently, if you do not want to run a search, you can perform an entire export of your filter query from your Jira UI by navigating to your *Filter > Advanced* issue search, typing your query to get the desired result and click the export CSV all fields.
+
+You do not have to edit the file or change the format in any way. If you’ve exported it as an xlsx file or you’ve modified the file by removing other columns. Please add a delimiter argument and use “;” as the delimiter. Always ensure that the headers are present and not removed also. Also, ensure that the “Attachment” and “Issue key” columns are always present in the file.
+
+.. code-block:: python
+
+ # previous login statement
+
+ ext = [".csv", ".mov", ".png"]
+ file = "Jira-export.csv"
+ delete_attachments(file=file, extension=ext)
+ 
+Example with delimiter parameter.
+ 
+.. code-block:: python
+
+ # previous login statement with variable options
+
+ delete_attachments(file=file, extension=ext, delimiter=";")
+
+
+You can only filter by extension when using the file method.
+
+Turning on Safe mode
+If you just want to test the function without actually deleting any attachments for both the file and search method, you can switch the argument delete into False and that will turn on safe mode. E.g.
+
+.. code-block:: python
+
+ # previous login statement with variable options
+
+ delete_attachments(file=file, extension=ext, delimiter=";", delete=False)
+ # result
+ # Safe mode on: Attachment will not be deleted "jira_workflow_vid.mp4" | Key: COM-701
+ 
+The same argument is available when you use the search method.
+
+.. code-block:: python
+
+ # previous login statement with variable options
+
+ delete_attachments(search=jql, delete=False)
+ # result
+ # Safe mode on: Attachment will not be deleted "jira_workflow_vid.mp4" | Key: COM-701
+
+When safe mode is on, all filtering is ignored.
 
 
 .. _replacement_placeholder:
