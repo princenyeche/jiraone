@@ -21,10 +21,14 @@ class UserManagement:
     The alias to this class is called `manage`
 
     It comes with the below attributes and methods.
-    >> manage.LINK
-    >> manage.AUTH
-    >> token = YUISNxxx
-    >> manage.api_token(token)
+
+    .. code-block:: python
+
+        token = YUISNxxx
+        manage.api_token(token)
+        manage.LINK  # attribute
+        manage.AUTH  # attribute
+
     """
     # Define constants
     LINK = "https://api.atlassian.com"
@@ -49,6 +53,7 @@ class UserManagement:
         :param query:  A query parameter of Array<string>
 
                       *Valid options*
+
                        Valid values: profile, profile.write, profile.read, email.set, lifecycle.enablement,
                        apiToken.read, apiToken.delete
 
@@ -75,24 +80,28 @@ class UserManagement:
         :param method:  A response method condition
 
                       *Available options*
-                       - GET > Get the return request
-                       - PATCH > Updates a given set of data
-                               *Body parameter*
-                               > Any or all user object this is value
+
+                       * GET  Get the return request
+
+                       * PATCH  Updates a given set of data
+
+                               :body parameter: Any or all user object this is value
+
                                e.g. {"name": "Lila User", "nickname": "marshmallow"}
 
-                       - PUT > Change the email account of the user
+                       * PUT Change the email account of the user
 
-                             *Body parameter*
-                             > email - string
-                             e.g. {"email": "prince.nyeche@elfapp.website"}
+        :body parameter: email - string
+                        e.g. {"email": "prince.nyeche@elfapp.website"}
 
         :param kwargs: - Contains other options passed to the requests.<patch>
 
-                        *Options*
-                          json=<variable_name>
-                          e.g. payload = {"email": "prince.nyeche@elfapp.website"}
-                          UserManagement.manage_profile("account_id", "<method>", json=payload)
+        .. code-block:: python
+
+            # previous expression
+            # json=<variable_name>
+            payload = {"email": "prince.nyeche@elfapp.website"}
+            manage.manage_profile("account_id", "<method>", json=payload)
 
         :return: Any
 
@@ -141,6 +150,7 @@ class UserManagement:
         OR
 
         Enables the specified user account.
+
         The permission to make use of this resource is exposed by the lifecycle.enablement privilege.
 
         :param account_id:  A user string value for Atlassian accounts
@@ -151,8 +161,13 @@ class UserManagement:
         :param kwargs: Additional keyword argument to pass body data
 
                      *Options available when disable is False*
-                     e.g. payload = {"message": "On 6-month suspension"}
-                     UserManagement.manage_user("account_id", json=payload)
+
+        .. code-block:: python
+
+            # previous expression
+
+            payload = {"message": "On 6-month suspension"}
+            manage.manage_user("account_id", json=payload)
 
         :return: Any
         """
@@ -194,27 +209,30 @@ class UserManagement:
         :param filter_by: Use to determine the endpoint to return
 
                    *Valid options*
-                     > users - return the users in an organization
 
-                     > domains - list of domains in an organization
+                     * users - return the users in an organization
 
-                     > events - list of events in an audit log
+                     * domains - list of domains in an organization
 
-                     > policies - get the policy of the organization
+                     * events - list of events in an audit log
+
+                     * policies - get the policy of the organization
 
         :param event_id: Use to determine the events in the audit log
 
         :param action:  Additional positional argument for events. True sets events-actions
 
-                       > action - Sets the event actions, true to enable by default set to true.
-                             e.g action=True
+                       * action - Sets the event actions, true to enable by default set to true.
+                                  e.g action=True
 
         :param policy_id: An id of the policy
 
         :param kwargs: Optional arguments
 
-                    *Valid options*
+                     *Valid options*
+
                      Any response argument
+
                      e.g json=payload
                          data=payload
 
@@ -275,7 +293,7 @@ class UserManagement:
             else:
                 raise JiraOneErrors("wrong", "Unexpected error - unable to determine parameter value")
 
-    def manage_organization(self, org_id: t.Optional[str], method: str = "POST",
+    def manage_organization(self, org_id: str, method: str = "POST",
                             policy_id: t.Optional[str] = None,
                             resource_id: t.Optional[str] = None,
                             **kwargs: t.Any) -> t.Any:
@@ -287,7 +305,10 @@ class UserManagement:
         Update a policy for an org.
         Send a put request by using method="put" as keyword args
            You will need to send a payload for the body using the example shown below
-           {
+
+        .. code-block:: json
+
+            {
                   "id": "<string>",
                   "type": "policy",
                    "attributes": {
@@ -310,7 +331,7 @@ class UserManagement:
                                  }
                       ]
                     }
-                  }
+            }
 
         Delete a policy for an org
 
@@ -320,11 +341,12 @@ class UserManagement:
         :param method: A response method to set
 
                         *Valid options*
-                         > PUT - updates resource
 
-                         > POST - creates resource
+                         * PUT - updates resource
 
-                         > DELETE - removes resources
+                         * POST - creates resource
+
+                         * DELETE - removes resources
 
         :param policy_id: ID of the policy
 
@@ -421,6 +443,7 @@ class UserManagement:
         :param data: A response object
 
         :param types: A string of available attributes
+
         :return: None
         """
         many = []
@@ -497,19 +520,20 @@ class UserManagement:
                                                         and len(source['links']) > 1 else {}
             for item in source['data']:
                 user_data = {
-                    "account_id": item['account_id'],
-                    "email": item['email']
+                    "account_id": item.get('account_id'),
+                    "email": item.get('email')
                 } if detail is False else \
                     {
-                        "account_id": item['account_id'],
-                        "email": item['email'],
-                        "account_type": item['account_type'],
-                        "account_status": item['account_status'],
-                        "name": item['name'],
-                        "product_access": item['product_access'],
-                        "link": item['links'],
-                        "access_billable": item['access_billable'],
-                        "picture": item['picture']
+                        "account_id": item.get('account_id'),
+                        "email": item.get('email'),
+                        "account_type": item.get('account_type'),
+                        "account_status": item.get('account_status'),
+                        "name": item.get('name'),
+                        "product_access": item.get('product_access'),
+                        "link": item.get('links'),
+                        "access_billable": item.get('access_billable'),
+                        "picture": item.get('picture'),
+                        "last_active": item.get('last_active')
                     }
                 user_collection.append(list(user_data.values())) if detail is False else \
                     user_collection.append(user_data)
@@ -525,7 +549,7 @@ class UserManagement:
         """Finds a specific user.
 
         :param query: A search term, could be an email, displayname or accountId if
-        the `source` data is gotten from `self.get_all_users` and parameter `detail=True`
+        the ``source`` data is gotten from ``self.get_all_users`` and parameter ``detail=True``
 
         :param source: A list of users
 
