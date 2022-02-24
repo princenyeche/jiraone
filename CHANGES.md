@@ -1,5 +1,9 @@
 # Jira one change log
 
+**Release 0.5.9** - 2022-02-24
+### Patch update #78
+* Patch to `delete_attachments()` and modification of `manage` API docs
+
 
 **Release 0.5.8** - 2022-02-22
 ### Patch update #77
