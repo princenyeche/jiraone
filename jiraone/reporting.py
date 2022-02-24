@@ -423,7 +423,9 @@ class Projects:
         """1 Byte = 8 Bits.
 
         using megabyte MB, value is 1000^2
+
         mebibyte MiB, value is 1024^2
+
         Therefore total = val / MB
 
         :param val: A value to supply
@@ -473,8 +475,11 @@ class Projects:
         """Returns unit in KB or MB.
 
         1 Byte = 8 Bits.
+
         using megabyte MB, value is 1000^2
+
         mebibyte MiB, value is 1024^2
+
         Therefore total = val / MB
 
         :param val: An integer value
@@ -573,6 +578,7 @@ class Projects:
         """Download the attachments to your local device read from a csv file.
 
         we assume you're getting this from   ``def get_attachments_on_project()`` method.
+
               :param attach: integers to specify the index of the columns
 
               :param file_folder: a folder or directory where the file
@@ -869,9 +875,13 @@ class Projects:
             """
             Write the created date of an issue to a file.
             This is used for ``time_in_status()`` to accurately calculate the difference in status time.
+
             :param key_val: An issue key
+
             :param sums: A summary of an issue
+
             :param item_val: An dictionary of values
+
             :param name_: displayName of the user
             :return: None
             """
@@ -1114,34 +1124,41 @@ class Projects:
                 def __init__(self, results) -> None:
                     """Get all data from a comment field.
 
-                    :param results A dict object that loads the result of comments.
-
                 This calls the comment endpoint and returns a list of the data.
                 Depending on what method you're calling. It is either you call the
                 method `comment()` or you call a property within the method.
-                .. Example::
+
+                .. code-block:: python
+
                     iss_key = "COM-42"
                     get_com = comment(iss_key).comment("body").result
                     echo(get_com)
                     # This will return the data of the body content
+
                 OR
-                .. Example::
+                .. code-block:: python
+
                     iss_key = "COM-42"
                     get_com = comment(iss_key).data
                     echo(get_com)
                     # This will simply return the comment endpoint data
 
                 @properties that can be called
+
                 i) body - returns the body content of the comment.
                 ii) mention - returns the users mentioned on a comment.
                 iii) text - returns a Array of strings of the text in the comment.
                 iv) author - returns the author who triggered the comment.
 
-                .. Example::
+                .. code-block:: python
+
                     iss_key = "COM-42"
                     get_com = comment(iss_key).comment("body").text
                     echo(get_com)
                     # This will simply return the comment text separated by comma
+
+                :param results: A dict object that loads the result of comments.
+
                 """
                     self.data = results
                     self._author = None
@@ -1152,8 +1169,10 @@ class Projects:
                 def comment(self, type_field: str) -> Any:
                     """Return a comment field data.
 
-                    :param type_field A string used to determine which data to pull
+                    :param type_field: A string used to determine which data to pull
+
                     options available
+
                      i) author - the user which triggered the comment
                      ii) body - a comment body
                      iii) updateAuthor - gets the updated author details
@@ -1348,7 +1367,7 @@ class Users:
 
     You can customize it to determine which user you're looking for.
 
-    * It's method such as `get_all_users` displays active or inactive users, so you'll be getting all users
+    * It's method such as ``get_all_users`` displays active or inactive users, so you'll be getting all users
 
     """
     user_list = deque()
@@ -1358,14 +1377,21 @@ class Users:
         """Generates a list of users.
 
         :param pull: (options)
+
             * both: pulls out inactive and active users
+
             * active: pulls out only active users
+
             * inactive: pulls out inactive users
 
        :param user_type: (options)
+
             * atlassian: a normal Jira Cloud user
+
             * customer: this will be your JSM customers
+
             * app: this will be the bot users for any Cloud App
+
             * unknown: as the name suggest unknown user type probably from oAuth
 
        :param file: String of the filename
@@ -1628,7 +1654,7 @@ def replacement_placeholder(string: str = Any, data: list = Any,
 
     :param row: An indicator of the column to check.
 
-    .. usage::
+    .. code-block:: python
 
       # previous statement
       hold = ["Hello", "John doe", "Post mortem"]
@@ -1737,6 +1763,7 @@ def delete_attachments(
     saved_file: str = "data_block.json" if "saved_file" not in kwargs else kwargs["saved_file"]
     back_up: bool = False if "back_up" not in kwargs else True
     attach_load = []
+    data_file = path_builder(folder, file_name=saved_file)
 
     def time_share(_time: str, _items=None) -> bool:
         """
@@ -1977,7 +2004,7 @@ def delete_attachments(
                     inf_block(atl=True)
             else:
                 inf_block(atl=True)
-            json.dump(data_brick, open(path_builder(folder, saved_file), mode="w+", encoding="utf-8"),
+            json.dump(data_brick, open(data_file, mode="w+", encoding="utf-8"),
                       indent=4) if allow_cp is True else None
             infinity_point += 1
 
@@ -2025,16 +2052,16 @@ def delete_attachments(
                             del_.reason, _items_.get("key") if fl is False else _items_[1]), "info")
 
     if allow_cp is True:
-        if os.path.isfile(path_builder(folder, file_name=saved_file)):
+        if os.path.isfile(data_file) and os.stat(data_file).st_size != 0:
             user_input = input("An existing save point exist from your last search, "
                                "do you want to use it? (Y/N) \n")
-            set_up = json.load(open(path_builder(path=folder, file_name=saved_file)))
+            set_up = json.load(open(data_file))
             if user_input.lower() in ["y", "yes"]:
                 back_up = True
             else:
                 print("Starting search from scratch.")
                 add_log("Starting search from scratch, any previous data will be removed", "info")
-    os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT) if allow_cp is True else None
+    os.open(data_file, flags=os.O_CREAT) if allow_cp is True else None
     count, cycle, step = 0, 0, 0
     if file is None:
         if search is None:
@@ -2099,7 +2126,8 @@ def delete_attachments(
         new_file = f"{split_file}_temp.csv"
         file_writer(folder, file_name=new_file, data=new_list, mark="many", mode="w+")
         read_file = file_reader(folder, file_name=new_file)
-        step = 0 if back_up is False else set_up["iter"]
+
+        step = 0 if back_up is False and os.stat(data_file).st_size == 0 else set_up["iter"]
         count = step
         for item in read_file[step:]:
             attach_ = item[1].split("/")
@@ -2118,7 +2146,7 @@ def delete_attachments(
                 add_log("Safe mode on: Attachment will not be deleted \"{}\" | Key: {}".format(attach_[-1], item[0]),
                         "info")
             count += 1
-            json.dump(data_brick, open(path_builder(folder, saved_file), mode="w+", encoding="utf-8"),
+            json.dump(data_brick, open(data_file, mode="w+", encoding="utf-8"),
                       indent=4) if allow_cp is True else None
         os.remove(path_builder(folder, file_name=new_file))
     if search_path is not None:
@@ -2134,7 +2162,7 @@ def delete_attachments(
                 LOGIN.get(endpoint.search_issues_jql(query=query, start_at=count,
                                                      max_results=100))
             if data_brick["status"] == "complete":
-                open_ = json.load(open(path_builder(folder, saved_file))) if allow_cp is True else {}
+                open_ = json.load(open(data_file)) if allow_cp is True else {}
                 attach_load = open_["data_block"] if "data_block" in open_ else []
                 break
             if load.status_code < 300:
@@ -2155,7 +2183,7 @@ def delete_attachments(
                 )
                 if count > data_["total"]:
                     data_brick.update({"status": "complete"})
-                    json.dump(data_brick, open(path_builder(folder, saved_file), mode="w+", encoding="utf-8"),
+                    json.dump(data_brick, open(data_file, mode="w+", encoding="utf-8"),
                               indent=4) if allow_cp is True else None
                     add_log("Extraction is completed, deletion of attachments on the next step", "info")
                     break
@@ -2175,7 +2203,7 @@ def delete_attachments(
 
         length = len(attach_load)
         if length > 0:
-            _open_ = json.load(open(path_builder(folder, saved_file))) if allow_cp is True else {}
+            _open_ = json.load(open(data_file)) if allow_cp is True else {}
             data_brick["data_block"] = attach_load
             data_brick["iter"] = _open_["iter"] if "iter" in _open_ else 0
             data_brick["query"] = _open_["query"] if "query" in _open_ else query
@@ -2282,7 +2310,7 @@ def delete_attachments(
                           format(each_item.get("filename"), each_item.get("key")))
 
                 count += 1
-                json.dump(data_brick, open(path_builder(folder, saved_file), mode="w+", encoding="utf-8"),
+                json.dump(data_brick, open(data_file, mode="w+", encoding="utf-8"),
                           indent=4) if allow_cp is True else None
 
         else:
@@ -2290,7 +2318,7 @@ def delete_attachments(
             add_log("Searching for attachment did not yield any result. It seems the search criteria"
                     " does not have attachments.", "debug")
 
-    os.remove(path_builder(folder, file_name=saved_file)) if allow_cp is True else None
+    os.remove(data_file) if allow_cp is True else None
 
 
 USER = Users()
