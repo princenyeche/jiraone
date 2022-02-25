@@ -1865,7 +1865,7 @@ def delete_attachments(
         if isinstance(size, str):
             sign = re.compile(r"(?:[\<|\>])")
             number = re.compile(r"(?:\d+)")
-            string_ = re.compile(r"(?:[a-z]{2})")
+            string_ = re.compile(r"(?:[a-zA-Z]{2})")
             if sign.search(size) is not None:
                 chars.append(sign.search(size).group())
             if number.search(size) is not None:
