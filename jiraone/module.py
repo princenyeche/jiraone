@@ -67,9 +67,11 @@ def field_update(field, key_or_id: Union[str, int],
 
     :param data: A way to send out data.
 
-            *options to use for `update` parameter*
-                  i) add - add to list value or dict value
-                  ii) remove - remove an option value from a list or dict
+            *options to use for ``update`` parameter*
+
+                  * add - add to list value or dict value
+
+                  * remove - remove an option value from a list or dict
 
     :return: Any object
     """
@@ -127,7 +129,9 @@ def time_in_status(
                *Available options*
 
                * login - Required keyword argument to authenticate request
+
                * pprint -Bool, Optional -formats the datetime output into a nice pretty format.
+
                * is_printable - Bool, prints output to terminal if true
 
     :return: A Printable representation of the data or output files.
@@ -192,8 +196,11 @@ def time_in_status(
     }):
         def initialize(to_, from_) -> None:
             """Rerun the data for time extraction.
+
             :param to_: A timedelta object showing the present or future datetime
+
             :param from_: A timedelta object showing the previous datetime
+
             :return: none
             """
             difference = to_ - from_
@@ -237,6 +244,7 @@ def time_in_status(
 
     def matrix_loop(proxy, rev: bool = True) -> None:
         """Repeat of ``if`` steps validating the status.
+
         :param proxy: The name of the iterable data within the dict
         :param rev: Changes context of dict value for proxy argument
         :return: None
@@ -376,9 +384,11 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
     :param kwargs Additional keyword argument to pass
 
                 *Valid values*
-                > dummy - A dummy email address to choose if not a default is formed
+
+                * dummy - A dummy email address to choose if not a default is formed
                    from your email address
-                > users - The name of a file to check the users and their account_id
+
+                * users - The name of a file to check the users and their account_id
                     only needed if you want to search a predefined set of users.
 
     :return: None
