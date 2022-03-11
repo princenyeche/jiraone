@@ -1,5 +1,11 @@
 # Jira one change log
 
+**Release 0.6.0** - 2022-03-11
+### Patch update #80
+* Patch to `time_in_status()` fix on windows platform. A carriage return in file_writer caused throws a `TypeError: Expected 13 arguments, got 0`
+* Documentation fix
+
+
 **Release 0.5.9** - 2022-02-24
 ### Patch update #78
 * Patch to `delete_attachments()` and modification of `manage` API docs
