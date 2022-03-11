@@ -512,6 +512,7 @@ class Projects:
          * Issue key
          * file name
          * attachment url
+
         we assume you're getting this from
         ``def get_attachments_on_project()``
 
@@ -592,6 +593,7 @@ class Projects:
                 e.g
                   * attach=6,
                   * file=8
+
               the above example corresponds with the index if using the ``def get_attachments_on_project()``
               otherwise, specify your value in each keyword args when calling the method.
 
@@ -616,18 +618,14 @@ class Projects:
                     break
 
     @staticmethod
-    def extract_jira_issues(*args, **kwargs):
-        """Returns all issues within an instance without the 1K limit.
+    def extract_jira_issues(*args, **kwargs) -> None:
+        """Returns all issues within an instance using a JQL search without the 1K limit.
 
-        Issue download contains all fields, fields can be specified as well
-        Issue history included as fields
-        Attachments url included as fields
-        All comments included
-        Sprint id and name included
-        User accountId included
+        :return: None
         """
-        # TODO: create this method
-        pass
+        #TODO create this function
+        folder = "EXPORT" if "folder" not in kwargs else kwargs["folder"]
+        file_name = "export_file.csv" if "file_name" not in kwargs else kwargs["file_name"]
 
     def move_projects_across_instances(
             self,
@@ -846,13 +844,13 @@ class Projects:
 
         :param kwargs: The other other kwargs that can be passed as below.
 
-               jql: (required) A valid JQL query for projects or issues.  datatype -> string
+               * jql: (required) A valid JQL query for projects or issues.  datatype -> string
 
-               saved_file: The name of the file which saves the iteration. datatype -> string
+               * saved_file: The name of the file which saves the iteration. datatype -> string
 
-               show_output: Show a printable output on terminal. datatype -> boolean
+               * show_output: Show a printable output on terminal. datatype -> boolean
 
-               field_name: Target a field name to render. datatype -> string
+               * field_name: Target a field name to render. datatype -> string
 
         :return: None
         """
@@ -1094,11 +1092,16 @@ class Projects:
     def comment_on(self, key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs) -> Any:
         """Comment on a ticket or write on a description field.
 
-        GET comments
-        POST comments by id
-        PUT update a comment
-        POST add a comment
-        DELETE delete a comment
+        :request GET: comments
+
+        :request POST: comments by id
+
+        :request PUT: update a comment
+
+        :request POST: add a comment
+
+        :request DELETE: delete a comment
+
         Do the same thing you do via the UI.
 
         :return: Any
@@ -1126,7 +1129,7 @@ class Projects:
 
                 This calls the comment endpoint and returns a list of the data.
                 Depending on what method you're calling. It is either you call the
-                method `comment()` or you call a property within the method.
+                method ``comment()`` or you call a property within the method.
 
                 .. code-block:: python
 
@@ -1583,14 +1586,17 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
     :param kwargs: Additional parameters
 
                *options*
+
                delimiter: defaults to comma.
 
     :return: Any
     """
+    from platform import system
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
     file = path_builder(path=folder, file_name=file_name)
+    windows = open(file, mode, newline="") if system() == "Windows" else open(file, mode)
     if mode:
-        with open(file, mode) as f:
+        with windows as f:
             write = csv.writer(f, delimiter=delimiter)
             if mark == "single":
                 write.writerow(data)
@@ -1744,8 +1750,6 @@ def delete_attachments(
 
                  * allow_cp: Allows the ability to trigger and save a checkpoint.
 
-                 * back_up: Allows the recall of checkpoint at least once during any iteration if ``allow_cp`` is True.
-
                  * saved_file: Provides a generic name for the checkpoint save file.
 
                  * delimiter: Allows you to change the delimiter used to read the file used by ``file`` parameter.
@@ -1761,14 +1765,16 @@ def delete_attachments(
     folder: str = "DATA"
     allow_cp: bool = True if "allow_cp" not in kwargs else False
     saved_file: str = "data_block.json" if "saved_file" not in kwargs else kwargs["saved_file"]
-    back_up: bool = False if "back_up" not in kwargs else True
+    back_up: bool = False
     attach_load = []
     data_file = path_builder(folder, file_name=saved_file)
 
     def time_share(_time: str, _items=None) -> bool:
         """
         Calculate the time difference it takes with the date and now to determine if deletion is possible.
+
         :param _time: A string of date range to check
+
         :param _items: An iterable of available date of attachment creation.
 
         :return: True or False
@@ -1791,7 +1797,7 @@ def delete_attachments(
         times = []
         if isinstance(_time, str):
             number = re.compile(r"(?:\d+)")
-            string_one = re.compile(r"(?:[a-z]{4,7})")
+            string_one = re.compile(r"(?:[a-zA-Z]{4,7})")
             if number.search(_time) is not None:
                 times.append(number.search(_time).group())
             if string_one.search(_time) is not None:
@@ -2324,3 +2330,4 @@ def delete_attachments(
 USER = Users()
 PROJECT = Projects()
 comment = PROJECT.comment_on
+export_issues = PROJECT.extract_jira_issues
