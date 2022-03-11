@@ -18,13 +18,13 @@ from collections import deque
 class UserManagement:
     """
     The UserManagement API is used to access organization profiles on Atlassian sites.
-    The alias to this class is called `manage`
+    The alias to this class is called ``manage``
 
     It comes with the below attributes and methods.
 
     .. code-block:: python
 
-        token = YUISNxxx
+        token = "YUISNxxx"
         manage.api_token(token)
         manage.LINK  # attribute
         manage.AUTH  # attribute
@@ -69,10 +69,10 @@ class UserManagement:
     def manage_profile(self, account_id: str, method: str = "GET", **kwargs: t.Any) -> t.Any:
         """Returns information about a single Atlassian account by ID by using a "GET" request.
 
-        PATCH request: Updates fields in a user account.
+        :request PATCH: Updates fields in a user account.
         The profile.write privilege details which fields you can change.
 
-        PUT request: Sets the specified user's email address.
+        :request PUT: Sets the specified user's email address.
         Before using this endpoint, you must verify the target domain
 
         :param account_id:  A user string value for Atlassian accounts
@@ -81,15 +81,15 @@ class UserManagement:
 
                       *Available options*
 
-                       * GET  Get the return request
+                       :request GET:  Get the return request
 
-                       * PATCH  Updates a given set of data
+                       :request PATCH:  Updates a given set of data
 
                                :body parameter: Any or all user object this is value
 
                                e.g. {"name": "Lila User", "nickname": "marshmallow"}
 
-                       * PUT Change the email account of the user
+                       :request PUT: Change the email account of the user
 
         :body parameter: email - string
                         e.g. {"email": "prince.nyeche@elfapp.website"}
