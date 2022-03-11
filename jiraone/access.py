@@ -188,16 +188,18 @@ class EndPoints:
         return "{}/rest/api/{}/myself".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def search_users(cls, query: int = 0) -> str:
+    def search_users(cls, query: int = 0, max_result: int = 50) -> str:
         """Search multiple users and retrieve the data
 
         :param query: An integer record row
 
+        :param max_result: An integer of max capacity
+
         :return: A string of the url
         """
-        return "{}/rest/api/{}/users/search?startAt={}&maxResults=50".format(LOGIN.base_url,
+        return "{}/rest/api/{}/users/search?startAt={}&maxResults={}".format(LOGIN.base_url,
                                                                              "3" if LOGIN.api is True else "latest",
-                                                                             query)
+                                                                             query, max_result)
 
     @classmethod
     def get_user_group(cls, account_id: Any) -> str:
@@ -218,14 +220,22 @@ class EndPoints:
            #api-rest-api-3-project-search-get
 
         :param args: Query Parameters that are useful mostly.
+
            a) query, example: query=key,name {caseInsensitive}
+
            b) searchBy, example: searchBy=key,name
+
            c) action, example: action=browse
+
                i. available options [view, browse, edit]
+
            d) status example: status=live
+
                i. available options [live, archived, deleted]
+
            e). expand, example: expand=insight
-                 i. available options [insight, description, projectKeys, url, issueTypes, lead]
+
+                i. available options [insight, description, projectKeys, url, issueTypes, lead]
 
         :param start_at:  defaults as keyword args,example startAt=0
 
@@ -248,9 +258,8 @@ class EndPoints:
     def find_users_with_permission(cls, *args) -> str:
         """Find users with permissions to a Project.
 
-        :param args: 1st accountId
-                     2nd projectKey
-                     3rd permissions that needs checking all in caps e.g "BROWSE", "CREATE_ISSUE" etc
+        :param args: 1st accountId, 2nd projectKey, 3rd permissions that needs checking all in caps
+                     e.g "BROWSE", "CREATE_ISSUE" etc
 
         :return: A string of the url
         """
@@ -373,6 +382,28 @@ class EndPoints:
             -> str:
         """Returns a paginated list of fields for Classic Jira projects. The list can include:
 
+        *  all fields.
+
+        *  specific fields, by defining id.
+
+        *  fields that contain a string in the field name or description, by defining query.
+
+        *  specific fields that contain a string in the field name or description, by defining id and query.
+        Only custom fields can be queried, type must be set to custom.
+
+        **Find system fields**
+
+        *  Fields that cannot be added to the issue navigator are always returned.
+
+        *  Fields that cannot be placed on an issue screen are always returned.
+
+        *  Fields that depend on global Jira settings are only returned if the setting is enabled.
+           That is, timetracking fields, subtasks, votes, and watches.
+
+        *  For all other fields, this operation only returns the fields that the user has permission to view
+        (that is, the field is used in at least one project that the user has Browse Projects project permission for.)
+
+
         :param query: accepted options -> string type=custom (use to search for custom fields)
 
         :param start_at: defaults to 0
@@ -380,22 +411,6 @@ class EndPoints:
         :param max_results: defaults to 50
 
         :param system: string accepts any string e.g. field (use any string to denote as system)
-
-        *  all fields.
-        *  specific fields, by defining id.
-        *  fields that contain a string in the field name or description, by defining query.
-        *  specific fields that contain a string in the field name or description, by defining id and query.
-        Only custom fields can be queried, type must be set to custom.
-
-        **Find system fields**
-
-        *  Fields that cannot be added to the issue navigator are always returned.
-        *  Fields that cannot be placed on an issue screen are always returned.
-        *  Fields that depend on global Jira settings are only returned if the setting is enabled.
-           That is, timetracking fields, subtasks, votes, and watches.
-
-        *  For all other fields, this operation only returns the fields that the user has permission to view
-        (that is, the field is used in at least one project that the user has Browse Projects project permission for.)
 
          :return: A string of the url
          """
@@ -437,23 +452,24 @@ class EndPoints:
                           query: Optional[str] = None) -> str:
         """Returns the attachment content.
 
-        :request GET - Get Jira attachment settings
+        :request GET: - Get Jira attachment settings
         Returns the attachment settings, that is, whether attachments are enabled and the
         maximum attachment size allowed.
 
-                 :request GET - Get attachment Meta data
+        :request GET: - Get attachment Meta data
         Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
         :param attach_id: required (id of the attachment), datatype -> string
-                :request DELETE - Deletes an attachment from an issue.
+                :request DELETE: - Deletes an attachment from an issue.
 
-               attach_id required (id of the attachment), datatype -> string
+                attach_id required (id of the attachment), datatype -> string
 
-               :request GET - Get all metadata for an expanded attachment
+               :request GET:  - Get all metadata for an expanded attachment
 
-               :param query:, datatype -> string
+               :param query: datatype -> string
 
-               available options
+               *available options*
+
                 * expand/human -Returns the metadata for the contents of an attachment, if it is an archive,
                      and metadata for the attachment itself. For example, if the attachment is a ZIP archive,
                      then information about the files in the archive is returned and metadata for the ZIP archive.
@@ -462,15 +478,14 @@ class EndPoints:
                      For example, if the attachment is a ZIP archive, then information about the files in the
                      archive is returned. Currently, only the ZIP archive format is supported.
 
-               :request POST - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+               :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
 
-        :request POST - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+        :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
 
-        :param id_or_key: required, datatype -> string
+        :param id_or_key: required, datatype -> string. The ID or key of the issue that attachments are added to.
 
         :param uri: various endpoint to attachment
 
-        The ID or key of the issue that attachments are added to.
 
         :return: A string of the url
         """
@@ -674,8 +689,10 @@ class EndPoints:
         This operation is equivalent to remove future and active sprints from a given set of issues.
         At most 50 issues may be moved at once.
 
-        :request POST
+        :request POST:
+
         :body param: issues, datatype -> Array<string>
+
         Send a POST request within API.
 
         :return: A string of the url
@@ -695,8 +712,10 @@ class EndPoints:
         :param board_id: required
 
         :body param: issues, datatype -> Array<string>,
-                   : rankBeforeIssue, rankAfterIssue, type -> string
-                   : rankCustomFieldId, type -> integer
+
+                    rankBeforeIssue, rankAfterIssue, type -> string
+
+                    rankCustomFieldId, type -> integer
 
         :return: A string of the url
         """
@@ -711,8 +730,10 @@ class EndPoints:
         :request POST:
 
         :body param: name, type, datatype -> string
-                   : filterId, datatype -> integer
-                   : location, datatype -> object
+
+                    filterId, datatype -> integer
+
+                    location, datatype -> object
         :return: A string of the url
         """
         return "{}/rest/agile/1.0/board".format(LOGIN.base_url)
@@ -724,14 +745,12 @@ class EndPoints:
         This method can be executed by users without a valid software license
         in order to find which boards are using a particular filter.
 
-        :param filter_id  required
-
-        Filters results to boards that are relevant to a filter.
+        :param filter_id:  required - Filters results to boards that are relevant to a filter.
         Not supported for next-gen boards.
 
-        :param start_at defaults to 0
+        :param start_at: defaults to 0
 
-        :param max_results defaults to 50
+        :param max_results: defaults to 50
 
         :return: A string of the url
         """
@@ -767,12 +786,13 @@ class EndPoints:
 
         :param query: -> includes other query parameters such as
 
-                         Query           Datatypes
+                            Query           Datatypes
                         ----------------------------
                          jql           | string
                          validateQuery | boolean
                          fields        | Array<string>
                          expand        | string
+
 
         :return: A string of the url
         """
@@ -908,6 +928,7 @@ class EndPoints:
         """Creates a future sprint. Sprint name and origin board id are required.
 
         Start date, end date, and goal are optional.
+
         :request POST:
 
         :body param: name, startDate, endDate, goal, datatype -> string
@@ -938,7 +959,9 @@ class EndPoints:
         Any fields not present in the request JSON will be set to null.
 
         :request PUT:
+
         :param sprint_id: required
+
         :body param: name, state, startDate, endDate, goal, self (format: uri), completeDate, datatype -> string
                    : id, originBoardId, datatype -> integer
 
@@ -951,7 +974,9 @@ class EndPoints:
         """Deletes a sprint.
 
         Once a sprint is deleted, all open issues in the sprint will be moved to the backlog.
+
         :request DELETE:
+
         :param sprint_id: required
 
         :return: A string of the url
@@ -967,7 +992,7 @@ class EndPoints:
 
         instance by passing a JSON file including an email address and display name.
 
-        :request POST
+        :request POST:
 
         :body param: email, displayName, datatype -> string
 
@@ -1243,7 +1268,7 @@ class EndPoints:
     def jira_user(cls, account_id: str = None) -> str:
         """API for User creation, deletion and retrieval.
 
-        :request POST - Creates a user. This resource is retained for legacy compatibility.
+        :request POST: - Creates a user. This resource is retained for legacy compatibility.
                         As soon as a more suitable alternative is available this resource will be deprecated
 
                         :body param: key, name, password, emailAddress, displayName, notification, datatypes -> string
@@ -1251,15 +1276,16 @@ class EndPoints:
                                     : Additional Properties, datatypes -> Any
                         returns 201 for successful creation
 
-                :DELETE - Deletes a user.
+                :request DELETE: - Deletes a user.
+
                           :body param: accountId, datatype -> string required
                           returns 204 for successful deletion
 
-                :GET - Returns a user.
+                :request GET: - Returns a user.
 
                        :body param: accountId, expand, datatypes -> string
 
-                :param account_id: - string for a user account
+        :param account_id: - string for a user account
 
         :return: A string of the url
         """
@@ -1273,20 +1299,21 @@ class EndPoints:
     def jira_group(cls, group_name: str = None, swap_group: str = None) -> str:
         """Used for Creation and deletion of Jira groups.
 
-        :request  POST - Creates a group.
+        :request  POST: - Creates a group.
                      :body param: name required, datatype -> string
                      returns 201 if successful
 
-                : DELETE - Deletes a group.
+                :request DELETE: - Deletes a group.
+
                      The group to transfer restrictions to. Only comments and worklogs are transferred.
                      If restrictions are not transferred, comments and worklogs are inaccessible after the deletion.
 
                      :query param: group_name required, swap_group,  datatype -> string
                      returns 200 if successful
 
-                    :param group_name: name of group
+        :param group_name: name of group
 
-                    :param swap_group: group name to swap
+        :param swap_group: group name to swap
 
         :return: A string of the url
         """
@@ -1304,18 +1331,21 @@ class EndPoints:
     def group_jira_users(cls, group_name: str, account_id: str = None) -> str:
         """Used for addition and removal of users to and from groups.
 
-        :request POST - Adds a user to a group.
+        :request POST: - Adds a user to a group.
+
                      :query param: groupname required, datatype -> string
+
                      :body param: name, accountId, datatype -> string
                      returns 201 if successful
 
-                : DELETE - Removes a user from a group.
+                :request DELETE: - Removes a user from a group.
+
                      :query param: group_name required, account_id required,  datatype -> string
                      returns 200 if successful
 
-                    :param group_name: name of group
+       :param group_name: name of group
 
-                    :param account_id: string of a user account
+       :param account_id: string of a user account
 
         :return: A string of the url
         """
@@ -1332,19 +1362,22 @@ class EndPoints:
                  enable_undo: Optional[bool] = None) -> str:
         """Create, delete, update, archive, get status.
 
-        :request: POST - for project creations.
+        :request POST: - for project creations.
                          The project types are available according to the installed Jira features as follows:
 
         :param id_or_key: required
 
-              :param uri: optional for accessing other project endpoints -> string
+        :param uri: optional for accessing other project endpoints -> string
 
                    endpoint: /rest/api/3/project/{projectIdOrKey}/{archive}
                    available options [archive, delete, restore, statuses]
 
                          * archive - Archives a project. Archived projects cannot be deleted.
+
                          * delete - Deletes a project asynchronously.
+
                          * restore - Restores a project from the Jira recycle bin.
+
                          * statuses - Returns the valid statuses for a project.
 
         see:https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post
@@ -1354,23 +1387,23 @@ class EndPoints:
                              : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
                               datatype -> integer
 
-                : GET - Returns the project details for a project.
+                :request GET: - Returns the project details for a project.
                 This operation can be accessed anonymously.
 
                      :query param: expand, datatype -> string
 
-                                 : properties, datatype -> Array<string>
+                                  properties, datatype -> Array<string>
 
-               : PUT - Updates the project details for a project.
+               :request PUT: - Updates the project details for a project.
 
-                  :param query:  expand, datatype -> string
+        :param query:  expand, datatype -> string
 
                   :body param: projectTypeKey and projectTemplateKey required, datatype -> string
                              : name, key, description, leadAccountId, url, assigneeType, datatype -> string
                              : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
                               datatype -> integer
 
-              : DELETE - Deletes a project.
+              :request DELETE: - Deletes a project.
 
                    :param enable_undo:  datatype -> boolean
 
@@ -1400,12 +1433,14 @@ class EndPoints:
         A transition may be applied, to move the issue or subtask to a workflow step other than
         the default start step, and issue properties set.
 
-        :request POST - Creates an issue or, where the option to create subtasks is enabled in Jira, a subtask.
+        :request POST: - Creates an issue or, where the option to create subtasks is enabled in Jira, a subtask.
 
         :param uri: datatype -> string
 
                    * available options [bulk, createmeta]
+
                    * e.g. endpoint: /rest/api/3/issue/bulk
+
                    * e.g. endpoint /rest/api/3/issue/createmeta
 
         :param query: datatype -> string
@@ -1418,9 +1453,10 @@ class EndPoints:
 
                  * determine if you can get a changelog from the issue. default is false
                  if True required parameters are:
-                 :param issue_key_or_id:
-                 :param query:
-                    /rest/api/3/issue/{issueIdOrKey}/changelog
+
+        :param issue_key_or_id:
+
+        :param query: /rest/api/3/issue/{issueIdOrKey}/changelog
 
         :param issue_key_or_id: -> string or integer
 
@@ -1433,31 +1469,32 @@ class EndPoints:
                               : properties, datatype -> Array<EntityProperty>
                               : Additional Properties, datatype -> Any
 
-                  POST - Bulk create issue
+                  :request POST:  Bulk create issue
+
                       Creates issues and, where the option to create subtasks is enabled in Jira, subtasks.
 
                       :body param: issueUpdates, datatype -> Array<IssueUpdateDetails>
                                  : Additional Properties, datatype -> Any
 
-                  GET - Create issue metadata
+                  :request GET: - Create issue metadata
+
                   Returns details of projects, issue types within projects, and, when requested,
                   the create screen fields for each issue type for the user.
 
                   :query param: projectIds, projectKeys, issuetypeIds, issuetypeNames, datatype -> Array<string>
                               : expand, datatype -> string
 
-                  GET - Get issue
-                  Return the details of an issue
+                  :request GET:  Get issue. Return the details of an issue
                   endpoint  /rest/api/3/issue/{issueIdOrKey}
 
                   :query param: issue_key_or_id required
-                              : fields, properties, datatype -> Array<string>
-                              : fieldsByKeys, updateHistory,  datatype -> boolean
-                              : expand, datatype -> string
+                               fields, properties, datatype -> Array<string>
+                               fieldsByKeys, updateHistory,  datatype -> boolean
+                               expand, datatype -> string
 
 
-                  PUT - Edits an issue. A transition may be applied and issue properties updated as part of the edit.
-                  endpoint  /rest/api/3/issue/{issueIdOrKey}
+                  :request PUT: - Edits an issue. A transition may be applied and issue properties
+                  updated as part of the edit. endpoint  /rest/api/3/issue/{issueIdOrKey}
 
                   :query param: issue_key_or_id required
                               : notifyUsers, overrideScreenSecurity, overrideEditableFlag, datatype -> boolean
@@ -1465,8 +1502,8 @@ class EndPoints:
                   :body param: transition, fields, update, historyMetadata, properties, Additional Properties,
                               datatype -> object
 
-                  DELETE - Deletes an issue.
-                  endpoint  /rest/api/3/issue/{issueIdOrKey}
+                  :request DELETE: Deletes an issue.
+                                     endpoint  /rest/api/3/issue/{issueIdOrKey}
 
                   :query param: issue_key_or_id required
                               : deleteSubtasks, datatype -> string, values = (true | false)
@@ -1496,8 +1533,9 @@ class EndPoints:
                 ids: int = None, event: bool = False) -> str:
         """Create, update, delete or get a comment.
 
-        :request POST - Returns a paginated list of just the comments for a list of comments specified by comment IDs.
-           :param query: datatype -> string
+        :request POST: - Returns a paginated list of just the comments for a list of comments specified by comment IDs.
+
+        :param query: datatype -> string
 
             :query param: expand datatype -> string
 
@@ -1511,35 +1549,46 @@ class EndPoints:
 
               The list of comment IDs. A maximum of 1000 IDs can be specified.
 
-        :request GET - Returns all comments for an issue.
+        :request GET: - Returns all comments for an issue.
 
              :param key_or_id: datatype -> string required
+
              :param start_at: datatype -> integer defaults to 0
+
              :param max_results: datatyoe -> integer defaults to 50
+
              :query param: orderBy datatype -> string
                    Valid values: created, -created, +created
 
-        :request POST - Adds a comment to an issue.
+        :request POST:  Adds a comment to an issue.
+
               key_or_id required
+
               :param event datatype -> boolean
                      defaults to false, set to true to add a comment to an issue.
 
-              :query param: expand
+                        :query param: expand
 
-              :body param:
-                   body datatype -> Anything
-                   visibility -> The group or role to which this comment is visible. Optional on create and update.
-                   properties datatype -> Array<EntityProperty>
+                        :body param:
+
+                         body datatype -> Anything
+                        visibility -> The group or role to which this comment is visible. Optional on create and update.
+                            properties datatype -> Array<EntityProperty>
+
                          A list of comment properties. Optional on create and update.
-                  Additional Properties datatype ->anything
+                        Additional Properties datatype ->anything
 
-        :request GET - Returns a comment.
+        :request GET: - Returns a comment.
+
                 :param ids: datatype integers - The ID of the comment.
+
                 :query param: expand
 
-        :request PUT - Updates a comment.
+        :request PUT: - Updates a comment.
+
                key_or_id required
                ids The ID of the comment.
+
                :query param: expand
 
                :body param:
@@ -1549,7 +1598,8 @@ class EndPoints:
                          A list of comment properties. Optional on create and update.
                    Additional Properties datatype ->anything
 
-        :request DELETE - Deletes a comment.
+        :request DELETE: - Deletes a comment.
+
                 key_or_id required
                 ids required
 
@@ -1611,7 +1661,9 @@ class Field(object):
     It helps with posting, putting and getting various fields or field type.
 
     * It comes with two attributes
+
       * field_type
+
       * field_search_key
 
     """
@@ -1735,7 +1787,7 @@ class Field(object):
 
         All field types mentioned on the Field class attributes.
 
-        :request PUT
+        :request PUT:
 
         :param data: datatype[Any] the data you're trying to process, depending on what field it could be any object.
 
@@ -1750,6 +1802,7 @@ class Field(object):
         :param kwargs: datatype[String] perform other operations with keyword args
 
                    * options arg is a string and has two values "add" or "remove".
+
                    * query arg is a string and it can have any value that is stated on the endpoint.issue() method
                          e.g. query="notifyUsers=false"
 

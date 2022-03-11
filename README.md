@@ -8,9 +8,15 @@
 A REST API Implementation to Jira Cloud APIs for creating reports and for performing other Jira queries.
 
 ## Configurations
-Install using `pip`. you have to be on python >= 3.6.x in order to utilize this script.
+Install using `pip`. You have to be on python >= 3.6.x in order to utilize this script.
+* Download python and install on your device by visiting [python.org](https://python.org/downloads)
+* Run the below command either using a virtual environment or from your python alias
 ```bash
 pip install jiraone
+```
+OR
+```bash
+python3 -m pip install jiraone
 ```
 
 ## Classes, functions and methods

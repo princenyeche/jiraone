@@ -50,7 +50,8 @@ class Permissions(object):
     WORK_ISSUE = "WORK_ISSUE"
 
 
-def field_update(field, key_or_id: Union[str, int],
+def field_update(field,
+                 key_or_id: Union[str, int],
                  name: str = None,
                  update: Optional[str] = None,
                  data: Any = None,
@@ -67,9 +68,11 @@ def field_update(field, key_or_id: Union[str, int],
 
     :param data: A way to send out data.
 
-            *options to use for `update` parameter*
-                  i) add - add to list value or dict value
-                  ii) remove - remove an option value from a list or dict
+            *options to use for ``update`` parameter*
+
+                  * add - add to list value or dict value
+
+                  * remove - remove an option value from a list or dict
 
     :return: Any object
     """
@@ -127,10 +130,23 @@ def time_in_status(
                *Available options*
 
                * login - Required keyword argument to authenticate request
+
                * pprint -Bool, Optional -formats the datetime output into a nice pretty format.
+
                * is_printable - Bool, prints output to terminal if true
 
+
+    .. code-block:: python
+
+      # previous expression
+      # To print out the function, you can either use ``echo`` function or ``print`` built-in
+      status = time_in_status(PROJECT, key, file_reader, login=LOGIN, pprint=True, output_format="json",
+                            is_printable=True)
+      echo(status)
+
+
     :return: A Printable representation of the data or output files.
+
     """
     login = kwargs["login"] if "login" in kwargs else False
     pprint = kwargs["pprint"] if "pprint" in kwargs else False
@@ -192,8 +208,11 @@ def time_in_status(
     }):
         def initialize(to_, from_) -> None:
             """Rerun the data for time extraction.
+
             :param to_: A timedelta object showing the present or future datetime
+
             :param from_: A timedelta object showing the previous datetime
+
             :return: none
             """
             difference = to_ - from_
@@ -237,8 +256,11 @@ def time_in_status(
 
     def matrix_loop(proxy, rev: bool = True) -> None:
         """Repeat of ``if`` steps validating the status.
+
         :param proxy: The name of the iterable data within the dict
+
         :param rev: Changes context of dict value for proxy argument
+
         :return: None
         """
         matrix = [proxy['issue_key'], proxy['summary'], proxy['author'], proxy['time_status'],
@@ -369,16 +391,18 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
     If the target email exist as an Atlassian account email, this will help to swap
     that email address to the desired target email.
 
-    :param data A string of the file name
+    :param data: A string of the file name
 
-    :param token An API token to authenticate the API.
+    :param token: An API token to authenticate the API.
 
-    :param kwargs Additional keyword argument to pass
+    :param kwargs: Additional keyword argument to pass
 
                 *Valid values*
-                > dummy - A dummy email address to choose if not a default is formed
+
+                * dummy - A dummy email address to choose if not a default is formed
                    from your email address
-                > users - The name of a file to check the users and their account_id
+
+                * users - The name of a file to check the users and their account_id
                     only needed if you want to search a predefined set of users.
 
     :return: None
@@ -445,6 +469,7 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
         """Returns a dictionary
 
             :param emails: A namedtuple to string
+
             :param count: An integer count, basically trying to see if we can keep track of the changes.
 
             :return: dict
