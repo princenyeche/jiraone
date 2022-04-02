@@ -18,6 +18,14 @@
    :target: https://jiraone.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
+..image:: https://snyk.io/advisor/python/jiraone/badge.svg
+  :target: https://snyk.io/advisor/python/jiraone
+  :alt: jiraone
+
+.. image:: https://app.travis-ci.com/princenyeche/jiraone.svg?branch=main
+    :target: https://app.travis-ci.com/princenyeche/jiraone
+    :alt: jiraone
+    
 
 Jira one
 =================
