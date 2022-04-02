@@ -11,4 +11,4 @@ script:
   - export JIRAONEUSERNAME
   - export JIRAONEUSERPASS
   - export JIRAONEUSERURL
-  - python -m test.py
+  - python test.py
