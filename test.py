@@ -1,11 +1,12 @@
 from jiraone import LOGIN, endpoint
 import json
 import unittest
+import os
 
 
-user = "email"
-password = "token"
-link = "https://yourinstance.atlassian.net"
+user = os.environ.get("JIRAONEUSERNAME") or "email"
+password = os.environ.get("JIRAONEUSERPASS") or "token"
+link = os.environ.get("JIRAONEUSERURL") or "https://yourinstance.atlassian.net"
 LOGIN(user=user, password=password, url=link)
 
 

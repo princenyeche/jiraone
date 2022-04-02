@@ -3,6 +3,9 @@
 [![PyPI version](https://badge.fury.io/py/jiraone.svg)](https://badge.fury.io/py/jiraone)
 ![PyPI - License](https://img.shields.io/pypi/l/jiraone)
 ![Build Doc](https://readthedocs.org/projects/jiraone/badge/?version=latest)
+[![jiraone](https://snyk.io/advisor/python/jiraone/badge.svg)](https://snyk.io/advisor/python/jiraone)
+[![Build Status](https://app.travis-ci.com/princenyeche/jiraone.svg?branch=main)](https://app.travis-ci.com/princenyeche/jiraone)
+
 
 # Jira one
 A REST API Implementation to Jira Cloud APIs for creating reports and for performing other Jira queries.

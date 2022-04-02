@@ -1594,7 +1594,7 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
     from platform import system
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
     file = path_builder(path=folder, file_name=file_name)
-    windows = open(file, mode, newline="") if system() == "Windows" else open(file, mode)
+    windows = open(file, mode, newline="") if system() == "Windows" and mark != "file" else open(file, mode)
     if mode:
         with windows as f:
             write = csv.writer(f, delimiter=delimiter)
