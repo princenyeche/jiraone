@@ -1,7 +1,7 @@
-from jiraone import LOGIN, endpoint
+import os
 import json
 import unittest
-import os
+from jiraone import LOGIN, endpoint
 
 
 user = os.environ.get("JIRAONEUSERNAME") or "email"
