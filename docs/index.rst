@@ -18,7 +18,7 @@
    :target: https://jiraone.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-..image:: https://snyk.io/advisor/python/jiraone/badge.svg
+.. image:: https://snyk.io/advisor/python/jiraone/badge.svg
   :target: https://snyk.io/advisor/python/jiraone
   :alt: jiraone
 
