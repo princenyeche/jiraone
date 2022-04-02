@@ -17,7 +17,7 @@ class JiraOne(unittest.TestCase):
         self.assertTrue(load.status_code == 200, "Login Successful")
 
     def test_endpoints(self):
-        load = LOGIN.get(endpoint.get_all_issue_security_scheme())
+        load = LOGIN.get(endpoint.myself())
         if load.status_code != 200:
             self.assertFalse(load.status_code != 200, "Unable to Load")
 
