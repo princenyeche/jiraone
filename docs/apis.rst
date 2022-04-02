@@ -188,3 +188,13 @@ as possible, so you can easily make calls to Jira's endpoint and get the require
 .. autofunction:: bulk_change_email
 
 .. autofunction:: bulk_change_swap_email
+
+
+.. module:: jiraone.utils
+
+
+Utils
+---------
+
+.. autoclass:: DotNotation
+   :members:
