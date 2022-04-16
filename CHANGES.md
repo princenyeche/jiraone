@@ -1,5 +1,22 @@
 # Jira one change log
 
+**Release 0.6.1** - 2022-04-02
+### Minor update #83
+* Added a correction to #82 with file_writer() to add argument newline when on windows if not on file mode
+  * This way, we do not obstruct the binary mode operation.
+* Added a new module utils which will now help in writing dictionary object with dot notation.
+
+```python
+from jiraone.utils import DotNotation
+
+my_dict = {"name": "Prince"}
+dot = DotNotation(my_dict)
+print(dot.name)
+# result
+# Prince
+```
+* Added a security, code_of_conduct and contribution document files
+
 **Release 0.6.0** - 2022-03-11
 ### Patch update #80
 * Patch to `time_in_status()` fix on windows platform. A carriage return in `file_writer` throws a `TypeError: Expected 13 arguments, got 0`
