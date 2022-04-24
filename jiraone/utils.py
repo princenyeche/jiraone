@@ -80,8 +80,8 @@ class DotNotation(dict):
 
     def __expose_list__(self, value) -> None:
         """Defines a list value from a set of values."""
-        for key, value in enumerate(value):
-            if isinstance(value, dict):
-                value[key] = DotNotation(value)
-            elif isinstance(value, list):
-                self.__expose_list__(value)
+        for key, values in enumerate(value):
+            if isinstance(values, dict):
+                value[key] = DotNotation(values)
+            elif isinstance(values, list):
+                self.__expose_list__(values)
