@@ -35,6 +35,7 @@ print(LOGIN.get(endpoint.myself()).json())
 
 # saving to a database is similar
 # if using `flask` framework and `flask_sqlachemy` we can do the below
+# previous import statement
 current_user.oauth_token = LOGIN.save_oauth
 db.session.commit()
 ```
