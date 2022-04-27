@@ -198,3 +198,28 @@ Utils
 
 .. autoclass:: DotNotation
    :members:
+
+This ``DotNotation`` class provides the ability of using a dot notation on any dict object. Making it easier when working with dictionary objects.
+Examples below
+
+.. code-block:: python
+
+    from jiraone.utils import DotNotation
+    
+    # for dict operation
+    my_dict = {"name": "John", "unit": 7}
+    notation =  DotNotation(my_dict)
+    print(notation.name)
+    # result
+    # >>> John
+
+    # for list[dict] operations
+    my_dict = [{"name": "John", "unit": 7}, {"name": "Jane", "unit" 8}]
+    notation =  DotNotation(value=my_dict)
+    print(notation.value[0].name)
+    # result - access the list using index
+    # >>> John
+    
+.. note::
+
+   When loading a list of dictionary, please refer to the second example as shown on the above code. The dictionary needs to be assigned to a key (any naming convention will do) to get the value. Failure will result in an error.

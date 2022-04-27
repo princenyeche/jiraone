@@ -47,7 +47,7 @@ OR
 
 .. code-block:: bash
 
-    python3 - m pip install jiraone
+    python3 -m pip install jiraone
 
 
 

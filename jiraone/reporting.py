@@ -1544,7 +1544,7 @@ class NextGen(object):
     """
 
     def __init__(self):
-        """A constructor for the NextGen class object."""
+        """A initializer for the NextGen class object."""
         print("Hello")
 
 

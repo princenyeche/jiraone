@@ -7,12 +7,17 @@
 - alias to Endpoints
 - friendly name to PrettyPrint
 """
+import string
+import random
+import requests
+import sys
+import os
+import json
 from requests.auth import HTTPBasicAuth
 from typing import Any, Optional, Union, Dict, Mapping, List
 from pprint import PrettyPrinter
-import requests
-import sys
 from jiraone.exceptions import JiraOneErrors
+from jiraone.jira_logs import add_log
 
 
 class Credentials(object):
@@ -22,9 +27,27 @@ class Credentials(object):
     headers = None
     api = True
 
-    def __init__(self, user: str, password: str, url: str = None) -> None:
+    def __init__(self,
+                 user: str,
+                 password: str,
+                 url: str = None,
+                 oauth: dict = None,
+                 session: Any = None) -> None:
         """
         Instantiate the login.
+
+        .. versionadded:: 0.6.2
+
+        oauth argument - Allows the ability to use Atlassian OAuth 2.0 3LO to
+        authenticate to Jira. It supports various scopes configured from
+        your `Developer Console`_
+
+        session argument - Provides a means to access the request session.
+
+        save_oauth - Is a property value which provides a dictionary object of the current oauth token.
+
+        instance_name - Is an attribute of the connected instance using OAuth. Accessing this attribute
+        when OAuth isn't use returns ``None``.
 
         :param user:  A username or email address
 
@@ -32,12 +55,206 @@ class Credentials(object):
 
         :param url: A server url or cloud instance url
 
+        :param oauth: An OAuth authentication request.
+
+        :param session: Creates a context session
+
+        .. _Developer Console: https://developer.atlassian.com/console/myapps/
+
         :return: None
         """
         self.base_url = url
         self.user = user
         self.password = password
-        self.token_session(email=self.user, token=self.password)
+        self.oauth = oauth
+        self.instance_name = None
+        if session is None:
+            self.session = requests.Session()
+        else:
+            self.session = session
+
+        if self.user is not None and self.password is not None:
+            self.token_session(self.user, self.password)
+        elif oauth is not None:
+            self.oauth_session(self.oauth)
+
+    def oauth_session(self, oauth: dict) -> None:
+        """A session initializer to HTTP request using OAuth.
+
+        This method implements the ``Atlassian OAuth 2.0 3LO implmentation.
+        To reissue token, this method uses a refresh token session. This is possible,
+        if the scope in the ``callback_url`` contains ``offline_access``.
+
+        .. code-block:: python
+
+           client = {
+               "client_id": "JixkXXX",
+               "client_secret": "KmnlXXXX",
+               "name": "nexusfive",
+               "callback_url": "https://auth.atlassian.com/XXXXX"
+           }
+
+        A typical client object should look like the above. Which is passed to the ``LOGIN``
+        initializer as below. The ``name`` key is needed to specifically target an instance,
+        but it is optional if you have multiple instances that your app is connected to.
+        The ``client_id``, ``client_secret`` and ``callback_url`` are mandatory.
+
+        .. code-block:: python
+
+           from jiraone import LOGIN
+
+           # previous expression
+           LOGIN(oauth=client)
+
+        To store and reuse the oauth token, you will need to call the environmental variable.
+        This object is a string which can be stored to a database and pulled as an environmental
+        variable.
+
+        .. code-block:: python
+
+           import os
+
+           #  Example for storing the OAuth token
+           dumps = LOGIN.save_oauth # this is a property value which contains a dict of tokens
+           # As long as a handshake has been allowed with OAuth, the above should exist.
+           os.environ["JIRAONE_OAUTH"] = f"{json.dumps(dumps)}"
+           # with the above string, you can easily save your OAuth tokens into a DB or file.
+
+
+        :param oauth: A dictionary containing the client and secret information
+        and any other client information that can be represented within the data structure.
+
+        :return: None
+        """
+        if not isinstance(oauth, dict):
+            add_log("Wrong data type received for the oauth argument.", "error")
+            raise JiraOneErrors("wrong", "Excepting a dictionary object got {} instead."
+                                .format(type(oauth)))
+        if "client_id" not in oauth:
+            add_log("You seem to be missing a key in your oauth argument.", "debug")
+            raise JiraOneErrors("value", "You seem to be missing the `client_id` in your request.")
+        tokens = {}
+        oauth_data = {
+            "token_url": "https://auth.atlassian.com/oauth/token",
+            "cloud_url": "https://api.atlassian.com/oauth/token/accessible-resources",
+            "base_url": "https://api.atlassian.com/ex/jira/{cloud}"
+        }
+
+        def token_update(token) -> None:
+            """Updates the token to environment variable."""
+            self.session.auth = token
+            os.environ["JIRAONE_OAUTH"] = f"{json.dumps(token)}"
+
+        def get_cloud_id():
+            """Retrieve the cloud id of connected instance."""
+            cloud_id = requests.get(oauth_data["cloud_url"], headers=self.headers).json()
+            for ids in cloud_id:
+                if ids["name"] == oauth.get("name"):
+                    self.instance_name = ids["name"]
+                    LOGIN.base_url = oauth_data.get("base_url").format(cloud=ids["id"])
+                else:
+                    self.instance_name = cloud_id[0]["name"]
+                    LOGIN.base_url = oauth_data.get("base_url").format(cloud=cloud_id[0]["id"])
+            tokens.update({"base_url": LOGIN.base_url, "ins_name": self.instance_name})
+
+        if os.environ["JIRAONE_OAUTH"]:
+            sess = json.loads(os.environ["JIRAONE_OAUTH"])
+            oauth_data.update({"base_url": sess.pop("base_url")})
+            self.instance_name = sess.pop("ins_name")
+            tokens.update(sess)
+            body = {
+                "grant_type": "refresh_token",
+                "client_id": oauth.get("client_id"),
+                "client_secret": oauth.get("client_secret"),
+                "refresh_token": tokens.get("refresh_token")
+            }
+            get_token = requests.post(oauth_data["token_url"], json=body, headers=self.headers)
+            if get_token.status_code < 300:
+                access_token = get_token.json()["access_token"]
+                refresh = get_token.json()["refresh_token"]
+                expires = get_token.json()["expires_in"]
+                scope = get_token.json()["scope"]
+                token_type = get_token.json()["token_type"]
+                extra = {
+                    "type": token_type,
+                    "token": access_token
+                }
+                tokens.update({
+                    "access_token": access_token,
+                    "expires_in": expires,
+                    "scope": scope,
+                    "refresh_token": refresh
+                })
+                self.__token_only_session__(extra)
+                get_cloud_id()
+            else:
+                add_log("Token refresh has failed to revalidate", "debug")
+                raise JiraOneErrors("login", "Refreshing token failed with code {}"
+                                    .format(get_token.status_code))
+
+        def generate_state(i):
+            """Generates a random key for state variable."""
+            char = string.ascii_lowercase
+            return "".join(random.choice(char) for _ in range(i))
+
+        state = generate_state(12)
+        if tokens:
+            LOGIN.base_url = oauth_data.get("base_url")
+        if not tokens:
+            callback = oauth.get("callback_url").format(YOUR_USER_BOUND_VALUE=state)
+            print("Please click or copy the link into your browser and hit Enter!")
+            print(callback)
+            redirect_url = input("Enter the redirect url: \n")
+            code = redirect_url.split("?")[1].split("=")[1].split("&")[0]
+            body = {
+                "grant_type": "authorization_code",
+                "client_id": oauth.get("client_id"),
+                "client_secret": oauth.get("client_secret"),
+                "code": code,
+                "redirect_uri": redirect_url
+            }
+            get_token = requests.post(oauth_data["token_url"], json=body, headers=self.headers)
+            if get_token.status_code < 300:
+                access_token = get_token.json()["access_token"]
+                refresh = get_token.json()["refresh_token"]
+                expires = get_token.json()["expires_in"]
+                scope = get_token.json()["scope"]
+                token_type = get_token.json()["token_type"]
+                extra = {
+                    "type": token_type,
+                    "token": access_token
+                }
+                tokens.update({
+                    "access_token": access_token,
+                    "expires_in": expires,
+                    "scope": scope,
+                    "token_type": token_type,
+                    "refresh_token": refresh
+                })
+                self.__token_only_session__(extra)
+                get_cloud_id()
+            else:
+                add_log("The connection using OAuth was unable to connect, please "
+                        "check your client key or client secret", "debug")
+                raise JiraOneErrors("login", "Could not establish the OAuth connection.")
+
+        print("Connected to instance:", self.instance_name)
+        token_update(tokens)
+
+    @property
+    def save_oauth(self):
+        """Defines the OAuth data to save."""
+        return os.environ["JIRAONE_OAUTH"]
+
+    def __token_only_session__(self, token: dict) -> None:
+        """Creates a token bearer session.
+
+        :param token: A dict containing token info.
+
+        :return: None
+        """
+        self.headers = {"Content-Type": "application/json"}
+        self.headers.update({"Authorization": "{} {}".format(token["type"], token["token"])})
 
     # produce a session for the script and save the session
     def token_session(self, email: str = None, token: str = None) -> None:
@@ -67,7 +284,8 @@ class Credentials(object):
 
         :return: A HTTP response
         """
-        response = requests.get(url, *args, auth=self.auth_request, json=payload, headers=self.headers, **kwargs)
+        response = requests.get(url, *args, auth=self.auth_request,
+                                json=payload, headers=self.headers, **kwargs)
         return response
 
     def post(self, url, *args, payload=None, **kwargs) -> requests.Response:
@@ -82,9 +300,11 @@ class Credentials(object):
 
         :param kwargs: Additional keyword arguments to ``requests`` module
 
+
         :return: A HTTP response
         """
-        response = requests.post(url, *args, auth=self.auth_request, json=payload, headers=self.headers, **kwargs)
+        response = requests.post(url, *args, auth=self.auth_request,
+                                 json=payload, headers=self.headers, **kwargs)
         return response
 
     def put(self, url, *args, payload=None, **kwargs) -> requests.Response:
@@ -101,7 +321,8 @@ class Credentials(object):
 
         :return: A HTTP response
         """
-        response = requests.put(url, *args, auth=self.auth_request, json=payload, headers=self.headers, **kwargs)
+        response = requests.put(url, *args, auth=self.auth_request,
+                                json=payload, headers=self.headers, **kwargs)
         return response
 
     def delete(self, url, **kwargs) -> requests.Response:
@@ -114,7 +335,8 @@ class Credentials(object):
 
         :return: A HTTP response
         """
-        response = requests.delete(url, auth=self.auth_request, headers=self.headers, **kwargs)
+        response = requests.delete(url, auth=self.auth_request,
+                                   headers=self.headers, **kwargs)
         return response
 
 
@@ -154,9 +376,19 @@ class InitProcess(Credentials):
     Object values are entered directly when called because of the __call__
     dunder method."""
 
-    def __init__(self, user=None, password=None, url=None) -> None:
+    def __init__(self, user=None,
+                 password=None,
+                 url=None,
+                 oauth=None,
+                 session=None) -> None:
         """
         A Call to the Credential Class.
+
+        .. versionadded:: 0.6.2
+
+        oauth argument added to support OAuth 2.0
+
+        session argument added to create a session context
 
         :param user: A username or email address
 
@@ -164,9 +396,15 @@ class InitProcess(Credentials):
 
         :param url: A valid URL
 
+        :param oauth: An oAuth session
+
+        :param session: Creates a context session
+
         :return: None
         """
-        super(InitProcess, self).__init__(user=user, password=password, url=url)
+        super(InitProcess, self).__init__(user=user, password=password,
+                                          url=url, oauth=oauth,
+                                          session=session)
 
     def __call__(self, *args, **kwargs):
         """Help to make our class callable."""
@@ -215,9 +453,10 @@ class EndPoints:
     def get_projects(cls, *args: Any, start_at=0, max_results=50) -> str:
         """Return a list of Projects available on an Instance
 
-        How to use this endpoint /rest/api/3/project/search  is mentioned here
-        https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/
-           #api-rest-api-3-project-search-get
+        How to use this endpoint ``/rest/api/3/project/search``  is mentioned
+`here
+<https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get>`_
+
 
         :param args: Query Parameters that are useful mostly.
 
@@ -240,6 +479,8 @@ class EndPoints:
         :param start_at:  defaults as keyword args,example startAt=0
 
         :param max_results: defaults as keyword args, example maxResults=50
+
+.. _here:
 
         :return: A string of the url
         """
@@ -355,7 +596,10 @@ class EndPoints:
         return "{}/rest/api/{}/priority".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def search_all_notification_schemes(cls, query: Optional[str] = None, start_at=0, max_results=50) -> str:
+    def search_all_notification_schemes(cls,
+                                        query: Optional[str] = None,
+                                        start_at=0,
+                                        max_results=50) -> str:
         """Returns a paginated list of notification schemes ordered by display name.
 
         :param query:  1st String value for expand= {all, field, group, user, projectRole, notificationSchemeEvents}
@@ -378,8 +622,11 @@ class EndPoints:
                                                                                        start_at, max_results)
 
     @classmethod
-    def get_field(cls, query: Optional[str] = None, start_at: int = 0, max_results: int = 50, system: str = None) \
-            -> str:
+    def get_field(cls,
+                  query: Optional[str] = None,
+                  start_at: int = 0,
+                  max_results: int = 50,
+                  system: str = None) -> str:
         """Returns a paginated list of fields for Classic Jira projects. The list can include:
 
         *  all fields.
@@ -448,7 +695,10 @@ class EndPoints:
         return "{}/rest/api/{}/attachment/{}".format(LOGIN.base_url, query, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def issue_attachments(cls, id_or_key: str = None, attach_id: str = None, uri: Optional[str] = None,
+    def issue_attachments(cls,
+                          id_or_key: str = None,
+                          attach_id: str = None,
+                          uri: Optional[str] = None,
                           query: Optional[str] = None) -> str:
         """Returns the attachment content.
 
@@ -464,9 +714,9 @@ class EndPoints:
 
                 attach_id required (id of the attachment), datatype -> string
 
-               :request GET:  - Get all metadata for an expanded attachment
+       :request GET:  - Get all metadata for an expanded attachment
 
-               :param query: datatype -> string
+       :param query: datatype -> string
 
                *available options*
 
@@ -478,9 +728,9 @@ class EndPoints:
                      For example, if the attachment is a ZIP archive, then information about the files in the
                      archive is returned. Currently, only the ZIP archive format is supported.
 
-               :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+     :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
 
-        :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+     :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
 
         :param id_or_key: required, datatype -> string. The ID or key of the issue that attachments are added to.
 
@@ -649,7 +899,7 @@ class EndPoints:
 
         :param query: has default value of 0
 
-               maxResults=25 (default)
+           maxResults=25 (default)
 
         :return: A string of the url
         """
@@ -727,6 +977,9 @@ class EndPoints:
     def create_board(cls) -> str:
         """Creates a new board. Board name, type and filter ID is required.
 
+        :request GET: returns a list of boards on the instance that's accessible by
+        you.
+
         :request POST:
 
         :body param: name, type, datatype -> string
@@ -772,7 +1025,11 @@ class EndPoints:
         return "{}/rest/agile/1.0/board/{}".format(LOGIN.base_url, board_id)
 
     @classmethod
-    def get_issues_on_backlog(cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50) -> str:
+    def get_issues_on_backlog(cls,
+                              board_id,
+                              query: str = None,
+                              start_at: int = 0,
+                              max_results: int = 50) -> str:
         """Returns all issues from the board's backlog, for the given board ID.
 
         This only includes issues that the user has permission to view.
@@ -804,7 +1061,11 @@ class EndPoints:
                 .format(LOGIN.base_url, board_id, start_at, max_results)
 
     @classmethod
-    def get_issues_on_board(cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50) -> str:
+    def get_issues_on_board(cls,
+                            board_id,
+                            query: str = None,
+                            start_at: int = 0,
+                            max_results: int = 50) -> str:
         """Returns all issues from a board, for a given board ID.
 
         This only includes issues that the user has permission to view.
@@ -902,7 +1163,11 @@ class EndPoints:
         return "{}/rest/agile/1.0/board/{}/quickfilter/{}".format(LOGIN.base_url, board_id, quick_filter_id)
 
     @classmethod
-    def get_all_sprints(cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50) -> str:
+    def get_all_sprints(cls,
+                        board_id,
+                        query: str = None,
+                        start_at: int = 0,
+                        max_results: int = 50) -> str:
         """Get all Sprint on a Board.
 
         :param board_id: A board id
@@ -1144,7 +1409,11 @@ class EndPoints:
         return "{}/rest/servicedeskapi/organization/{}/user".format(LOGIN.base_url, org_id)
 
     @classmethod
-    def get_sd_organizations(cls, service_desk_id, start: int = 0, limit: int = 50, account_id: str = None) -> str:
+    def get_sd_organizations(cls,
+                             service_desk_id,
+                             start: int = 0,
+                             limit: int = 50,
+                             account_id: str = None) -> str:
         """This method returns a list of all organizations associated with a service desk.
 
         :param service_desk_id: required
@@ -1158,8 +1427,8 @@ class EndPoints:
         :return: A string of the url
         """
         if account_id is not None:
-            return "{}/rest/servicedeskapi/servicedesk/{}/organization?{}&start={}&limit={}" \
-                .format(LOGIN.base_url, account_id, service_desk_id, start, limit)
+            return "{}/rest/servicedeskapi/servicedesk/{}/organization?accountId={}&start={}&limit={}" \
+                .format(LOGIN.base_url, service_desk_id, account_id, start, limit)
         else:
             return "{}/rest/servicedeskapi/servicedesk/{}/organization?start={}&limit={}" \
                 .format(LOGIN.base_url, service_desk_id, start, limit)
@@ -1202,7 +1471,11 @@ class EndPoints:
     # SERVICEDESK -> API specific to servicedesk
     ############################################
     @classmethod
-    def get_customers(cls, service_desk_id, start: int = 0, limit: int = 50, query: str = None) -> str:
+    def get_customers(cls,
+                      service_desk_id,
+                      start: int = 0,
+                      limit: int = 50,
+                      query: str = None) -> str:
         """This method returns a list of the customers on a service desk.
 
         The returned list of customers can be filtered using the query parameter.
@@ -1237,7 +1510,7 @@ class EndPoints:
 
         :param service_desk_id: required
 
-               :body param: usernames, accountIds,  datatype -> Array<string>
+        :body param: usernames, accountIds,  datatype -> Array<string>
 
 
         :return: A string of the url
@@ -1255,7 +1528,7 @@ class EndPoints:
 
         :param service_desk_id: required
 
-               :body param: usernames, accountIds,  datatype -> Array<string>
+        :body param: usernames, accountIds,  datatype -> Array<string>
 
         :return: A string of the url
                 """
@@ -1271,19 +1544,19 @@ class EndPoints:
         :request POST: - Creates a user. This resource is retained for legacy compatibility.
                         As soon as a more suitable alternative is available this resource will be deprecated
 
-                        :body param: key, name, password, emailAddress, displayName, notification, datatypes -> string
-                                    : applicationKeys, datatype -> Array<string>
-                                    : Additional Properties, datatypes -> Any
-                        returns 201 for successful creation
+        :body param: key, name, password, emailAddress, displayName, notification, datatypes -> string
+                    : applicationKeys, datatype -> Array<string>
+                    : Additional Properties, datatypes -> Any
+                    returns 201 for successful creation
 
-                :request DELETE: - Deletes a user.
+        :request DELETE: - Deletes a user.
 
-                          :body param: accountId, datatype -> string required
+        :body param: accountId, datatype -> string required
                           returns 204 for successful deletion
 
-                :request GET: - Returns a user.
+        :request GET: - Returns a user.
 
-                       :body param: accountId, expand, datatypes -> string
+        :body param: accountId, expand, datatypes -> string
 
         :param account_id: - string for a user account
 
@@ -1300,16 +1573,17 @@ class EndPoints:
         """Used for Creation and deletion of Jira groups.
 
         :request  POST: - Creates a group.
-                     :body param: name required, datatype -> string
-                     returns 201 if successful
 
-                :request DELETE: - Deletes a group.
+         :body param: name required, datatype -> string
+            returns 201 if successful
 
-                     The group to transfer restrictions to. Only comments and worklogs are transferred.
-                     If restrictions are not transferred, comments and worklogs are inaccessible after the deletion.
+        :request DELETE: - Deletes a group.
 
-                     :query param: group_name required, swap_group,  datatype -> string
-                     returns 200 if successful
+         The group to transfer restrictions to. Only comments and worklogs are transferred.
+           If restrictions are not transferred, comments and worklogs are inaccessible after the deletion.
+
+         :query param: group_name required, swap_group,  datatype -> string
+             returns 200 if successful
 
         :param group_name: name of group
 
@@ -1333,14 +1607,14 @@ class EndPoints:
 
         :request POST: - Adds a user to a group.
 
-                     :query param: groupname required, datatype -> string
+        :query param: groupname required, datatype -> string
 
-                     :body param: name, accountId, datatype -> string
+        :body param: name, accountId, datatype -> string
                      returns 201 if successful
 
-                :request DELETE: - Removes a user from a group.
+        :request DELETE: - Removes a user from a group.
 
-                     :query param: group_name required, account_id required,  datatype -> string
+        :query param: group_name required, account_id required,  datatype -> string
                      returns 200 if successful
 
        :param group_name: name of group
@@ -1363,7 +1637,7 @@ class EndPoints:
         """Create, delete, update, archive, get status.
 
         :request POST: - for project creations.
-                         The project types are available according to the installed Jira features as follows:
+                         The project types are available according to the installed Jira features as `follows`_ :
 
         :param id_or_key: required
 
@@ -1380,32 +1654,32 @@ class EndPoints:
 
                          * statuses - Returns the valid statuses for a project.
 
-        see:https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post
+ _follows: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post
 
-                  :body param: projectTypeKey and projectTemplateKey required, datatype -> string
-                             : name, key, description, leadAccountId, url, assigneeType, datatype -> string
-                             : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
-                              datatype -> integer
+      :body param: projectTypeKey and projectTemplateKey required, datatype -> string
+            : name, key, description, leadAccountId, url, assigneeType, datatype -> string
+            : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
+             datatype -> integer
 
-                :request GET: - Returns the project details for a project.
-                This operation can be accessed anonymously.
+      :request GET: - Returns the project details for a project.
+        This operation can be accessed anonymously.
 
-                     :query param: expand, datatype -> string
+      :query param: expand, datatype -> string
 
-                                  properties, datatype -> Array<string>
+       properties, datatype -> Array<string>
 
-               :request PUT: - Updates the project details for a project.
+       :request PUT: - Updates the project details for a project.
 
         :param query:  expand, datatype -> string
 
-                  :body param: projectTypeKey and projectTemplateKey required, datatype -> string
-                             : name, key, description, leadAccountId, url, assigneeType, datatype -> string
-                             : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
-                              datatype -> integer
+        :body param: projectTypeKey and projectTemplateKey required, datatype -> string
+           : name, key, description, leadAccountId, url, assigneeType, datatype -> string
+           : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
+            datatype -> integer
 
-              :request DELETE: - Deletes a project.
+        :request DELETE: - Deletes a project.
 
-                   :param enable_undo:  datatype -> boolean
+        :param enable_undo:  datatype -> boolean
 
         :return: A string of the url
         """
@@ -1426,8 +1700,11 @@ class EndPoints:
                                                               id_or_key)
 
     @classmethod
-    def issues(cls, issue_key_or_id: Optional[Any] = None, query: Optional[Any] = None,
-               uri: Optional[str] = None, event: bool = False) -> str:
+    def issues(cls,
+               issue_key_or_id: Optional[Any] = None,
+               query: Optional[Any] = None,
+               uri: Optional[str] = None,
+               event: bool = False) -> str:
         """Creates issues, delete issues,  bulk create issue, transitions.
 
         A transition may be applied, to move the issue or subtask to a workflow step other than
@@ -1439,9 +1716,9 @@ class EndPoints:
 
                    * available options [bulk, createmeta]
 
-                   * e.g. endpoint: /rest/api/3/issue/bulk
+                   * e.g. endpoint: ``/rest/api/3/issue/bulk``
 
-                   * e.g. endpoint /rest/api/3/issue/createmeta
+                   * e.g. endpoint ``/rest/api/3/issue/createmeta``
 
         :param query: datatype -> string
 
@@ -1456,57 +1733,56 @@ class EndPoints:
 
         :param issue_key_or_id:
 
-        :param query: /rest/api/3/issue/{issueIdOrKey}/changelog
+        :param query: ``/rest/api/3/issue/{issueIdOrKey}/changelog``
 
         :param issue_key_or_id: -> string or integer
 
                  * The body parameter has to be a bundled data that should be posted to the desired endpoint.
 
 
-                   :query param: updateHistory, datatype -> boolean
+        :query param: updateHistory, datatype -> boolean
 
-                   :body param: transition, fields, update, historyMetadata, datatype -> object
+        :body param: transition, fields, update, historyMetadata, datatype -> object
                               : properties, datatype -> Array<EntityProperty>
                               : Additional Properties, datatype -> Any
 
-                  :request POST:  Bulk create issue
+        :request POST:  Bulk create issue
 
-                      Creates issues and, where the option to create subtasks is enabled in Jira, subtasks.
+        Creates issues and, where the option to create subtasks is enabled in Jira, subtasks.
 
-                      :body param: issueUpdates, datatype -> Array<IssueUpdateDetails>
+        :body param: issueUpdates, datatype -> Array<IssueUpdateDetails>
                                  : Additional Properties, datatype -> Any
 
-                  :request GET: - Create issue metadata
+        :request GET: - Create issue metadata
 
-                  Returns details of projects, issue types within projects, and, when requested,
-                  the create screen fields for each issue type for the user.
+        Returns details of projects, issue types within projects, and, when requested,
+        the create screen fields for each issue type for the user.
 
-                  :query param: projectIds, projectKeys, issuetypeIds, issuetypeNames, datatype -> Array<string>
-                              : expand, datatype -> string
+        :query param: projectIds, projectKeys, issuetypeIds, issuetypeNames, datatype -> Array<string>
+           : expand, datatype -> string
 
-                  :request GET:  Get issue. Return the details of an issue
-                  endpoint  /rest/api/3/issue/{issueIdOrKey}
+        :request GET:  Get issue. Return the details of an issue
+                  endpoint  ``/rest/api/3/issue/{issueIdOrKey}``
 
-                  :query param: issue_key_or_id required
-                               fields, properties, datatype -> Array<string>
-                               fieldsByKeys, updateHistory,  datatype -> boolean
-                               expand, datatype -> string
+        :query param: issue_key_or_id required
+             fields, properties, datatype -> Array<string>
+             fieldsByKeys, updateHistory,  datatype -> boolean
+             expand, datatype -> string
 
 
-                  :request PUT: - Edits an issue. A transition may be applied and issue properties
-                  updated as part of the edit. endpoint  /rest/api/3/issue/{issueIdOrKey}
+        :request PUT: - Edits an issue. A transition may be applied and issue properties
+          updated as part of the edit. endpoint  /rest/api/3/issue/{issueIdOrKey}
 
-                  :query param: issue_key_or_id required
-                              : notifyUsers, overrideScreenSecurity, overrideEditableFlag, datatype -> boolean
+        :query param: issue_key_or_id required
+              : notifyUsers, overrideScreenSecurity, overrideEditableFlag, datatype -> boolean
 
-                  :body param: transition, fields, update, historyMetadata, properties, Additional Properties,
-                              datatype -> object
+        :body param: transition, fields, update, historyMetadata, properties, Additional Properties,
+                datatype -> object
 
-                  :request DELETE: Deletes an issue.
-                                     endpoint  /rest/api/3/issue/{issueIdOrKey}
+        :request DELETE: Deletes an issue. endpoint  ``/rest/api/3/issue/{issueIdOrKey}``
 
-                  :query param: issue_key_or_id required
-                              : deleteSubtasks, datatype -> string, values = (true | false)
+        :query param: issue_key_or_id required
+            : deleteSubtasks, datatype -> string, values = (true | false)
 
         :return: A string of the url
         """
@@ -1529,15 +1805,21 @@ class EndPoints:
                 return "{}/rest/api/{}/issue".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
-    def comment(cls, query: str = None, key_or_id: str = None, start_at: int = 0, max_results: int = 50,
-                ids: int = None, event: bool = False) -> str:
+    def comment(cls,
+                query: str = None,
+                key_or_id: str = None,
+                start_at: int = 0,
+                max_results: int = 50,
+                ids: int = None,
+                event: bool = False) -> str:
         """Create, update, delete or get a comment.
 
-        :request POST: - Returns a paginated list of just the comments for a list of comments specified by comment IDs.
+        :request POST: - Returns a paginated list of just the comments for a list
+         of comments specified by comment IDs.
 
         :param query: datatype -> string
 
-            :query param: expand datatype -> string
+        :query param: expand datatype -> string
 
                available options below
 
@@ -1545,9 +1827,9 @@ class EndPoints:
 
                properties Returns the comment's properties.
 
-           :body param - ids: datatype -> Array<integer>
+        :body param - ids: datatype -> Array<integer>
 
-              The list of comment IDs. A maximum of 1000 IDs can be specified.
+           The list of comment IDs. A maximum of 1000 IDs can be specified.
 
         :request GET: - Returns all comments for an issue.
 
@@ -1557,51 +1839,51 @@ class EndPoints:
 
              :param max_results: datatyoe -> integer defaults to 50
 
-             :query param: orderBy datatype -> string
+        :query param: orderBy datatype -> string
                    Valid values: created, -created, +created
 
         :request POST:  Adds a comment to an issue.
 
               key_or_id required
 
-              :param event datatype -> boolean
-                     defaults to false, set to true to add a comment to an issue.
+         :param event datatype -> boolean
+             defaults to false, set to true to add a comment to an issue.
 
-                        :query param: expand
+            :query param: expand
 
-                        :body param:
+            :body param:
 
-                         body datatype -> Anything
-                        visibility -> The group or role to which this comment is visible. Optional on create and update.
-                            properties datatype -> Array<EntityProperty>
+                body datatype -> Anything
+                visibility -> The group or role to which this comment is visible. Optional on create and update.
+                properties datatype -> Array<EntityProperty>
 
-                         A list of comment properties. Optional on create and update.
-                        Additional Properties datatype ->anything
+                A list of comment properties. Optional on create and update.
+                Additional Properties datatype ->anything
 
         :request GET: - Returns a comment.
 
-                :param ids: datatype integers - The ID of the comment.
+          :param ids: datatype integers - The ID of the comment.
 
-                :query param: expand
+          :query param: expand
 
         :request PUT: - Updates a comment.
 
-               key_or_id required
-               ids The ID of the comment.
+         key_or_id required
+          ids The ID of the comment.
 
-               :query param: expand
+          :query param: expand
 
-               :body param:
-                   body datatype -> Anything
-                   visibility -> The group or role to which this comment is visible. Optional on create and update.
+          :body param:
+                body datatype -> Anything
+                visibility -> The group or role to which this comment is visible. Optional on create and update.
                    properties datatype -> Array<EntityProperty>
                          A list of comment properties. Optional on create and update.
                    Additional Properties datatype ->anything
 
         :request DELETE: - Deletes a comment.
 
-                key_or_id required
-                ids required
+         key_or_id required
+           ids required
 
 
         :return: A string of the url
@@ -2232,8 +2514,10 @@ class Field(object):
             return var
 
     @staticmethod
-    def extract_issue_field_options(key_or_id: Union[str, int] = None, search: Dict = None,
-                                    amend: str = None, data: Any = Any) -> Any:
+    def extract_issue_field_options(key_or_id: Union[str, int] = None,
+                                    search: Dict = None,
+                                    amend: str = None,
+                                    data: Any = Any) -> Any:
         """Get the option from an issue.
 
         Use this method to extract and amend changes to system fields such as
