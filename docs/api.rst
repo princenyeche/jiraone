@@ -45,10 +45,11 @@ LOGIN
 --------
 
 
-This is a call to the `Credentials` class and the accepted parameters are
+This is a call to the ``Credentials`` class and the accepted parameters are
   * user - string
   * password - string
   * url - string 
+  * oauth - dict - An OAuth 2.0 3LO implementation
   
 Example usage:
 
@@ -76,6 +77,12 @@ Example usage:
 
 * ``LOGIN.auth_requests`` 
 
+* ``LOGIN.save_oauth`` Is a property value of a saved OAuth data session
+
+* ``LOGIN.instance_name`` represents the name of an instance when using OAuth
+
+* ``LOGIN.session`` represents the session from the initialization
+
 **Methods**, available to the LOGIN alias, it returns a response object.
 
 The keyword argument of payload can be any json object you want to pass to the method. Subsequently, you can pass other keyword arguments
@@ -90,13 +97,22 @@ such as ``files``, ``data`` etc.
 * ``LOGIN.put(url, *args, payload=None, **kwargs)``
 
 
+.. note::
+ 
+  If you want to save the OAuth data session, you will need to call the ``LOGIN.save_oauth`` property. 
+  This property is set once an OAuth authentication  has been initialized. If an OAuth session is not created, the value won't return anything.
+  
+  Also, if you want to save the OAuth data session into a ``DB`` of ``file``, you can call this property value ``LOGIN.save_oauth``. 
+  To access the saved oauth session, please see the example used by the oauth method. You will need to push the data to the environment variabled called ``JIRAONE_OAUTH``.
+
+
 
 .. _echo:
 echo
 --------
 .. autofunction:: echo
 
-This is a function which uses a copy of the PrettyPrint Class used to nicely format a represented printed result. To call, simply use the function ``echo``.
+This is a function which uses a copy of the PrettyPrint class used to nicely format a represented printed result. To call, simply use the function ``echo``.
 It accepts one required parameter, which can be any object. 
 Example usage:
 
@@ -579,8 +595,12 @@ Enables the specified user account.The permission to make use of this resource i
  # output
  # <Response 204>
   
-                
-
+ 
+.. warning::
+ 
+  The token used by the ``manage`` API is completely different from the one used with the basic authentication method. 
+  Therefore, ensure that the right token is used when making either calls.
+  
 
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
 
