@@ -1,5 +1,48 @@
 # Jira one change log
 
+
+**Release 0.6.2** - 2022-04-27
+### Patch update #84
+* Added a new authentication method using OAuth 2.0 (3LO)
+  * With this new method, you can create and add scope to your oauth connection.
+  * You will need to either call or set the environment variable `JIRAONE_OAUTH` that stores the OAuth data session.
+  * Please note that the `LOGIN.save_oauth` is stored as a string. However, the underlying data is a dictionary which is converted by the oauth method used for authentication.
+  * Without doing the below, you will need to re-authenticate every session with your OAuth 2.0 app.
+
+```python
+from jiraone import LOGIN
+import json
+
+client = {
+               "client_id": "JixkXXX",
+               "client_secret": "KmnlXXXX",
+               "name": "nexusfive",
+               "callback_url": "https://auth.atlassian.com/XXXXX",
+           }
+# saving the oauth session data locally
+file = "DATA/cred.json"
+dumps = None
+if os.path.isfile(file):
+    dumps = json.load(open(file))
+os.environ["JIRAONE_OAUTH"] = f"{dumps}"
+LOGIN(oauth=client)
+# LOGIN.save_oauth is a property value, always available
+# after an OAuth session is initialized
+json.dump(LOGIN.save_oauth, 
+          open(file, encoding="utf-8", mode="w+"), 
+          indent=4)
+print(LOGIN.get(endpoint.myself()).json())
+
+# saving to a database is similar
+# if using `flask` framework and `flask_sqlachemy` we can do the below
+current_user.oauth_token = LOGIN.save_oauth
+db.session.commit()
+```
+
+* Corrected dot notation method and changed `range` to `enumerate`
+* Made documentation update
+
+
 **Release 0.6.1** - 2022-04-02
 ### Minor update #83
 * Added a correction to #82 with file_writer() to add argument newline when on windows if not on file mode
