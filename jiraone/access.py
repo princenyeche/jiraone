@@ -201,6 +201,9 @@ class Credentials(object):
         if tokens:
             LOGIN.base_url = oauth_data.get("base_url")
         if not tokens:
+            # add an offline_access to the scope, so we can get a refresh token
+            call_back = oauth.get("callback_url").replace("scope=", "scope=offline_access%20", 1)
+            oauth.update({"callback_url": call_back})
             callback = oauth.get("callback_url").format(YOUR_USER_BOUND_VALUE=state)
             print("Please click or copy the link into your browser and hit Enter!")
             print(callback)
