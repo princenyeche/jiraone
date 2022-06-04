@@ -167,6 +167,7 @@ This function helps in creating a csv file or a normal file. It comes with the b
   * ``mode``: string - file mode, available options ["a", "w", "a+", "w+", "wb"], by default the mode is set to "a+".
   * ``content``: string - outputs the file in bytes.
   * ``delimiter``: string - a file separator. Defaults to ","
+  * ``encoding``: string - a string of character encoding. Defaults to "utf-8"
  Example usage:
  
 .. code-block:: python
