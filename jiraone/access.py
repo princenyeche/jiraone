@@ -18,6 +18,7 @@ from typing import Any, Optional, Union, Dict, Mapping, List
 from pprint import PrettyPrinter
 from jiraone.exceptions import JiraOneErrors
 from jiraone.jira_logs import add_log
+from collections import deque
 
 
 class Credentials(object):
@@ -81,7 +82,7 @@ class Credentials(object):
     def oauth_session(self, oauth: dict) -> None:
         """A session initializer to HTTP request using OAuth.
 
-        This method implements the ``Atlassian OAuth 2.0 3LO implmentation.
+        This method implements the ``Atlassian OAuth 2.0 3LO implementation.
         To reissue token, this method uses a refresh token session. This is possible,
         if the scope in the ``callback_url`` contains ``offline_access``.
 
@@ -121,8 +122,9 @@ class Credentials(object):
            # with the above string, you can easily save your OAuth tokens into a DB or file.
 
 
-        :param oauth: A dictionary containing the client and secret information
-        and any other client information that can be represented within the data structure.
+        :param oauth: A dictionary containing the client and secret information and any
+                  other client information that can be represented within the data structure.
+
 
         :return: None
         """
@@ -713,7 +715,8 @@ class EndPoints:
         Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
         :param attach_id: required (id of the attachment), datatype -> string
-                :request DELETE: - Deletes an attachment from an issue.
+
+        :request DELETE: - Deletes an attachment from an issue.
 
                 attach_id required (id of the attachment), datatype -> string
 
@@ -721,19 +724,19 @@ class EndPoints:
 
        :param query: datatype -> string
 
-               *available options*
+           *available options*
 
-                * expand/human -Returns the metadata for the contents of an attachment, if it is an archive,
+           * expand/human -Returns the metadata for the contents of an attachment, if it is an archive,
                      and metadata for the attachment itself. For example, if the attachment is a ZIP archive,
                      then information about the files in the archive is returned and metadata for the ZIP archive.
 
-                * expand/raw - Returns the metadata for the contents of an attachment, if it is an archive.
+           * expand/raw - Returns the metadata for the contents of an attachment, if it is an archive.
                      For example, if the attachment is a ZIP archive, then information about the files in the
                      archive is returned. Currently, only the ZIP archive format is supported.
 
-     :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+       :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
 
-     :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+        :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
 
         :param id_or_key: required, datatype -> string. The ID or key of the issue that attachments are added to.
 
@@ -1640,7 +1643,8 @@ class EndPoints:
         """Create, delete, update, archive, get status.
 
         :request POST: - for project creations.
-                         The project types are available according to the installed Jira features as `follows`_ :
+        The project types are available according to the installed Jira features as `follows
+        <https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post>`_
 
         :param id_or_key: required
 
@@ -1657,7 +1661,7 @@ class EndPoints:
 
                          * statuses - Returns the valid statuses for a project.
 
- _follows: https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post
+ .. _follows:
 
       :body param: projectTypeKey and projectTemplateKey required, datatype -> string
             : name, key, description, leadAccountId, url, assigneeType, datatype -> string
@@ -2611,17 +2615,6 @@ class Field(object):
             if isinstance(i, KeyError):
                 return f"<Error: KeyError on {i} - options: It seems that the field '{name}' " \
                        f"doesn't exist within {keys}>"
-
-    def get_all_field_value(self, field_set: Mapping, key: Union[str, int]) -> Any:
-        """Return all the field present on an issue.
-
-        :param field_set:
-
-        :param key:
-
-        :return: Any
-        """
-        pass
 
 
 def echo(obj) -> Any:
