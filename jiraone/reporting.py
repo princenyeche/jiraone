@@ -837,7 +837,7 @@ class Projects:
         attempt: int = 1
         _fix_status_: bool = True if "fix" in kwargs else False
 
-        def blank_data(key_val: str, sums: str, item_val: Any, name_: str, once=None) -> None:
+        def blank_data(key_val: str, sums: str, item_val: Any, name_: str) -> None:
             """
             Write the created date of an issue to a file.
             This is used for ``time_in_status()`` to accurately calculate the difference in status time.
@@ -849,8 +849,6 @@ class Projects:
             :param item_val: An dictionary of values
 
             :param name_: displayName of the user
-
-            :param once: Check for status once.
 
             :return: None
             """
