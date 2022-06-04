@@ -14,7 +14,7 @@ import sys
 import os
 import json
 from requests.auth import HTTPBasicAuth
-from typing import Any, Optional, Union, Dict, Mapping, List
+from typing import Any, Optional, Union, Dict, List
 from pprint import PrettyPrinter
 from jiraone.exceptions import JiraOneErrors
 from jiraone.jira_logs import add_log
