@@ -13,7 +13,6 @@ import csv
 import sys
 import os
 import re
-import asyncio
 
 
 class Projects:
@@ -861,16 +860,12 @@ class Projects:
                 create = LOGIN.get(endpoint.issues(key_val))
                 if create.status_code < 300:
                     adjust = create.json().get("fields").get("created")
-                    raw_ = ([key_val, sums, name_, adjust, "", item_val.field,
-                             item_val.from_, item_val.fromString, item_val.to, item_val.toString] if LOGIN.api is
-                                                                                                     False else [
+                    raw_ = [key_val, sums, name_, adjust, "", item_val.field,
+                            item_val.from_, item_val.fromString, item_val.to, item_val.toString] if LOGIN.api is \
+                                                                                                    False else [
                         key_val, sums, name_, adjust, "", item_val.field,
                         item_val.field_id, item_val.from_, item_val.fromString, item_val.to, item_val.toString,
-                        item_val.tmpFromAccountId, item_val.tmpToAccountId]) if once is None else \
-                        [key_val, sums, adjust, "", item_val[0], item_val[1], item_val[2], item_val[3], item_val[4]] \
-                            if LOGIN.api is False else [key_val, sums, name_, adjust, "", item_val[0],
-                                                        item_val[1], item_val[2], item_val[3], item_val[4], item_val[5],
-                                                        item_val[6], item_val[7]]
+                        item_val.tmpFromAccountId, item_val.tmpToAccountId]
                     file_writer(folder, file, data=raw_, mode="a+")
                     attempt += 2
 
@@ -979,18 +974,6 @@ class Projects:
                                 else [_field, _field_type, _field_id, _from, _fromString, _to, _toString,
                                       _tmpFromAccountId, _tmpToAccountId]
                             item_list.append(raw)
-
-                        # if field_name is not None and attempt == 1 and len(item_list) == 0:
-                        #     # Fix to get the time_in_status when there's no status field in history.
-                        #     _status = LOGIN.get(endpoint.issues(_keys))
-                        #     print("we came here")
-                        #     if _status.status_code < 300:
-                        #         _status_ = _status.json()["fields"]["status"]["name"]
-                        #         raw = ["status", "", _status_, "", "", ""] \
-                        #             if LOGIN.api is False \
-                        #             else ["status", "", "", _status_, "", "", "",
-                        #                   _tmpFromAccountId, _tmpToAccountId]
-                        #         blank_data(_keys, _summary, raw, name, once="once")
 
                         ItemList = namedtuple("ItemList", ["field", "field_type", "from_", "fromString",
                                                            "to", "toString"]) if LOGIN.api is False else \
