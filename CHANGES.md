@@ -1,5 +1,10 @@
 # Jira one change log
 
+**Release 0.6.3** - 2022-06-04
+### Patch update #85
+* Added offline access to OAuth argument
+* Bug fix on issue [JIR-8](https://github.com/princenyeche/jiraone/issues/89) affecting windows devices on change_log function
+* General patches and doc updates.
 
 **Release 0.6.2** - 2022-04-27
 ### Patch update #84

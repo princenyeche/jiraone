@@ -30,8 +30,8 @@ class Projects:
         be keyword args that follows. This API helps to generate full user accessibility to Projects on Jira.
         It checks the users access and commits the finding to a report file.
 
-        You can tweak the permission argument with the options mention here
-        https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search
+        You can tweak the permission argument with the options mention `here
+        <https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search>`_
 
         for endpoint /rest/api/3/user/permission/search
 
@@ -46,6 +46,8 @@ class Projects:
         :param permission: A permission of Jira to check
 
         :param kwargs: Additional arguments
+
+        .. _here:
 
         :return: None
         """
@@ -580,22 +582,22 @@ class Projects:
 
         we assume you're getting this from   ``def get_attachments_on_project()`` method.
 
-              :param attach: integers to specify the index of the columns
+        :param attach: integers to specify the index of the columns
 
-              :param file_folder: a folder or directory where the file
+        :param file_folder: a folder or directory where the file
 
-              :param download_path: a directory where files are stored
+        :param download_path: a directory where files are stored
 
-              :param file: a row to the index of the column
+        :param file: a row to the index of the column
 
-              :param file_name: a file name to a file
+        :param file_name: a file name to a file
 
                 e.g
                   * attach=6,
                   * file=8
 
-              the above example corresponds with the index if using the ``def get_attachments_on_project()``
-              otherwise, specify your value in each keyword args when calling the method.
+        the above example corresponds with the index if using the ``def get_attachments_on_project()``
+        otherwise, specify your value in each keyword args when calling the method.
 
         :return: None
         """
@@ -616,40 +618,6 @@ class Projects:
             if last_cell is True:
                 if count >= (length - 1):
                     break
-
-    @staticmethod
-    def extract_jira_issues(*args, **kwargs) -> None:
-        """Returns all issues within an instance using a JQL search without the 1K limit.
-
-        :return: None
-        """
-        #TODO create this function
-        folder = "EXPORT" if "folder" not in kwargs else kwargs["folder"]
-        file_name = "export_file.csv" if "file_name" not in kwargs else kwargs["file_name"]
-
-    def move_projects_across_instances(
-            self,
-            instance_a: str = Any,
-            instance_b: str = Any,
-            extracted_file: str = Any,
-            method_allowed: bool = False,
-            method_function: Callable = Any,
-            properties: Union[float, int] = Any,
-            classification: str = Any,
-            diagram: List[str] = Any,
-            probability: Dict[List[str], int] = Any,
-            status: Tuple[Union[List[str]]] = Any,
-            **kwargs
-    ):
-        """Ability to move projects between instances.
-
-        Everything within the Project is maintained.
-        Full user permission required, in order to successful transfer and recreate
-        the issue between instances.
-        everything within Instance A project A into Instance B project B is retained.
-        """
-        # TODO: Create this method and its features. this is a work in progress.
-        pass
 
     @staticmethod
     def get_total_comments_on_issues(folder: str = "Comment", file_name: str = "comment_file.csv",
@@ -881,6 +849,7 @@ class Projects:
             :param item_val: An dictionary of values
 
             :param name_: displayName of the user
+
             :return: None
             """
             nonlocal attempt
@@ -1008,6 +977,7 @@ class Projects:
                                                            "to", "toString"]) if LOGIN.api is False else \
                             namedtuple("ItemList", ["field", "field_type", "field_id", "from_", "fromString",
                                                     "to", "toString", "tmpFromAccountId", "tmpToAccountId"])
+
                         for _ in item_list:
                             issue = ItemList._make(_)
                             # Fix for time in status
@@ -1046,7 +1016,8 @@ class Projects:
         set_up = None
         loop: bool = False
         if allow_cp is True:
-            if os.path.isfile(path_builder(folder, file_name=saved_file)):
+            if os.path.isfile(path_builder(folder, file_name=saved_file)) and \
+                    os.stat(path_builder(folder, file_name=saved_file)).st_size != 0:
                 user_input = input("An existing save point exist from your last extraction, "
                                    "do you want to use it? (Y/N) \n")
                 set_up = json.load(open(path_builder(path=folder, file_name=saved_file)))
@@ -1379,7 +1350,7 @@ class Users:
                       file: str = None, folder: str = Any, **kwargs) -> Any:
         """Generates a list of users.
 
-        :param pull: (options)
+        :param pull: (options) for the argument
 
             * both: pulls out inactive and active users
 
@@ -1387,7 +1358,7 @@ class Users:
 
             * inactive: pulls out inactive users
 
-       :param user_type: (options)
+       :param user_type: (options) for the argument
 
             * atlassian: a normal Jira Cloud user
 
@@ -1544,7 +1515,7 @@ class NextGen(object):
     """
 
     def __init__(self):
-        """A initializer for the NextGen class object."""
+        """An initializer for the NextGen class object."""
         print("Hello")
 
 
@@ -1587,14 +1558,24 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
 
                *options*
 
-               delimiter: defaults to comma.
+               delimiter: defaults to comma - datatype (strings)
+
+               encoding: defaults to utf-8 - datatype (strings)
+
+    .. versionchanged:: 0.6.3
+
+    encoding - added keyword argument encoding to handle encoding issues on windows
+    like device.
 
     :return: Any
     """
     from platform import system
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
     file = path_builder(path=folder, file_name=file_name)
-    windows = open(file, mode, newline="") if system() == "Windows" and mark != "file" else open(file, mode)
+    encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
+    # Bug:fix:JIR-8 on https://github.com/princenyeche/jiraone/issues/89
+    windows = open(file, mode, encoding=encoding, newline="") \
+        if system() == "Windows" and mark != "file" else open(file, mode)
     if mode:
         with windows as f:
             write = csv.writer(f, delimiter=delimiter)
@@ -2330,4 +2311,3 @@ def delete_attachments(
 USER = Users()
 PROJECT = Projects()
 comment = PROJECT.comment_on
-export_issues = PROJECT.extract_jira_issues

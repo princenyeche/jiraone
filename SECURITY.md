@@ -6,6 +6,7 @@ Below shows the list of supported version for the jiraone library
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 0.6.3   | :white_check_mark: |
 | 0.6.2   | :white_check_mark: |
 | 0.6.1   | :white_check_mark: |
 | 0.6.0   | :x:                |
