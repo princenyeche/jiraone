@@ -18,7 +18,6 @@ from typing import Any, Optional, Union, Dict, Mapping, List
 from pprint import PrettyPrinter
 from jiraone.exceptions import JiraOneErrors
 from jiraone.jira_logs import add_log
-from collections import deque
 
 
 class Credentials(object):
