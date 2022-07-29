@@ -1445,7 +1445,7 @@ class Users:
         add_log("Get Users group Completed", "info")
 
     def search_user(self, find_user: Union[str, list] = None,
-                    folder: str = "Users", **kwargs) -> Union[deque, int]:
+                    folder: str = "Users", **kwargs) -> Union[list, int]:
         """Get a list of all cloud users and search for them by using the displayName.
 
         :param find_user: A list of user's displayName or a string of the displayName
