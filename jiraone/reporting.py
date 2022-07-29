@@ -5,7 +5,7 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
-from typing import Any, List, Iterable, Tuple, Union, Callable, Dict, Optional
+from typing import Any, List, Iterable, Tuple, Union, Dict, Optional
 from collections import deque, namedtuple, OrderedDict
 from jiraone import LOGIN, endpoint, add_log, WORK_PATH
 import json
@@ -19,7 +19,7 @@ class Projects:
     """Get report on a Project based on user or user's attributes or groups."""
 
     @staticmethod
-    def projects_accessible_by_users(*args: Any, project_folder: str = "Project",
+    def projects_accessible_by_users(*args: str, project_folder: str = "Project",
                                      project_file_name: str = "project_file.csv",
                                      user_extraction_file: str = "project_extract.csv",
                                      permission: str = "BROWSE", **kwargs) -> None:
@@ -219,7 +219,7 @@ class Projects:
         file_writer(folder=roles_folder, file_name=roles_file_name, data=headers, **kwargs)
 
         # get extraction of projects data
-        def role_on() -> Any:
+        def role_on() -> None:
             project_role_list = deque()
             for keys in results["values"]:
                 role_list = deque()
@@ -251,7 +251,7 @@ class Projects:
                     display_name = user[2]
 
                     # extract the user role using the appropriate accountId
-                    def get_user_role(user_data) -> Any:
+                    def get_user_role(user_data) -> None:
                         for users in user_data[1]:
                             check = LOGIN.get(users[1])
                             if check.status_code == 200:
@@ -264,7 +264,7 @@ class Projects:
                                             project_role_list.append(res)
 
                         # function to write collected data into a file
-                        def pull_data() -> Any:
+                        def pull_data() -> None:
                             role_puller = [j for j in project_role_list]
                             project_id = data[0]
                             project_key = data[1]
@@ -554,7 +554,7 @@ class Projects:
             attachment = r[attach]
             _file_name = r[file]
             fetch = LOGIN.get(attachment).content
-            # use the files keyword args to send multipart/form-data in the post request of LOGIN.post
+            # use the file's keyword args to send multipart/form-data in the post request of LOGIN.post
             payload = {"file": (_file_name, fetch)}
             # modified our initial headers to accept X-Atlassian-Token to avoid (CSRF/XSRF)
             new_headers = {"Accept": "application/json",
@@ -810,7 +810,7 @@ class Projects:
 
         :param allow_cp: Allow or deny the ability to have a checkpoint.
 
-        :param kwargs: The other other kwargs that can be passed as below.
+        :param kwargs: The other kwargs that can be passed as below.
 
                * jql: (required) A valid JQL query for projects or issues.  datatype -> string
 
@@ -868,7 +868,7 @@ class Projects:
                     attempt += 2
 
         def changelog_search() -> None:
-            """Search the change history endpoint and extract data if exist.
+            """Search the change history endpoint and extract data if existed.
             :return: None
             """
             nonlocal loop, attempt
@@ -931,7 +931,7 @@ class Projects:
                 loop = True
                 re_instantiate(keys)
 
-        def changelog_history(history: Any = Any, proj: tuple = (str, Any, Any)) -> None:
+        def changelog_history(history: Any = Any, proj: tuple = (str, str, str)) -> None:
             """Structure the change history data after being retrieved.
 
             :return: None
@@ -1121,7 +1121,7 @@ class Projects:
 
                 i) body - returns the body content of the comment.
                 ii) mention - returns the users mentioned on a comment.
-                iii) text - returns a Array of strings of the text in the comment.
+                iii) text - returns an array of strings of the text in the comment.
                 iv) author - returns the author who triggered the comment.
 
                 .. code-block:: python
@@ -1326,14 +1326,6 @@ class Projects:
                 print("Comment not added to {}, error: {}".format(key_or_id, result.status_code))
             block.clear()
 
-    def create_issues(self,
-                      *args,
-                      csv_file: Callable = None,
-                      **kwargs):
-        """TODO:"""
-        columns = csv_file(*args) if "column" in kwargs else exit("Unable to extract columns from CSV file")
-        self.byte_converter(columns)
-
 
 class Users:
     """
@@ -1452,25 +1444,47 @@ class Users:
               .format(path_builder(path=group_folder, file_name=group_file_name)))
         add_log("Get Users group Completed", "info")
 
-    def search_user(self, find_user: Any = None, folder: str = "Users", **kwargs) -> deque:
-        """Get a list of all cloud users and search for them by using the displayName."""
+    def search_user(self, find_user: Union[str, list] = None,
+                    folder: str = "Users", **kwargs) -> Union[deque, int]:
+        """Get a list of all cloud users and search for them by using the displayName.
+
+        :param find_user: A list of user's displayName or a string of the displayName
+
+        :param folder: A name to the folder
+
+        :param kwargs: Additional arguments
+
+                   *options*
+                   skip (bool) - allows you to skip the header of ``file_reader``
+                   delimiter (str) - allows a delimiter to the ``file_reader`` function
+                   pull (str) - determines which user is available e.g. "active", "inactive"
+                   user_type (str) - searches for user type
+                   file (str) - Name of the file
+
+        """
         pull = kwargs["pull"] if "pull" in kwargs else "both"
         user_type = kwargs["user_type"] if "user_type" in kwargs else "atlassian"
         file = kwargs["file"] if "file" in kwargs else "user_file.csv"
         build = path_builder(folder, file)
+
         if not os.path.isfile(build):
             open(build, mode="a").close()
-        if os.stat(build).st_size != 0:
-            print(f"The file \"{file}\" exist...", end="")
-            os.remove(build)
-            print("Updating extracted user...\n", end="")
-            self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
-        else:
-            self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
-            print("Extracting users...")
+
+        def get_users():
+            if os.stat(build).st_size != 0:
+                print(f"The file \"{file}\" exist...", end="")
+                os.remove(build)
+                print("Updating extracted user...\n", end="")
+                self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
+            else:
+                print("Extracting users...")
+                self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
+
+        if len(self.user_list) == 0:
+            get_users()
         CheckUser = namedtuple("CheckUser", ["accountId", "account_type", "display_name", "active"])
         list_user = file_reader(file_name=file, folder=folder, **kwargs)
-        self.user_list.clear()
+        checker = []
         for _ in list_user:
             f = CheckUser._make(_)
             if isinstance(find_user, str):
@@ -1478,18 +1492,18 @@ class Users:
                     get_user = f.accountId
                     display_name = f.display_name
                     status = f.active
-                    self.user_list.append(OrderedDict({"accountId": get_user,
-                                                       "displayName": display_name, "active": status}))
+                    checker.append(OrderedDict({"accountId": get_user,
+                                                "displayName": display_name, "active": status}))
             if isinstance(find_user, list):
                 for i in find_user:
                     if i in f._asdict().values():
                         get_user = f.accountId
                         display_name = f.display_name
                         status = f.active
-                        self.user_list.append(OrderedDict({"accountId": get_user,
-                                                           "displayName": display_name, "active": status}))
+                        checker.append(OrderedDict({"accountId": get_user,
+                                                    "displayName": display_name, "active": status}))
 
-        return self.user_list if len(self.user_list) != 0 else 0
+        return checker if len(checker) != 0 else 0
 
     def mention_user(self, name) -> List[str]:
         """Return a format that you can use to mention users on cloud.
@@ -1506,17 +1520,6 @@ class Users:
             data.append(f"[~accountId:{u.get('accountId')}]")
 
         return data
-
-
-class NextGen(object):
-    """An API made to operate on next-gen projects.
-
-    Recently Atlassian changed next-gen projects to "team-managed projects".
-    """
-
-    def __init__(self):
-        """An initializer for the NextGen class object."""
-        print("Hello")
 
 
 def path_builder(path: str = "Report", file_name: str = Any, **kwargs) -> str:
@@ -1536,8 +1539,8 @@ def path_builder(path: str = "Report", file_name: str = Any, **kwargs) -> str:
     return base_file
 
 
-def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = object,
-                mark: str = "single", mode: str = "a+", content: str = Any, **kwargs) -> Any:
+def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable = object,
+                mark: str = "single", mode: str = "a+", content: str = None, **kwargs) -> Any:
     """Reads and writes to a file, single or multiple rows or write as byte files.
 
     :param folder: A path to the name of the folder
@@ -1564,7 +1567,7 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
 
     .. versionchanged:: 0.6.3
 
-    encoding - added keyword argument encoding to handle encoding issues on windows
+    encoding - added keyword argument encoding to handle encoding issues on Windows
     like device.
 
     :return: Any
@@ -1588,7 +1591,7 @@ def file_writer(folder: str = WORK_PATH, file_name: str = Any, data: Iterable = 
             add_log(f"Writing to file {file_name}", "info")
 
 
-def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
+def file_reader(folder: str = WORK_PATH, file_name: str = None, mode: str = "r",
                 skip: bool = False, content: bool = False, **kwargs) -> Union[List[List[str]], str]:
     """Reads a CSV file and returns a list comprehension of the data or reads a byte into strings.
 
@@ -1598,9 +1601,9 @@ def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
 
     :param mode: string - file mode, available options [“r”, “rb”]
 
-    :param skip: bool - True allows you to skip the header if the file has any. Otherwise defaults to False
+    :param skip: bool - True allows you to skip the header if the file has any. Otherwise, defaults to False
 
-    :param content: bool - True allows you to read a byte file. By default it is set to False
+    :param content: bool - True allows you to read a byte file. By default, it is set to False
 
     :param kwargs: Additional parameters
 
@@ -1613,11 +1616,14 @@ def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
 
     :return: A list comprehension data or binary data
     """
+    from platform import system
     file = path_builder(path=folder, file_name=file_name)
     encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
+    windows = open(file, mode, encoding=encoding, newline="") \
+        if system() == "Windows" and content is False else open(file, mode)
     if mode:
-        with open(file, mode) as f:
+        with windows as f:
             read = csv.reader(f, delimiter=delimiter)
             if skip is True:
                 next(read, None)
@@ -1628,8 +1634,8 @@ def file_reader(folder: str = WORK_PATH, file_name: str = Any, mode: str = "r",
             return load if content is False else feed
 
 
-def replacement_placeholder(string: str = Any, data: list = Any,
-                            iterable: list = List,
+def replacement_placeholder(string: str = None, data: List = None,
+                            iterable: List = None,
                             row: int = 2) -> Any:
     """Return multiple string replacement.
 
@@ -1678,7 +1684,7 @@ def delete_attachments(
 ) -> None:
     """
     A function that helps to delete attachments on Jira issues. You can export a JQL search of issues
-    containing the ``Attachment`` column either in CSV or xlsx from your advanced filter search
+    containing the ``Attachment`` column either in CSV or xlsx from your advanced filter search,
     or you can search using a JQL search query to delete attachments.
 
     .. code-block:: python
@@ -1708,7 +1714,7 @@ def delete_attachments(
 
     :param file: A file export of issues from Jira which includes the ``attachment columns``
 
-    :param search: A search parameter for issues e.g issue key or JQL query
+    :param search: A search parameter for issues e.g. issue key or JQL query
 
     :param extension: A file extension to focus on while deleting.
 
@@ -1803,7 +1809,7 @@ def delete_attachments(
 
         def time_delta(val: int, cet: str) -> tuple:
             """
-            Return a tuple to determine what the expected datetimes are.
+            Return a tuple to determine what the expected datetime are.
 
             :param val: An integer of the datetime.
 
@@ -1935,7 +1941,7 @@ def delete_attachments(
         """
         Helps to get a list of attachments on an issue.
 
-        :param items: A dictionary of search results
+        :param items: A dictionary of search results.
 
         :return: None
         """
