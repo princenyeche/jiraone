@@ -26,6 +26,7 @@ class Credentials(object):
     auth_request = None
     headers = None
     api = True
+    auth2_0 = None
 
     def __init__(self,
                  user: str,
@@ -68,6 +69,7 @@ class Credentials(object):
         self.password = password
         self.oauth = oauth
         self.instance_name = None
+
         if session is None:
             self.session = requests.Session()
         else:
@@ -115,10 +117,13 @@ class Credentials(object):
            import os
 
            #  Example for storing the OAuth token
-           dumps = LOGIN.save_oauth # this is a property value which contains a dict of tokens
+           dumps = LOGIN.save_oauth # this is a property value which contains a dict of tokens in strings
            # As long as a handshake has been allowed with OAuth, the above should exist.
            os.environ["JIRAONE_OAUTH"] = f"{json.dumps(dumps)}"
            # with the above string, you can easily save your OAuth tokens into a DB or file.
+           # Please note that when you initialize the oauth method, you do not need to set
+           # The environment variable, as it will be set automatically after initialization.
+           # But you can assign other string objects to it or make a call to it.
 
 
         :param oauth: A dictionary containing the client and secret information and any
@@ -144,7 +149,7 @@ class Credentials(object):
         def token_update(token) -> None:
             """Updates the token to environment variable."""
             self.session.auth = token
-            os.environ["JIRAONE_OAUTH"] = f"{json.dumps(token)}"
+            self.auth2_0 = f"{json.dumps(token)}"
 
         def get_cloud_id():
             """Retrieve the cloud id of connected instance."""
@@ -158,8 +163,8 @@ class Credentials(object):
                     LOGIN.base_url = oauth_data.get("base_url").format(cloud=cloud_id[0]["id"])
             tokens.update({"base_url": LOGIN.base_url, "ins_name": self.instance_name})
 
-        if os.environ["JIRAONE_OAUTH"]:
-            sess = json.loads(os.environ["JIRAONE_OAUTH"])
+        if self.auth2_0:
+            sess = json.loads(self.auth2_0)
             oauth_data.update({"base_url": sess.pop("base_url")})
             self.instance_name = sess.pop("ins_name")
             tokens.update(sess)
@@ -246,9 +251,14 @@ class Credentials(object):
         token_update(tokens)
 
     @property
-    def save_oauth(self):
+    def save_oauth(self) -> str:
         """Defines the OAuth data to save."""
-        return os.environ["JIRAONE_OAUTH"]
+        return self.auth2_0
+
+    @save_oauth.setter
+    def save_oauth(self, oauth) -> None:
+        """Sets the OAuth data."""
+        self.auth2_0 = oauth
 
     def __token_only_session__(self, token: dict) -> None:
         """Creates a token bearer session.
@@ -261,7 +271,7 @@ class Credentials(object):
         self.headers.update({"Authorization": "{} {}".format(token["type"], token["token"])})
 
     # produce a session for the script and save the session
-    def token_session(self, email: str = None, token: str = None) -> None:
+    def token_session(self, email: str = None, token: str = None, sess: str = None) -> None:
         """
         A session initializer to HTTP request.
 
@@ -269,10 +279,19 @@ class Credentials(object):
 
         :param token: An API token or user password
 
+        :param sess: Triggers an Authorization bearer session
+
         :return: None
         """
-        self.auth_request = HTTPBasicAuth(email, token)
-        self.headers = {"Content-Type": "application/json"}
+        if sess is None:
+            self.auth_request = HTTPBasicAuth(email, token)
+            self.headers = {"Content-Type": "application/json"}
+        else:
+            if LOGIN.base_url is None:
+                raise JiraOneErrors("value", "Please include a connecting base URL by declaring "
+                                             " LOGIN.base_url = \"https://yourinstance.atlassian.net\"")
+            extra = {"type": "Bearer", "token": sess}
+            self.__token_only_session__(extra)
 
     def get(self, url, *args, payload=None, **kwargs) -> requests.Response:
         """
@@ -341,6 +360,34 @@ class Credentials(object):
         """
         response = requests.delete(url, auth=self.auth_request,
                                    headers=self.headers, **kwargs)
+        return response
+
+    def custom_method(self, *args, **kwargs) -> requests.Response:
+        """
+        A custom request to HTTP request.
+
+        .. code-block:: python
+
+           import jiraone
+           # previous login expression
+           req = jiraone.LOGIN.custom_method('GET', 'https://elfapp.website')
+           print(req)
+           # <Response [200]>
+
+        :param args: The HTTP method type e.g. PUT, PATCH, DELETE etc
+
+                    Also, includes the URL that needs to be queried.
+
+        :param kwargs: Additional keyword arguments to ``requests`` module
+
+                     For example:
+                     json={"file": content}
+                     data={"file": content}
+
+        :return: A HTTP response
+        """
+        response = requests.request(*args, auth=self.auth_request,
+                                    headers=self.headers, **kwargs)
         return response
 
 
@@ -1906,6 +1953,23 @@ class EndPoints:
         else:
             return "{}/rest/api/{}/comment/list?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                                                            query)
+
+    @classmethod
+    def issue_export(cls,
+                     url: Optional[str] = None,
+                     start: int = 0,
+                     limit: int = 1000) -> str:
+        """
+        Generate an export of Jira issues using a JQL.
+
+        :param url: A JQL of the issues to be exported
+        :param start: A start counter
+        :param limit: Max limit allowed for export
+        :return: A string of the export URL
+        """
+        return "{}/sr/jira.issueviews:searchrequest-csv-all-fields/temp/" \
+               "SearchRequest.csv?jqlQuery={}&tempMax={}&pager/start={}" \
+            .format(LOGIN.base_url, url, limit, start)
 
 
 class For(object):
