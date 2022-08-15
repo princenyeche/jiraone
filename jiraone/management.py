@@ -36,7 +36,7 @@ class UserManagement:
 
     def __init__(self) -> None:
         """
-        A Constructor which also helps with property initialization.
+        An initializer which also helps with property initialization.
         """
         # Property entry point.
         self._org_id_ = None
@@ -503,12 +503,23 @@ class UserManagement:
     def get_all_users(self, source, detail: bool = False) -> deque:
         """Store all user list from organization, so we can search them by email.
 
-                :param source: A JSON response payload
+        .. code-block:: python
 
-                :param detail: Bool defaults to False
+           from jiraone import manage as org
 
-                :return: Deque List
-                """
+           token = "VGHxxxxx"
+           org.add_token(token)
+           get_users = org.get_organization(org.org_id, filter_by="users").json()
+           all_users = org.get_all_users(get_users)
+           # output is a deque list, which can be accessed like a regular list.
+           print(all_users)
+
+        :param source: A JSON response payload
+
+        :param detail: Bool defaults to False
+
+        :return: Deque List
+        """
         exit("Your source data isn't a valid JSON object.") if not isinstance(source, t.Mapping) else ""
         user_collection = deque()
         exit(f"Incorrect data type {type(detail)} for keyword argument 'detail'. "
