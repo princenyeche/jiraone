@@ -119,10 +119,10 @@ class Credentials(object):
            #  Example for storing the OAuth token
            dumps = LOGIN.save_oauth # this is a property value which contains a dict of tokens in strings
            # As long as a handshake has been allowed with OAuth, the above should exist.
-           os.environ["JIRAONE_OAUTH"] = f"{json.dumps(dumps)}"
+           LOGIN.save_oauth = f"{json.dumps(dumps)}"
            # with the above string, you can easily save your OAuth tokens into a DB or file.
            # Please note that when you initialize the oauth method, you do not need to set
-           # The environment variable, as it will be set automatically after initialization.
+           # The property variable, as it will be set automatically after initialization.
            # But you can assign other string objects to it or make a call to it.
 
 
