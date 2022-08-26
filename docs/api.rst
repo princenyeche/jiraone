@@ -83,6 +83,8 @@ Example usage:
 
 * ``LOGIN.session`` represents the session from the initialization
 
+* ``LOGIN.auth2_0`` represents the oauth attribute for the property setter.
+
 **Methods**, available to the LOGIN alias, it returns a response object.
 
 The keyword argument of payload can be any json object you want to pass to the method. Subsequently, you can pass other keyword arguments
@@ -103,7 +105,7 @@ such as ``files``, ``data`` etc.
   This property is set once an OAuth authentication  has been initialized. If an OAuth session is not created, the value won't return anything.
   
   Also, if you want to save the OAuth data session into a ``DB`` of ``file``, you can call this property value ``LOGIN.save_oauth``. 
-  To access the saved oauth session, please see the example used by the oauth method. You will need to push the data to the environment variabled called ``JIRAONE_OAUTH``.
+  To access the saved oauth session, please see the example used by the oauth method. You will need to push the data to the property setter using ``LOGIN.save_oauth``.
 
 
 
