@@ -25,6 +25,19 @@ jql = "order by created DESC"
 LOGIN.get(endpoint.issue_export(jql))
 
 ```
+* Now you can use Bearer token with the `LOGIN.token_session()` and you can assign a token to this function.
+```python
+from jiraone import LOGIN, endpoint
+
+# previous statement
+url = "https://nexusfive.atlassian.net"
+token = "GHxxxxxPPPxx"
+# First assign a base_url to the attribute below
+LOGIN.base_url = url
+# You need to pass the token variable to a keyword argument called `sess`
+LOGIN.token_session(sess=token)
+
+```
 
 **Release 0.6.3** - 2022-06-04
 ### Patch update #85
