@@ -1,7 +1,8 @@
 # Jira one change log
 
-**Release 0.6.4** - 2022-08-26
+**Release 0.6.5** - 2022-08-26
 ### Patch  #86
+* * Skipped v0.6.4 as its equivalent to v0.6.5
 * Fix for `file_reader` in windows system
 * Update to OAuth authentication. Removed `JIRAONE_OAUTH` environment variable and used a property setter instead.
 Simply use `LOGIN.save_oauth` and assign a value
