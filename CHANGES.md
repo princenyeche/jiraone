@@ -1,5 +1,44 @@
 # Jira one change log
 
+**Release 0.6.4** - 2022-08-26
+### Patch  #86
+* Fix for `file_reader` in windows system
+* Update to OAuth authentication. Removed `JIRAONE_OAUTH` environment variable and used a property setter instead.
+Simply use `LOGIN.save_oauth` and assign a value
+
+### Update
+* Added new method to `LOGIN` alias for custom methods
+```python
+from jiraone import LOGIN, endpoint
+
+# previous statement
+LOGIN.custom_method("GET", endpoint.myself())
+# You can use any HTTP method "PATCH", "OPTIONS"
+
+```
+* Added a new method to the `endpoint` alias
+```python
+from jiraone import LOGIN, endpoint
+
+# previous statement
+jql = "order by created DESC"
+LOGIN.get(endpoint.issue_export(jql))
+
+```
+* Now you can use Bearer token with the `LOGIN.token_session()` and you can assign a token to this function.
+```python
+from jiraone import LOGIN, endpoint
+
+# previous statement
+url = "https://nexusfive.atlassian.net"
+token = "GHxxxxxPPPxx"
+# First assign a base_url to the attribute below
+LOGIN.base_url = url
+# You need to pass the token variable to a keyword argument called `sess`
+LOGIN.token_session(sess=token)
+
+```
+
 **Release 0.6.3** - 2022-06-04
 ### Patch update #85
 * Added offline access to OAuth argument
