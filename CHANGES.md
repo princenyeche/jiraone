@@ -4,6 +4,7 @@
 ### Patch  #86
 * Fix for `file_reader` in windows system
 * Update to OAuth authentication. Removed `JIRAONE_OAUTH` environment variable and used a property setter instead.
+Simply use `LOGIN.save_oauth` and assign a value
 
 ### Update
 * Added new method to `LOGIN` alias for custom methods
