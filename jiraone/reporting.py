@@ -1326,6 +1326,820 @@ class Projects:
                 print("Comment not added to {}, error: {}".format(key_or_id, result.status_code))
             block.clear()
 
+    @staticmethod
+    def export_issues(file: Optional[str] = "export.csv",
+                      folder: Optional[str] = "EXPORT",
+                      jql: Optional[str] = None,
+                      **kwargs: Union[str, dict]) -> None:
+        """
+        Exports all Jira issue based on JQL search. If the number of issues
+        returned is greater than 1K issues, all the issues are finally
+        combined into a single file as output.
+
+        :param file: The name of a file
+
+        :param folder: The name of a folder
+
+        :param jql: A valid JQL
+
+        :param kwargs: Additional arguments that can be supplied.
+
+                  **Available options**
+
+                  temp_file: Datatype (str) A temporary file name
+                  when combining the exported file.
+
+                  final_file: Datatype (str) Name of the final
+                  combined CSV file name.
+
+                  target: Datatype (str or dict) Ability to change or get
+                  certain values from another instance. If and only if it
+                  is the same user who exist on both. As the same
+                  authentication needs to be used to extract or create the
+                  data else use a dict to construct a login acceptable
+                  form that can be used as authentication.
+
+                  When used as a string, just supply the instance baseURL
+                  as string only.
+                  .. code-block: python
+
+                     # previous expression
+                     base = "https://yourinstance.atlassian.net"
+
+
+                  Example of dict construct which can be stored as
+                  a ``.json`` file.
+
+                  .. code-block: json
+
+                     {
+                      "user": "prince@example.com",
+                      "password": "secretpassword",
+                      "url": "https://server.example.com"
+                     }
+
+
+                  fields: Datatype (list) Ability to alter the row value
+                  of a field. Useful when you want to change the value
+                  used for imports into Jira. Such as sprint name to id
+                  or username to accountId (Server or DC to cloud migration)
+
+        :return: None
+
+        """
+        from jiraone.exceptions import JiraOneErrors
+        from jiraone.utils import DotNotation
+        from copy import deepcopy
+        from jiraone import field
+        import shutil
+        reason = LOGIN.get(endpoint.myself())
+        if reason.status_code > 300:
+            add_log("Authentication failed.Please check your credential "
+                    "data to determine "
+                    "what went wrong with reason: {}".format(reason.json()),
+                    "error")
+            raise JiraOneErrors("login", "Authentication failed. "
+                                         "Please check your credentials."
+                                         " Reason: {}".format(reason.reason))
+        # check if the target instance is accessible
+        source: str = LOGIN.base_url
+        target: Union[str, dict] = kwargs["target"] if "target" in kwargs \
+            else ""
+        active: bool = False
+        _field_names_: list = kwargs["fields"] if "fields" in kwargs else \
+            ["Sprint", "Watchers", "Reporter", "Assignee"]
+        temp_file: str = kwargs["temp_file"] if "temp_file" in kwargs \
+            else "temp_file.csv"
+        final_file: str = kwargs["final_file"] if "final_file" in kwargs \
+            else "final_file.csv"
+        user_list: str = kwargs["user_list"] if "user_list" in kwargs \
+            else None
+        # stores most configuration data using a dictionary
+        config = {}
+        # Checking that the arguments are passing correct data structure.
+        if not isinstance(_field_names_, list):
+            add_log("The `fields` argument seems to be using the wrong "
+                    "data structure {}"
+                    "expecting a list of items.".format(_field_names_),
+                    "error")
+            raise JiraOneErrors("wrong", "The `fields` argument should be a "
+                                         "list of field names. "
+                                         "Detected {} instead.".
+                                format(type(_field_names_)))
+        if not isinstance(target, (str, dict)):
+            add_log("The `target` argument seems to be using the wrong data "
+                    "structure {}"
+                    "expecting a dictionary or a string.".format(target),
+                    "error")
+            raise JiraOneErrors("wrong", "The `target` argument should be "
+                                         "a dictionary of auth items "
+                                         "or a string of the url"
+                                         "Detected {} instead.".format(type(target)))
+        if not isinstance(temp_file, str):
+            add_log("The `temp_file` argument seems to be using the wrong "
+                    "data structure {}"
+                    "expecting a string.".format(temp_file), "error")
+            raise JiraOneErrors("wrong", "The `temp_file` argument should be "
+                                         "a string of the file name."
+                                         "Detected {} instead.".
+                                format(type(temp_file)))
+        if not isinstance(final_file, str):
+            add_log("The `final_file` argument seems to be using the wrong data"
+                    " structure {}"
+                    "expecting a string.".format(final_file), "error")
+            raise JiraOneErrors("wrong", "The `final_file` argument should be "
+                                         "a string of the file name."
+                                         "Detected {} instead.".
+                                format(type(final_file)))
+        if not isinstance(jql, str):
+            add_log("The `jql` argument seems to be using the wrong data "
+                    "structure {}"
+                    "expecting a string.".format(jql), "error")
+            raise JiraOneErrors("wrong", "The `jql` argument should be a string "
+                                         "of a valid Jira query."
+                                         "Detected {} instead.".
+                                format(type(jql)))
+        if user_list is not None:
+            get_list = file_reader(file_name=user_list, skip=True)
+            config["users"] = get_list
+
+        target_option = {
+            "user": target.get("user"),
+            "password": target.get("password"),
+            "url": target.get("url")
+        } if isinstance(target, dict) else target
+        source_option = {"user": LOGIN.user, "password": LOGIN.password,
+                         "url": LOGIN.base_url}
+        LOGIN.base_url = target_option.get("url") if \
+            isinstance(target, dict) else target
+        if target != "":
+            if isinstance(target, dict):
+                LOGIN(**target_option)
+            locate = LOGIN.get(endpoint.myself())
+            if locate.status_code > 300:
+                add_log("Authentication failed to target instance."
+                        "Please check your "
+                        "credential data to determine what went wrong "
+                        "with reason {}"
+                        ".".format(locate.json()), "error")
+                raise JiraOneErrors("login", "Authentication failed to "
+                                             "target instance. "
+                                             "Please check your credentials."
+                                             "Reason:{}.".
+                                    format(locate.reason))
+            else:
+                active = True
+        source_option["url"] = source
+        LOGIN(**source_option)
+        rows, total, validate_query = 0, 0, \
+                                      LOGIN.get(endpoint.
+                                                search_issues_jql(jql))
+        if validate_query.status_code < 300:
+            total = validate_query.json()["total"]
+        else:
+            add_log("Invalid JQL query received. Reason {} with status code: "
+                    "{} and addition info: {}"
+                    .format(validate_query.reason, validate_query.status_code,
+                            validate_query.json()), "debug")
+            raise JiraOneErrors("value", "Your JQL query seems to be invalid"
+                                         " as no issues were returned.")
+        print("Downloading issue export in CSV format.")
+        file_deposit = []
+        while True:
+            if rows >= total:
+                break
+            file_name = file.split(".")[0] + f"_{rows}.csv"
+            issues = LOGIN.get(endpoint.issue_export(jql, rows))
+            print(issues, issues.reason, f"::downloading issues at record: "
+                                         f"{rows}")
+            file_writer(folder, file_name,
+                        content=issues.content.decode('utf-8'),
+                        mark="file", mode="w+")
+            # create a direct link to the new file
+            # ensure that there's a unique list as the names are different.
+            if file_name not in file_deposit:
+                file_deposit.append(file_name)
+            config.update({"exports": file_deposit})
+            rows += 1000
+
+        config["prev_list"], config["next_list"], \
+        config["column_data"], \
+        config["set_headers_main"], config["make_file"], \
+        config["set_file"] = [], [], {}, [], [], []
+
+        # Get an index of all columns within the first file
+        # Then use it across other files in the list
+
+        def data_frame(files_=None, activate: bool = True, poll=None,
+                       **kwargs) -> None:
+            """Check each column width of each CSV file
+            modify it and add the new rows.
+
+            :param files_: A name to files
+
+            :param activate: A validator
+
+            :param poll: A poll data link
+
+            :param kwargs: Additional arguments
+
+            :return: None
+            """
+            columns = file_reader(folder, files_, **kwargs) \
+                if activate is True else poll
+            column_count, config["headers"] = 0, []
+            for column_ in columns:
+                each_col_count = 0
+                for each_col in column_:
+                    # define the name and index of each column
+                    value = {"column_name": each_col,
+                             "column_index": each_col_count}
+                    config["headers"].append(value)
+                    each_col_count += 1
+                column_count += 1
+                if column_count == 1:
+                    break
+
+        file_path_directory = config["exports"]
+        # build headers
+        column_headers, headers, max_col_length = [], {}, 0
+
+        def write_files(files_, push: list = None) -> None:
+            """Creates the header file.
+
+            :param files_: The name to the file
+
+            :param push: Holds a list of iterable data
+
+            :return: None
+            """
+            from itertools import zip_longest
+            nonlocal max_col_length, headers, column_headers
+
+            # create a temp csv file with the header of the export
+
+            def create_file(**kwargs) -> None:
+                """Create multiple files or data points.
+                """
+                nonlocal max_col_length, headers, column_headers
+                data_frame(**kwargs) if push \
+                                        is not None else data_frame(files_)
+                column_headers, headers, \
+                max_col_length = [], DotNotation(value=config["headers"]), 0
+                for header in headers.value:
+                    column_headers.append(header.column_name)
+                    max_col_length += 1
+
+            def make_file(modes, data) -> None:
+                """Writes a list into an File like object.
+
+                :param modes: A writing mode indicator
+
+                :param data: A data of items, usually a List[list]
+
+                :return: None
+                """
+                file_writer(folder, temp_file,
+                            data=data, mark="many", mode=modes)
+
+            def make_headers_mark() -> None:
+                """Make and compare headers then recreate a new header.
+                Mostly mutates the config<> object
+
+                :return: None
+                """
+                # This should contain the data of the next column
+                config["next_list"] = column_headers
+                create_file(activate=False, poll=copy_temp_read)
+                # Because of the above, the column_headers should differ
+                # It should contain the previous data and header
+                config["prev_list"] = column_headers
+
+                def column_check(first_list: list,
+                                 second_list: list, _count_: int = 0) -> None:
+                    """Determine and defines the column headers.
+
+                    :param first_list: A list of the previous headers
+
+                    :param second_list: A list of the next headers
+
+                    :param _count_: An iteration counter
+
+                    :return: None
+                    """
+
+                    def column_populate(name_of_field: str = None,
+                                        ticker: int = None) -> None:
+                        """Receives a column count list with index.
+                        which are inserted and arranged properly
+                        into a new headers list.
+
+                        :param name_of_field: The name of a column
+
+                        :param ticker: An iteration counter of each
+                        element in the headers
+
+                        :return: None
+                        """
+                        config["set_headers_main"].insert(ticker,
+                                                          name_of_field)
+
+                    def determine_value(value: str) -> int:
+                        """Determines how the headers of two files
+                        are merged. By taking which ever file has
+                        more element in the headers.
+                        If on multiple columns and suggesting that
+                        file as value in constructing the new header.
+
+                        :param value: A string value of a column name
+
+                        :return: None
+                        """
+                        next_occurrence = config["next_list"].count(value)
+                        prior_occurrence = config["prev_list"].count(value)
+                        _plus_value = None
+                        if next_occurrence > prior_occurrence:
+                            _plus_value = prior_occurrence
+                        elif prior_occurrence > next_occurrence:
+                            _plus_value = next_occurrence
+                        else:
+                            _plus_value = prior_occurrence
+                        _main_value = int(abs(next_occurrence -
+                                              prior_occurrence)) + _plus_value
+                        return _main_value
+
+                    def call_column(items: list) -> None:
+                        """Populate a new column to the list
+                        by determining how many exist from the
+                        previous and next headers.
+
+                        :param items: A list of elements, mostly
+                        header's item
+
+                        :return: None
+                        """
+                        nonlocal _count_
+
+                        check_value = config["set_headers_main"]
+                        for col_list in items:
+                            value_id = determine_value(col_list)
+                            check = config["set_headers_main"].count(col_list)
+
+                            if col_list not in check_value:
+                                column_populate(
+                                    col_list,
+                                    _count_)
+                            elif col_list in check_value \
+                                    and check < value_id:
+                                column_populate(
+                                    col_list,
+                                    _count_)
+                            _count_ += 1
+                        _count_ = 0
+
+                    # do a loop through the first columns
+                    call_column(first_list)
+                    # call the 2nd column after the first
+                    call_column(second_list)
+                    # Why call `call_column` twice instead of recursion?
+                    # - That would mean creation more variables with 2-3
+                    # - lines of additional codes. It's simpler this way.
+
+                column_check(config["prev_list"],
+                             config["next_list"])
+
+                def populate_column_data(column_data: list,
+                                         attr: bool = False) -> list:
+                    """Tries and populate each rows
+                    By first getting the headers and the rows beneath it
+                    then adding the value of the column by rows.
+                    The algorithm below is a complete accurate
+                    1:1 addition of column=>row mechanism of a flattened
+                    file structure into a dictionary structure.
+
+                    :param column_data: The header column data to be
+                    processed
+
+                    :param attr: A conditional attribute used to determine
+                    logic
+
+                    :return: List, usually a list of new elements with
+                    corresponding data.
+                    """
+
+                    header_choice = config["prev_list"] \
+                        if attr is False \
+                        else config["next_list"]
+
+                    def load_count(my_list, conf) -> list:
+                        """Loads a list into a dictionary of
+                        values arranged by their column name.
+
+                        :param my_list: A list of elements
+
+                        :param conf: A new list to return
+
+                        :return: List
+
+                        """
+                        nums = 0
+                        for main in my_list:
+                            props = {
+                                "column_index": nums,
+                                "column_name": main,
+                                "column_data": [],
+                            }
+                            conf.append(props)
+                            nums += 1
+                        return conf
+
+                    pre_config, after_config, = [], []
+                    my_value = load_count(config["set_headers_main"],
+                                          pre_config)
+                    other_value = load_count(header_choice,
+                                             after_config)
+                    # run a loop through the data and assign each value
+                    # to their appropriate header
+
+                    locking = deepcopy(header_choice)
+                    read_lock = len(locking)
+                    box_item, box_count = 0, deepcopy(column_data)
+                    iter_count = len(box_count)
+                    for items in column_data:
+                        if box_item >= iter_count:
+                            break
+                        my_item = 0
+                        for that_row, inner_item in \
+                                zip(other_value, items):
+                            if my_item >= read_lock:
+                                break
+                            # select everything from first row to last row
+                            if that_row["column_index"] == my_item:
+                                that_row["column_data"].append(inner_item)
+                            my_item += 1
+                        box_item += 1
+
+                    # Now we have a mapping of all data,the way they should be
+                    # But we need to transfer that data to `my_value` variable
+                    keep_track = set()  # used to keep track of multiple column
+
+                    def bind_us() -> list:
+                        """This helps to align the rows to columns"""
+                        # where the values are
+                        for new_row in other_value:
+                            # where we need the values to be
+                            check_name = \
+                                locking.count(new_row["column_name"])
+                            for this_row in my_value:
+                                if check_name == 1:
+                                    if this_row["column_name"] == \
+                                            new_row["column_name"]:
+                                        this_row["column_data"] \
+                                            = new_row["column_data"]
+                                        break
+                                elif check_name > 1:
+                                    if this_row["column_name"] == \
+                                            new_row["column_name"]:
+                                        if this_row["column_index"] \
+                                                not in keep_track:
+                                            keep_track. \
+                                                add(this_row["column_index"])
+                                            this_row["column_data"] \
+                                                = new_row["column_data"]
+                                            break
+                                        else:
+                                            continue
+
+                        return my_value
+
+                    bind_us()
+                    lock = deepcopy(my_value)
+                    get_range, index = 0, 0
+                    for i in lock:
+                        # Use the first index field as a basic to determine
+                        # The length of the dataset.
+                        if i["column_index"] == index:
+                            get_range = len(i["column_data"])
+                    block = get_range
+                    # Adding a null value to each empty cell
+                    # This way, if we read it, we know we won't
+                    # Get an index error due to invariable length
+                    for this_item in my_value:
+                        value_ = len(this_item["column_data"])
+                        if value_ == 0:
+                            runner = 0
+                            for i in range(block):
+                                if runner >= block:
+                                    break
+                                data = None
+                                this_item["column_data"].append(data)
+                                runner += 1
+
+                    return my_value
+
+                def data_provision(make_item: list,
+                                   attr: bool = False) -> None:
+                    """Add the column data into a list.
+                    Here we split the header and the data into
+                    columns for [headers] -> vertical view
+                    rows for [data] -> horizontal view
+
+                    HEADER + HEADER +   HEADER  +      HEADER +
+                     ------+--------+-----------+-------------+
+                       A   +   B    +      C    +       D     +
+                     ------+--------+-----------+-------------+
+                       E   +   F    +      G    +       H     +
+                     ------+--------+-----------+-------------+
+                       I   +   J    +      K    +       L     +
+                     ------+--------+-----------+-------------+
+
+                    Each element in a list of data is assumed a 1
+                    value in a row then each row is skipped for the
+                    next item in the iteration.
+                    While the next item is assumed as next column
+                    The same step is repeated in the loop until the
+                    steps are exhausted.
+
+                    :param make_item: A list of element containing the
+                    CSV data items
+
+                    :param attr: A conditional logic
+
+                    :return: None
+                    """
+                    # checks the headers and maps the data
+                    # to the headers
+                    del make_item[0]
+                    cook_item = populate_column_data(make_item, attr)
+                    look_up = \
+                        DotNotation(value=cook_item)
+                    _main_dupe = deepcopy(make_item)
+                    minus, stop_loop = 1, 0
+                    _limit_copy = deepcopy(config["set_headers_main"])
+                    _limit = len(_limit_copy)
+                    inner_stop, finish_loop = {"num": 0}, \
+                                              len([row for
+                                                   row in
+                                                   make_item]) - minus
+                    # The below adds the values as they are gotten
+                    # From a dictionary object
+                    while True:
+                        if stop_loop >= finish_loop:
+                            break
+                        for _item in range(_limit):
+                            if inner_stop["num"] >= _limit:
+                                inner_stop.update({"num": 0})
+                                break
+                            for find_item in look_up.value:
+                                if inner_stop["num"] >= _limit:
+                                    break
+                                for _names in [config["set_headers_main"]
+                                               [inner_stop["num"]]]:
+                                    if find_item.column_name == _names:
+                                        data_brick = find_item. \
+                                            column_data[stop_loop]
+                                        config["set_file"].append(data_brick)
+                                        inner_stop["num"] += 1
+                                        break
+
+                        mutate = deepcopy(config["set_file"])
+                        config["make_file"].append(mutate)
+                        config["set_file"].clear()
+                        stop_loop += 1
+
+                    look_up.clear()  # clear all used list items from memory
+
+                # populate the first list with prev data
+                data_provision(copy_temp_read, attr=False)
+                # populate the second list with current data
+                data_provision(push, attr=True)
+                # Why call `data_provision` twice instead of recursion?
+                # - That would mean creating more variables and 2-3 lines of
+                # - additional codes. It's simpler this way.
+
+            create_file(files_=files_)
+            if push is not None:
+                # This denotes the current temp_file
+                copy_temp_read = file_reader(folder, temp_file)
+                make_headers_mark()
+                # This should construct the next CSV file headers
+                make_file("w+", [config["set_headers_main"]])
+                # `push` contains the next data_list to be written
+                make_file("a+", config["make_file"])
+            # clear all the previous values stored in memory
+            column_headers.clear()
+            config["set_headers_main"].clear()
+            config["make_file"].clear()
+
+        payload = []
+        length = max_col_length  # keep track of the column width
+
+        def merge_files() -> None:
+            """Merge each files and populate it into one file.
+            """
+            iteration, progress = 0, 0
+            for files in file_path_directory:
+                current_value = len(file_path_directory)
+                read_original, start_ = file_reader(folder,
+                                                    files), 0
+                copy_read = deepcopy(read_original)
+                table_length = len([row for row in copy_read])
+                for column in read_original:
+                    # break out of loop once we reach the end of the file
+                    if start_ == table_length:
+                        break
+                    payload.append(column)
+                    start_ += 1
+                if iteration == 0:
+                    # write the headers only
+                    write_files(files_=files)
+                    # add the content into the temp file and populate the rows
+                    file_writer(folder, temp_file, data=payload,
+                                mark="many", mode="a+")
+                else:
+                    # process the next list of files here
+                    write_files(files_=files, push=payload)
+                payload.clear()
+                iteration += 1
+                progress += 1
+                current_progress = 100 * progress / current_value
+                print("Processing. "
+                      "Current progress: {}%".format(int(current_progress)))
+
+        merge_files()  # loop through each file and attempt combination
+
+        if active is True:
+            # Change the field name to field id
+            # If the field is supported such as sprint or user_picker fields
+            field_name = _field_names_
+            if isinstance(target, dict):
+                LOGIN(**target_option)
+            else:
+                LOGIN.base_url = target
+            read_file, start = file_reader(folder, temp_file, **kwargs), 0
+            copy_total = deepcopy(read_file)
+            total_ = len([row for row in copy_total])
+            # get all the field value in the csv file
+            field_list, config["fields"], config["saves"] = [], [], []
+            field_data, cycle, field_column = set(), 0, []
+
+            def populate(name) -> None:
+                for _id_ in headers.value:
+                    if _id_.column_name == name:
+                        field_column.append(_id_.column_index)
+
+            def reset_fields() -> None:
+                """Reset field values."""
+                nonlocal read_file, start, copy_total, total_, \
+                    field_list, field_data, cycle, field_column
+
+                read_file, start = file_reader(folder, temp_file, **kwargs), 0
+                copy_total = deepcopy(read_file)
+                total_ = len([row for row in copy_total])
+                # get all the field value in the csv file
+                field_list, config["fields"], config["saves"] = [], [], []
+                field_data, cycle, field_column = set(), 0, []
+
+            def check_id(_id, _iter) -> bool:
+                """Return True if item exist in list."""
+                if _id in _iter:
+                    return True
+                return False
+
+            def check_payload(data) -> Union[dict, list]:
+                """Return the value of a field."""
+                if isinstance(data, list):
+                    # used for sprint fields
+                    _data = data[0]
+                    _result = {"field_name": _data["name"],
+                               "field_id": _data["id"]}
+                    return _result
+                if isinstance(data, dict):
+                    # used to extract watchers' list
+                    my_watch = []
+                    if names == "Watchers":
+                        watchers = data["watchers"]
+                        if watchers != 0:
+                            for _name_ in watchers:
+                                _result_ = {"field_name":
+                                                _name_["displayName"],
+                                            "field_id": _name_["accountId"]
+                                            if LOGIN.api is
+                                               True else data["name"]}
+                                my_watch.append(_result_)
+                            return my_watch
+                    else:
+                        # used for any other user field
+                        _result_ = {"field_name": data["displayName"],
+                                    "field_id": data["accountId"]
+                                    if LOGIN.api is True else data["name"]
+                                    }
+                        return _result_
+
+            def get_watchers(name, key):
+                get_issue = field.get_field_value(name, key)
+                get_watch = LOGIN.get(get_issue["self"]).json()
+                return get_watch
+
+            def field_change():
+                """Recursively check field columns and rewrite values."""
+                nonlocal field_list, start, cycle
+                for columns_ in read_file:
+
+                    def check_field():
+                        print("Converting {} name to {} id on outfile from {}".
+                              format(names, names, LOGIN.base_url))
+                        for _field_item in field_list:
+                            _fields_ = \
+                                LOGIN.get(endpoint.
+                                    search_issues_jql(
+                                    field_search.format
+                                    (field_name=_field_item)))
+                            if _fields_.status_code < 300:
+                                issues_ = _fields_.json()["issues"]
+                                for keys in issues_:
+                                    if "key" in keys:
+                                        key = keys["key"]
+                                        get_id = field. \
+                                            get_field_value(names, key) \
+                                            if names != "Watchers" \
+                                            else get_watchers(names, key)
+                                        value_ = check_payload(get_id)
+                                        config["fields"].append(value_)
+                                        break
+                            else:
+                                print("It seems like the {} name: {} "
+                                      "doesn't exist here"
+                                      .format(names, _field_item))
+
+                    def check_columns(_max_length):
+                        for rows_ in columns_:
+                            if _max_length == length:
+                                break
+                            if start == 0:
+                                continue
+                            if start > 0:
+                                if check_id(_max_length, field_column) \
+                                        and rows_ != "" \
+                                        and cycle == 0:
+                                    values = columns_[_max_length]
+                                    field_data.add(values)
+                                if check_id(_max_length, field_column) \
+                                        and rows_ != "" \
+                                        and cycle == 1:
+                                    get_value = [name.get("field_id")
+                                                 for name in config["fields"]
+                                                 if name.get("field_name")
+                                                 == columns_[_max_length]] if \
+                                        names != "Watchers" else \
+                                        [name.get("field_id")
+                                         for data_field in config["fields"]
+                                         for name in data_field
+                                         if name.get("field_name")
+                                         == columns_[_max_length]]
+                                    if len(get_value) != 0:
+                                        columns_[_max_length] = get_value[0]
+                            _max_length += 1
+                        if cycle == 1:
+                            config["saves"].append(columns_)
+
+                    max_length = 0
+                    check_columns(max_length)
+                    field_list = list(tuple(field_data))
+                    start += 1
+                    if start == total_:
+                        if cycle == 0:
+                            check_field()
+                            cycle += 1
+                            start = 0
+                            field_change()
+                        break
+                file_writer(folder, temp_file, data=config["saves"],
+                            mark="many", mode="w+")
+
+            for names in field_name:
+                try:
+                    field_search = "{} = \"{}\"".format(names.lower()
+                                                        if names != "Watchers"
+                                                        else "watcher",
+                                                        "{field_name}")
+                    populate(names)
+                    field_change()
+                    reset_fields()
+                except AttributeError as error:
+                    sys.stderr.write(f"{error}")
+
+        shutil.copy(
+            path_builder(folder, temp_file),
+            path_builder(folder, final_file)
+        )
+        os.remove(path_builder(folder, temp_file))
+        for file in config["exports"]:
+            path = path_builder(folder, file)
+            os.remove(path)
+        print("Export Completed.File located at {}"
+              .format(path_builder(folder, final_file)))
+
 
 class Users:
     """
@@ -1339,7 +2153,7 @@ class Users:
     user_list = deque()
 
     def get_all_users(self, pull: str = "both", user_type: str = "atlassian",
-                      file: str = None, folder: str = Any, **kwargs) -> Any:
+                      file: str = None, folder: str = Any, **kwargs) -> None:
         """Generates a list of users.
 
         :param pull: (options) for the argument
@@ -1397,14 +2211,14 @@ class Users:
         file_writer(folder=category, file_name=filename, data=read, mark="many", **kwargs)
         add_log(f"Generating report file on {filename}", "info")
 
-    def user_activity(self, status: str = Any, account_type: str = Any, results: List = Any) -> Any:
+    def user_activity(self, status: str = Any, account_type: str = Any, results: List = Any) -> None:
         """Determines users activity.
 
         :return: None
         """
 
         # get both active and inactive users
-        def stack(c: Any, f: List, s: Any) -> Any:
+        def stack(c: Any, f: List, s: Any) -> None:
             if status == "both":
                 if s["accountType"] == account_type:
                     return c.user_list.append(f)
@@ -1458,7 +2272,7 @@ class Users:
                    skip (bool) - allows you to skip the header of ``file_reader``
                    delimiter (str) - allows a delimiter to the ``file_reader`` function
                    pull (str) - determines which user is available e.g. "active", "inactive"
-                   user_type (str) - searches for user type
+                   user_type (str) - searches for user type e.g "atlassian", "customer"
                    file (str) - Name of the file
 
         """
@@ -2317,3 +3131,4 @@ def delete_attachments(
 USER = Users()
 PROJECT = Projects()
 comment = PROJECT.comment_on
+issue_export = PROJECT.export_issues
