@@ -1,5 +1,22 @@
 # Jira one change log
 
+**Release 0.7.0** - 2022-09-05
+### Minor #93
+* Added a new method `PROJECT.issue_count` which helps to count issues using JQL.
+* Added new method `issue_export` which allows you to export all issues within your Jira in a single CSV file.
+
+```python
+from jiraone import LOGIN, issue_export
+import json
+
+file = "config.json"
+config = json.load(open(file))
+LOGIN(**config)
+
+jql = "project in (AB, BC, IT, IP) order by created DESC"
+issue_export(jql=jql)
+```
+
 **Release 0.6.5** - 2022-08-26
 ### Patch  #86
 * * Skipped v0.6.4 as its equivalent to v0.6.5
