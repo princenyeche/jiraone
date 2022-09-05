@@ -1327,20 +1327,20 @@ class Projects:
             block.clear()
 
     @staticmethod
-    def export_issues(file: Optional[str] = "export.csv",
-                      folder: Optional[str] = "EXPORT",
+    def export_issues(*, folder: Optional[str] = "EXPORT",
                       jql: Optional[str] = None,
+                      page: Optional[tuple] = None,
                       **kwargs: Union[str, dict]) -> None:
         """
         Exports all Jira issue based on JQL search. If the number of issues
         returned is greater than 1K issues, all the issues are finally
         combined into a single file as output.
 
-        :param file: The name of a file
-
         :param folder: The name of a folder
 
         :param jql: A valid JQL
+
+        :param page: An iterative counter for page index
 
         :param kwargs: Additional arguments that can be supplied.
 
@@ -1357,7 +1357,8 @@ class Projects:
                   is the same user who exist on both. As the same
                   authentication needs to be used to extract or create the
                   data else use a dict to construct a login acceptable
-                  form that can be used as authentication.
+                  form that can be used as authentication. This needs to
+                  be set for the ``fields`` argument to work properly.
 
                   When used as a string, just supply the instance baseURL
                   as string only.
@@ -1382,7 +1383,9 @@ class Projects:
                   fields: Datatype (list) Ability to alter the row value
                   of a field. Useful when you want to change the value
                   used for imports into Jira. Such as sprint name to id
-                  or username to accountId (Server or DC to cloud migration)
+                  or username to accountId (Server or DC to cloud migration).
+                  This argument requires the ``target`` argument to be set
+                  first before it can become useful.
 
         :return: None
 
@@ -1412,8 +1415,6 @@ class Projects:
             else "temp_file.csv"
         final_file: str = kwargs["final_file"] if "final_file" in kwargs \
             else "final_file.csv"
-        user_list: str = kwargs["user_list"] if "user_list" in kwargs \
-            else None
         # stores most configuration data using a dictionary
         config = {}
         # Checking that the arguments are passing correct data structure.
@@ -1434,7 +1435,8 @@ class Projects:
             raise JiraOneErrors("wrong", "The `target` argument should be "
                                          "a dictionary of auth items "
                                          "or a string of the url"
-                                         "Detected {} instead.".format(type(target)))
+                                         "Detected {} instead.". \
+                                format(type(target)))
         if not isinstance(temp_file, str):
             add_log("The `temp_file` argument seems to be using the wrong "
                     "data structure {}"
@@ -1444,8 +1446,8 @@ class Projects:
                                          "Detected {} instead.".
                                 format(type(temp_file)))
         if not isinstance(final_file, str):
-            add_log("The `final_file` argument seems to be using the wrong data"
-                    " structure {}"
+            add_log("The `final_file` argument seems to be using the wrong "
+                    "data structure {}"
                     "expecting a string.".format(final_file), "error")
             raise JiraOneErrors("wrong", "The `final_file` argument should be "
                                          "a string of the file name."
@@ -1455,13 +1457,55 @@ class Projects:
             add_log("The `jql` argument seems to be using the wrong data "
                     "structure {}"
                     "expecting a string.".format(jql), "error")
-            raise JiraOneErrors("wrong", "The `jql` argument should be a string "
-                                         "of a valid Jira query."
+            raise JiraOneErrors("wrong", "The `jql` argument should be a "
+                                         "string of a valid Jira query."
                                          "Detected {} instead.".
                                 format(type(jql)))
-        if user_list is not None:
-            get_list = file_reader(file_name=user_list, skip=True)
-            config["users"] = get_list
+
+        if page is None:
+            pass
+        elif page is not None:
+            if not isinstance(page, tuple):
+                add_log("The `page` argument seems to be using the wrong data"
+                        " structure {}"
+                        "expecting a tuple.".format(page), "error")
+                raise JiraOneErrors("wrong", "The `page` argument should be a "
+                                             "tuple to determine valid page "
+                                             "index."
+                                             "Detected {} instead.".
+                                    format(type(page)))
+            elif isinstance(page, tuple):
+                fix_point = 0
+                for index_item in page:
+                    answer = "first" if fix_point == 0 else "second"
+                    if not isinstance(index_item, int):
+                        add_log("The {} `page` argument value seems to be "
+                                "using the wrong "
+                                "data "
+                                "structure {}"
+                                "expecting an integer.".format(answer, page),
+                                "error")
+                        raise JiraOneErrors("wrong", "The {} `page` argument "
+                                                     "value"
+                                                     " should be an integer "
+                                                     "to loop page records. "
+                                                     "Detected {} instead.".
+                                            format(answer, type(index_item)))
+                    if fix_point > 1:
+                        add_log("The `page` argument value seems to be "
+                                "more than the expected "
+                                "length. Detected {} values."
+                                "".format(len(page)),
+                                "error")
+                        raise JiraOneErrors("wrong", "The `page` argument "
+                                                     "should not have more"
+                                                     " than 2 values. You "
+                                                     "seem "
+                                                     "to have added {} "
+                                                     "so far."
+                                                     "".format(len(page)))
+
+                    fix_point += 1
 
         target_option = {
             "user": target.get("user"),
@@ -1503,15 +1547,38 @@ class Projects:
                             validate_query.json()), "debug")
             raise JiraOneErrors("value", "Your JQL query seems to be invalid"
                                          " as no issues were returned.")
+        calc = int(total / 1000)
+        # We assume each page is 1K that's downloaded.
+        limiter, init = total, rows
+        if page is not None:
+            assert page[0] > -1, "The `page` argument first " \
+                                 "range " \
+                                 "value {}, is lesser than 0 " \
+                                 "which is practically wrong." \
+                .format(page[0])
+            assert page[0] <= page[1], "The `page` argument first " \
+                                       "range " \
+                                       "value, should be lesser than " \
+                                       "the second range value of {}." \
+                .format(page[1])
+            assert page[1] <= calc, "The `page` argument second " \
+                                    "range " \
+                                    "value {}, seems to have " \
+                                    "exceed the issue record range " \
+                                    "searched.".format(page[1])
+
+            limiter = (page[1] + 1) * 1000
+            init = page[0] * 1000
         print("Downloading issue export in CSV format.")
         file_deposit = []
         while True:
-            if rows >= total:
+            if init >= limiter:
                 break
-            file_name = file.split(".")[0] + f"_{rows}.csv"
-            issues = LOGIN.get(endpoint.issue_export(jql, rows))
-            print(issues, issues.reason, f"::downloading issues at record: "
-                                         f"{rows}")
+            file_name = temp_file.split(".")[0] + f"_{init}.csv"
+            issues = LOGIN.get(endpoint.issue_export(jql, init))
+            print(issues, issues.reason, f"::downloading issues at page: "
+                                         f"{int(init / 1000)}", "of {}"
+                  .format(int((limiter - 1) / 1000)))
             file_writer(folder, file_name,
                         content=issues.content.decode('utf-8'),
                         mark="file", mode="w+")
@@ -1520,7 +1587,7 @@ class Projects:
             if file_name not in file_deposit:
                 file_deposit.append(file_name)
             config.update({"exports": file_deposit})
-            rows += 1000
+            init += 1000
 
         config["prev_list"], config["next_list"], \
         config["column_data"], \
@@ -1573,7 +1640,6 @@ class Projects:
 
             :return: None
             """
-            from itertools import zip_longest
             nonlocal max_col_length, headers, column_headers
 
             # create a temp csv file with the header of the export
@@ -1591,7 +1657,7 @@ class Projects:
                     max_col_length += 1
 
             def make_file(modes, data) -> None:
-                """Writes a list into an File like object.
+                """Writes a list into a File<->like object.
 
                 :param modes: A writing mode indicator
 
@@ -1604,7 +1670,7 @@ class Projects:
 
             def make_headers_mark() -> None:
                 """Make and compare headers then recreate a new header.
-                Mostly mutates the config<> object
+                Mostly mutates the config<>object
 
                 :return: None
                 """
@@ -1648,8 +1714,9 @@ class Projects:
                         """Determines how the headers of two files
                         are merged. By taking which ever file has
                         more element in the headers.
-                        If on multiple columns and suggesting that
-                        file as value in constructing the new header.
+                        If the column name is on multiple columns, just
+                        suggest that name as a new column in the new
+                        header.
 
                         :param value: A string value of a column name
 
@@ -1702,7 +1769,7 @@ class Projects:
                     # call the 2nd column after the first
                     call_column(second_list)
                     # Why call `call_column` twice instead of recursion?
-                    # - That would mean creation more variables with 2-3
+                    # - That would mean creating more variables with 2-3
                     # - lines of additional codes. It's simpler this way.
 
                 column_check(config["prev_list"],
@@ -1713,7 +1780,7 @@ class Projects:
                     """Tries and populate each rows
                     By first getting the headers and the rows beneath it
                     then adding the value of the column by rows.
-                    The algorithm below is a complete accurate
+                    The logic below is a complete accurate
                     1:1 addition of column=>row mechanism of a flattened
                     file structure into a dictionary structure.
 
@@ -1816,7 +1883,7 @@ class Projects:
                     lock = deepcopy(my_value)
                     get_range, index = 0, 0
                     for i in lock:
-                        # Use the first index field as a basic to determine
+                        # Use the first index field as a basis to determine
                         # The length of the dataset.
                         if i["column_index"] == index:
                             get_range = len(i["column_data"])
@@ -1863,7 +1930,7 @@ class Projects:
                     :param make_item: A list of element containing the
                     CSV data items
 
-                    :param attr: A conditional logic
+                    :param attr: A conditional logic flow
 
                     :return: None
                     """
@@ -1982,6 +2049,12 @@ class Projects:
             # get all the field value in the csv file
             field_list, config["fields"], config["saves"] = [], [], []
             field_data, cycle, field_column = set(), 0, []
+            data_frame(activate=False, poll=read_file)
+            column_headers, max_col_length, headers \
+                = [], 0, DotNotation(value=config["headers"])
+            for header in headers.value:
+                column_headers.append(header.column_name)
+                max_col_length += 1
 
             def populate(name) -> None:
                 for _id_ in headers.value:
@@ -2080,12 +2153,12 @@ class Projects:
                                 continue
                             if start > 0:
                                 if check_id(_max_length, field_column) \
-                                        and rows_ != "" \
+                                        and rows_ != "" or rows_ is None \
                                         and cycle == 0:
                                     values = columns_[_max_length]
                                     field_data.add(values)
                                 if check_id(_max_length, field_column) \
-                                        and rows_ != "" \
+                                        and rows_ != "" or rows_ is None \
                                         and cycle == 1:
                                     get_value = [name.get("field_id")
                                                  for name in config["fields"]
@@ -2139,6 +2212,50 @@ class Projects:
             os.remove(path)
         print("Export Completed.File located at {}"
               .format(path_builder(folder, final_file)))
+
+    @staticmethod
+    def issue_count(jql: Optional[str] = None) -> dict:
+        """Returns the total count of issues within a
+        JQL search phrase.
+
+        :param jql: A valid JQL query
+
+         Example of the dict return value
+
+        .. code-block: json
+           {
+            "count": 2345,
+            "max_page": 2
+           }
+
+        :return: a dictionary, containing issue count & max_page
+        """
+        from jiraone.utils import DotNotation
+        from jiraone.exceptions import JiraOneErrors
+        if jql is None:
+            raise JiraOneErrors("value")
+        elif jql is not None:
+            if not isinstance(jql, str):
+                raise JiraOneErrors("wrong", "Invalid data structure "
+                                             "received. Expected a string.")
+        total, validate_query = 0, LOGIN.get(endpoint.
+                                             search_issues_jql(jql))
+        if validate_query.status_code < 300:
+            total = validate_query.json()["total"]
+        else:
+            add_log("Invalid JQL query received. Reason {} with status code: "
+                    "{} and addition info: {}"
+                    .format(validate_query.reason, validate_query.status_code,
+                            validate_query.json()), "debug")
+            raise JiraOneErrors("value", "Your JQL query seems to be invalid"
+                                         " as no issues were returned.")
+
+        calc = int(total / 1000)
+        value = {
+            "count": total,
+            "max_page": calc if total > 1000 else 0
+        }
+        return DotNotation(value)
 
 
 class Users:
