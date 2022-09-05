@@ -2153,12 +2153,12 @@ class Projects:
                                 continue
                             if start > 0:
                                 if check_id(_max_length, field_column) \
-                                        and rows_ != "" or rows_ is None \
+                                        and rows_ != "" \
                                         and cycle == 0:
                                     values = columns_[_max_length]
                                     field_data.add(values)
                                 if check_id(_max_length, field_column) \
-                                        and rows_ != "" or rows_ is None \
+                                        and rows_ != "" \
                                         and cycle == 1:
                                     get_value = [name.get("field_id")
                                                  for name in config["fields"]
