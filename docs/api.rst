@@ -98,6 +98,8 @@ such as ``files``, ``data`` etc.
 
 * ``LOGIN.put(url, *args, payload=None, **kwargs)``
 
+* ``LOGIN.custom_method(*args, **kwargs)``
+
 
 .. note::
  
