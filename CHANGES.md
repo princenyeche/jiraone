@@ -1,5 +1,12 @@
 # Jira one change log
 
+**Release 0.7.1** - 2022-09-15
+### Patch #95
+* Patch to method `issue_export` which omit certain rows from final export.
+* Added new argument to `token_session` method `_type` which helps to change the context of authorization header.
+* Added new method `remote_links` to the `endpoint` alias.
+
+
 **Release 0.7.0** - 2022-09-05
 ### Minor #93
 * Added a new method `PROJECT.issue_count` which helps to count issues using JQL.
