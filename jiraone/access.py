@@ -268,10 +268,15 @@ class Credentials(object):
         :return: None
         """
         self.headers = {"Content-Type": "application/json"}
-        self.headers.update({"Authorization": "{} {}".format(token["type"], token["token"])})
+        self.headers.update({"Authorization": "{} {}"
+                            .format(token["type"],
+                                    token["token"])})
 
     # produce a session for the script and save the session
-    def token_session(self, email: str = None, token: str = None, sess: str = None) -> None:
+    def token_session(self, email: str = None,
+                      token: str = None,
+                      sess: str = None,
+                      _type: str = "Bearer") -> None:
         """
         A session initializer to HTTP request.
 
@@ -281,6 +286,9 @@ class Credentials(object):
 
         :param sess: Triggers an Authorization bearer session
 
+        :param _type: An acceptable Authorization type
+                     e.g. Bearer or JWT or ...
+
         :return: None
         """
         if sess is None:
@@ -288,12 +296,17 @@ class Credentials(object):
             self.headers = {"Content-Type": "application/json"}
         else:
             if LOGIN.base_url is None:
-                raise JiraOneErrors("value", "Please include a connecting base URL by declaring "
-                                             " LOGIN.base_url = \"https://yourinstance.atlassian.net\"")
-            extra = {"type": "Bearer", "token": sess}
+                raise JiraOneErrors("value",
+                                    "Please include a connecting "
+                                    "base URL by declaring "
+                                    " LOGIN.base_url "
+                                    "= \"https://yourinstance.atlassian.net\"")
+            extra = {"type": _type, "token": sess}
             self.__token_only_session__(extra)
 
-    def get(self, url, *args, payload=None, **kwargs) -> requests.Response:
+    def get(self, url, *args,
+            payload=None,
+            **kwargs) -> requests.Response:
         """
         A get request to HTTP request.
 
@@ -311,7 +324,10 @@ class Credentials(object):
                                 json=payload, headers=self.headers, **kwargs)
         return response
 
-    def post(self, url, *args, payload=None, **kwargs) -> requests.Response:
+    def post(self, url,
+             *args,
+             payload=None,
+             **kwargs) -> requests.Response:
         """
         A post  request to HTTP request.
 
@@ -980,6 +996,58 @@ class EndPoints:
         """
         return "{}/rest/api/{}/resolution".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
+    @classmethod
+    def remote_links(cls,
+                     key_or_id: Optional[str] = None,
+                     link_id: Optional[str] = None) -> str:
+        """Returns the remote issue links for an issue.
+        When a remote issue link global ID is provided
+        the record with that global ID is returned.
+
+        When using PUT and POST method, the body parameter
+        are similar and the object body parameter is
+        required.
+
+        When using the DELETE method, you can delete
+        remote issue link by globalId or you can delete
+        by id
+
+        :request GET: Gets the remote link
+        :param key_or_id: The ID or key of the issue.
+           :body param: globalId - datatype(str)
+                        The global ID of the remote issue link.
+
+        :request POST: Create or update remote link.
+        :body param: globalId - datatype(str)
+                        The global ID of the remote issue link.
+                     application - datatype(dict)
+                     Details of the remote application the
+                     linked item is in. For example, trello.
+                     relationship - datatype(str)
+                     Description of the relationship between
+                     the issue and the linked item.
+                     object - datatype(dict)
+                     Details of the item linked to.
+
+        :request DELETE: Deletes the remote issue link
+                from the issue using the link's global ID.
+
+
+        :param link_id: The ID of the remote issue link.
+
+        :request PUT: Updates a remote issue link for an issue.
+
+        :return: A string construct of the url
+        """
+        if link_id is None:
+            return "{}/rest/api/{}/issue/{}/remotelink". \
+                format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                       key_or_id)
+        else:
+            return "{}/rest/api/{}/issue/{}/remotelink/{}". \
+                format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                       key_or_id, link_id)
+
     ################################################
     # Jira Software Specifics API endpoints
     ################################################
@@ -1044,7 +1112,9 @@ class EndPoints:
         return "{}/rest/agile/1.0/board".format(LOGIN.base_url)
 
     @classmethod
-    def get_board_by_filter_id(cls, filter_id, start_at: int = 0, max_results: int = 50) -> str:
+    def get_board_by_filter_id(cls, filter_id,
+                               start_at: int = 0,
+                               max_results: int = 50) -> str:
         """Returns any boards which use the provided filter id.
 
         This method can be executed by users without a valid software license
