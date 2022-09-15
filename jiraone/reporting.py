@@ -1590,9 +1590,8 @@ class Projects:
             init += 1000
 
         config["prev_list"], config["next_list"], \
-        config["column_data"], \
         config["set_headers_main"], config["make_file"], \
-        config["set_file"] = [], [], {}, [], [], []
+        config["set_file"] = [], [], [], [], []
 
         # Get an index of all columns within the first file
         # Then use it across other files in the list
@@ -1936,18 +1935,17 @@ class Projects:
                     """
                     # checks the headers and maps the data
                     # to the headers
-                    del make_item[0]
                     cook_item = populate_column_data(make_item, attr)
                     look_up = \
                         DotNotation(value=cook_item)
                     _main_dupe = deepcopy(make_item)
-                    minus, stop_loop = 1, 0
+                    stop_loop = 0
                     _limit_copy = deepcopy(config["set_headers_main"])
                     _limit = len(_limit_copy)
                     inner_stop, finish_loop = {"num": 0}, \
                                               len([row for
                                                    row in
-                                                   make_item]) - minus
+                                                   make_item])
                     # The below adds the values as they are gotten
                     # From a dictionary object
                     while True:
@@ -1977,8 +1975,10 @@ class Projects:
                     look_up.clear()  # clear all used list items from memory
 
                 # populate the first list with prev data
+                del copy_temp_read[0]  # remove the headers
                 data_provision(copy_temp_read, attr=False)
                 # populate the second list with current data
+                del push[0]  # remove the headers
                 data_provision(push, attr=True)
                 # Why call `data_provision` twice instead of recursion?
                 # - That would mean creating more variables and 2-3 lines of
