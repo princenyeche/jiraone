@@ -1,5 +1,11 @@
 # Jira one change log
 
+**Release 0.7.2** - 2022-10-04
+### Update #97
+* Patch to OAuth 2.0 connection error - which caused the connection not to work.
+* Added new method to the `endpoint` alias, `issue_link`, `work_logs`, `instance_info`, `task`, `worklog_properties`, `issue_watchers`, `issue_votes`, `webhooks`
+
+
 **Release 0.7.1** - 2022-09-15
 ### Patch #95
 * Patch to method `issue_export` which omit certain rows from final export.
