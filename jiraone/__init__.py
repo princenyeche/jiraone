@@ -27,7 +27,7 @@ from jiraone.reporting import PROJECT, USER, file_writer, file_reader, path_buil
 from jiraone.management import manage
 
 __author__ = "Prince Nyeche"
-__version__ = "0.7.1"
+__version__ = "0.7.2"
 __all__ = ["LOGIN",
            "endpoint",
            "echo",
