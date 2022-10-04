@@ -108,9 +108,8 @@ class Credentials(object):
            # previous expression
            LOGIN(oauth=client)
 
-        To store and reuse the oauth token, you will need to call the environmental variable.
-        This object is a string which can be stored to a database and pulled as an environmental
-        variable.
+        To store and reuse the oauth token, you will need to call the property value.
+        This object is a string which can be stored to a database and pulled as a variable.
 
         .. code-block:: python
 
@@ -136,9 +135,13 @@ class Credentials(object):
             add_log("Wrong data type received for the oauth argument.", "error")
             raise JiraOneErrors("wrong", "Excepting a dictionary object got {} instead."
                                 .format(type(oauth)))
-        if "client_id" not in oauth:
-            add_log("You seem to be missing a key in your oauth argument.", "debug")
-            raise JiraOneErrors("value", "You seem to be missing the `client_id` in your request.")
+        if "client_id" not in oauth or "client_secret" not in oauth or \
+                "callback_url" not in oauth:
+            add_log("You seem to be missing a key or keys in your oauth argument.", "debug")
+            raise JiraOneErrors("value", "You seem to be missing some vital "
+                                         "keys in your request."
+                                         "Please check your oauth supplied "
+                                         "data that all keys are present.")
         tokens = {}
         oauth_data = {
             "token_url": "https://auth.atlassian.com/oauth/token",
@@ -194,7 +197,8 @@ class Credentials(object):
                 self.__token_only_session__(extra)
                 get_cloud_id()
             else:
-                add_log("Token refresh has failed to revalidate", "debug")
+                add_log("Token refresh has failed to revalidate. Reason [{} - {}]"
+                        .format(get_token.reason, json.loads(get_token.content)), "debug")
                 raise JiraOneErrors("login", "Refreshing token failed with code {}"
                                     .format(get_token.status_code))
 
@@ -202,6 +206,16 @@ class Credentials(object):
             """Generates a random key for state variable."""
             char = string.ascii_lowercase
             return "".join(random.choice(char) for _ in range(i))
+
+        def validate_uri(uri) -> bool:
+            """Return sanitize version of the input url"""
+            import urllib.parse
+            check_url = oauth.get("callback_url").split("&")
+            hostname = None
+            for url in check_url:
+                if url.startswith("redirect_uri"):
+                    hostname = urllib.parse.unquote(url.split("=")[1])
+            return hostname == uri
 
         state = generate_state(12)
         if tokens:
@@ -214,7 +228,10 @@ class Credentials(object):
             print("Please click or copy the link into your browser and hit Enter!")
             print(callback)
             redirect_url = input("Enter the redirect url: \n")
-            code = redirect_url.split("?")[1].split("=")[1].split("&")[0]
+            # Check if the supplied url is true to the one which exist in callback_url
+            validate_url = validate_uri(redirect_url.split("?")[0].rstrip("/"))
+            assert validate_url is True, "Your URL seems invalid as it cannot be validated."
+            code = redirect_url.split("?")[1].split("&")[1].split("=")[-1]
             body = {
                 "grant_type": "authorization_code",
                 "client_id": oauth.get("client_id"),
@@ -222,7 +239,8 @@ class Credentials(object):
                 "code": code,
                 "redirect_uri": redirect_url
             }
-            get_token = requests.post(oauth_data["token_url"], json=body, headers=self.headers)
+            get_token = requests.post(oauth_data["token_url"], json=body,
+                                      headers=self.headers)
             if get_token.status_code < 300:
                 access_token = get_token.json()["access_token"]
                 refresh = get_token.json()["refresh_token"]
@@ -244,7 +262,8 @@ class Credentials(object):
                 get_cloud_id()
             else:
                 add_log("The connection using OAuth was unable to connect, please "
-                        "check your client key or client secret", "debug")
+                        "check your client key or client secret. Reason [{} - {}]"
+                        .format(get_token.reason, json.loads(get_token.content)), "debug")
                 raise JiraOneErrors("login", "Could not establish the OAuth connection.")
 
         print("Connected to instance:", self.instance_name)
@@ -279,6 +298,15 @@ class Credentials(object):
                       _type: str = "Bearer") -> None:
         """
         A session initializer to HTTP request.
+
+
+        .. versionadded:: 0.7.1
+
+        _type - Datatype(string) - Allows a change of the Authorization type
+
+        .. versionadded:: 0.6.5
+
+        sess - Datatype(string) - Allows the use of an Authorization header
 
         :param email: An email address or username
 
@@ -405,6 +433,32 @@ class Credentials(object):
         response = requests.request(*args, auth=self.auth_request,
                                     headers=self.headers, **kwargs)
         return response
+
+    @staticmethod
+    def load_jira(obj: object) -> None:
+        """Performs a login initialization from a ``Jira`` object.
+        The authentication, looks into basic authentication.
+
+        :param obj: A call to a ``JIRA`` Interface
+        :return: None
+        """
+        try:
+            if hasattr(obj, "JIRA"):
+                if obj.basic_auth:
+                    auth = {
+                        "user": obj._session.auth[0],
+                        "password": obj._session.auth[1],
+                        "url": obj._options["server"],
+                    }
+                    LOGIN(**auth)
+        except Exception as err:
+            raise JiraOneErrors("wrong",
+                                "You do not seem to have the Jira python "
+                                "package installed."
+                                " Please run pip install jira or python3 -m "
+                                "pip install jira "
+                                " to begin. Other errors: "
+                                " {}".format(err))
 
 
 class Echo(PrettyPrinter):
@@ -1047,6 +1101,463 @@ class EndPoints:
             return "{}/rest/api/{}/issue/{}/remotelink/{}". \
                 format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                        key_or_id, link_id)
+
+    @classmethod
+    def issue_link(cls,
+                   link_id: Optional[str] = None) -> str:
+        """
+        Use this operation to indicate a relationship between two
+        issues and optionally add a comment to the
+        from (outward) issue.
+
+        :request GET: Returns an issue link.
+
+        :request POST: Creates a link between two issues.
+             link_id required.
+
+        :request DELETE: Deletes an issue link. link_id required.
+
+        :param link_id: The ID of the issue link.
+
+        :return: str
+        """
+        if link_id:
+            return "{}/rest/api/{}/issueLink/{}" \
+                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                        link_id)
+        else:
+            return "{}/rest/api/{}/issueLink"\
+                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+
+    @classmethod
+    def work_logs(cls,
+                  key_or_id: Optional[str] = None,
+                  start_at: int = 0,
+                  max_results: int = 1048576,
+                  started_after: int = None,
+                  started_before: int = None,
+                  worklog_id: Optional[str] = None,
+                  expand: Optional[str] = None,
+                  notify_users: Optional[bool] = True,
+                  adjust_estimate: Optional[str] = "auto",
+                  new_estimate: Optional[str] = None,
+                  increase_by: Optional[str] = None,
+                  override_editable_flag: Optional[bool] = False,
+                  reduce_by: Optional[str] = None,
+                  since: Optional[int] = None) -> str:
+        """Returns worklogs for an issue, starting from
+        the oldest worklog or from the worklog started on or
+        after a date and time.
+
+        :request GET: Returns worklogs for an issue
+
+        :request GET: Returns a worklog. When a worklog_id is specified
+
+        :param key_or_id: The ID or key of the issue.
+
+
+        :param start_at: The index of the first item to
+               return in a page of results (page offset).
+
+
+        :param max_results: The maximum number of items to
+               return per page.
+
+
+        :param started_after: The worklog start date and time,
+                as a UNIX timestamp in milliseconds, after
+                which worklogs are returned.
+
+
+        :param started_before: The worklog start date and time,
+                as a UNIX timestamp in milliseconds, before which
+                worklogs are returned.
+
+
+        :request POST: Adds a worklog to an issue. Other query parameters
+          can be specified such as ``adjust_estimate`` argument.
+
+        :request PUT: Updates a worklog. When a worklog_id is specified
+
+        :request DELETE: Deletes a worklog from an issue. When a worklog_id
+           is specified. Other query parameters
+           can be specified such as ``adjust_estimate`` argument.
+
+
+        :param worklog_id: The ID of the worklog.
+
+
+        :param expand: Use expand to include additional information
+             about worklogs in the response.
+
+
+        :param notify_users: Whether users watching the issue are
+                            notified by email.
+
+
+        :param adjust_estimate: Defines how to update the issue's
+                time estimate, the options are
+             ``new``  Sets the estimate to a specific value,
+                       defined in newEstimate.
+             ``leave`` Leaves the estimate unchanged.
+             ``auto`` Updates the estimate by the difference
+                      between the original and updated value of
+                     timeSpent or timeSpentSeconds.
+             Valid values: new, leave, manual, auto
+
+
+        :param new_estimate: The value to set as the issue's remaining
+              time estimate, as days (#d),  hours (#h), or minutes (#m or #).
+              For example, 2d. Required when adjustEstimate is new.
+
+
+        :param override_editable_flag: Whether the worklog should be added
+               to the issue even if the issue is not editable.
+
+
+        :param increase_by: The amount to increase the issue's remaining
+               estimate by, as days (#d), hours (#h), or minutes (#m or #).
+               For example, 2d.
+
+
+        :param reduce_by: The amount to reduce the issue's remaining
+              estimate by, as days (#d), hours (#h), or minutes (#m).
+              For example, 2d.
+
+        :param since: The date and time, as a UNIX timestamp in
+               milliseconds, after which updated worklogs are returned.
+
+        :return: str
+
+        """
+
+        if key_or_id is not None and worklog_id is None:
+            if started_after is not None and started_before is None:
+                if expand is None:
+                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
+                           "&maxResults={}" \
+                           "&startedAfter={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                               else "latest",
+                                key_or_id, start_at, max_results,
+                                started_after)
+                else:
+                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
+                           "&maxResults={}&expand={}" \
+                           "&startedAfter={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                                else "latest",
+                                key_or_id, start_at, max_results, expand,
+                                started_after)
+            elif started_after is None and started_before is not None:
+                if expand is None:
+                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
+                           "&maxResults={}" \
+                           "&startedBefore={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                    else "latest",
+                                key_or_id, start_at, max_results,
+                                started_before)
+                else:
+                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
+                           "&maxResults={}&expand={}" \
+                           "&startedBefore={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                    else "latest",
+                                key_or_id, start_at, max_results, expand,
+                                started_before)
+            elif started_after is not None and started_before is not None:
+                if expand is None:
+                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
+                           "&maxResults={}" \
+                           "&startedBefore={}&startedAfter={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                    else "latest",
+                                key_or_id, start_at, max_results,
+                                started_before, started_after)
+                else:
+                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
+                           "&maxResults={}&expand={}" \
+                           "&startedBefore={}&startedAfter={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                    else "latest",
+                                key_or_id, start_at, max_results, expand,
+                                started_before, started_after)
+            else:
+                if expand is not None:
+                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
+                           "&maxResults={}&expand={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                                else "latest",
+                                key_or_id, start_at, max_results, expand)
+                elif expand is None:
+                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
+                               "&maxResults={}" \
+                            .format(LOGIN.base_url, "3" if LOGIN.api is True
+                                    else "latest",
+                                    key_or_id, start_at, max_results)
+                else:
+                    if adjust_estimate is not None:
+                        if adjust_estimate == "new":
+                            return "{}/rest/api/{}/issue/{}/worklog?" \
+                                   "&adjustEstimate={}" \
+                                   "&newEstimate={}" \
+                                   "&notifyUsers={}" \
+                                   "&overrideEditableFlag={}" \
+                                .format(LOGIN.base_url, "3"
+                            if LOGIN.api is True else "latest",
+                                        key_or_id,
+                                        adjust_estimate, new_estimate,
+                                        notify_users,
+                                        override_editable_flag)
+                        elif adjust_estimate == "manual":
+                            return "{}/rest/api/{}/issue/{}/worklog?" \
+                                   "&adjustEstimate={}" \
+                                   "&reduceBy={}" \
+                                   "&notifyUsers={}" \
+                                   "&overrideEditableFlag={}" \
+                                .format(LOGIN.base_url, "3"
+                            if LOGIN.api is True else "latest",
+                                        key_or_id,
+                                        adjust_estimate, reduce_by,
+                                        notify_users,
+                                        override_editable_flag)
+                        else:
+                            return "{}/rest/api/{}/issue/{}/worklog?" \
+                                   "&adjustEstimate={}" \
+                                   "&notifyUsers={}" \
+                                   "&overrideEditableFlag={}" \
+                                .format(LOGIN.base_url, "3"
+                                      if LOGIN.api is True else "latest",
+                                        key_or_id,
+                                        adjust_estimate,
+                                        notify_users,
+                                        override_editable_flag)
+
+        elif key_or_id is not None and worklog_id is not None:
+            if expand is None:
+                return "{}/rest/api/{}/issue/{}/worklog/{}" \
+                    .format(LOGIN.base_url, "3" if LOGIN.api is True
+                else "latest",
+                            key_or_id, worklog_id)
+            elif expand is not None:
+                return "{}/rest/api/{}/issue/{}/worklog/{}?expand={}" \
+                    .format(LOGIN.base_url, "3" if LOGIN.api is True
+                else "latest",
+                            key_or_id, worklog_id,
+                            expand)
+            elif adjust_estimate is not None:
+                if adjust_estimate == "new":
+                    return "{}/rest/api/{}/issue/{}/worklog/{}?" \
+                           "adjustEstimate={}&newEstimate={}" \
+                           "&notifyUsers={}&overrideEditableFlag={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                    else "latest",
+                                key_or_id, worklog_id,
+                                adjust_estimate, new_estimate, notify_users,
+                                override_editable_flag)
+                elif adjust_estimate == "manual":
+                    return "{}/rest/api/{}/issue/{}/worklog/{}?" \
+                           "adjustEstimate={}&increaseBy={}" \
+                           "&notifyUsers={}&overrideEditableFlag={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                    else "latest",
+                                key_or_id, worklog_id,
+                                adjust_estimate, increase_by, notify_users,
+                                override_editable_flag)
+
+        else:
+            if since is not None and expand is not None:
+                return "{}/rest/api/{}/worklog/updated?" \
+                       "expand={}&since={}" \
+                    .format(LOGIN.base_url, "3" if LOGIN.api is True
+                else "latest",
+                            expand, since)
+            elif since is not None and expand is None:
+                return "{}/rest/api/{}/worklog/deleted?since={}". \
+                    format(LOGIN.base_url, "3" if LOGIN.api is True
+                else "latest",
+                           since)
+            elif since is None and expand is not None:
+                return "{}/rest/api/{}/worklog/list?expand={}" \
+                    .format(LOGIN.base_url, "3" if LOGIN.api is True
+                else "latest",
+                            expand)
+            else:
+                raise JiraOneErrors("value", "At least one argument "
+                                             "should be passed"
+                                             " with this method.")
+
+    @classmethod
+    def webhooks(cls,
+                 uri: Optional[str] = None) -> str:
+        """Makes a call to the webhook API.
+        Only connect app or OAuth 2.0 can use this connection.
+
+        :request GET: Returns a paginated list of the webhooks
+             registered by the calling app.
+
+        :request POST: Registers webhooks.
+
+        :request DELETE: Removes webhooks by ID.
+            :body param: webhookIds - required List[int]
+
+        :param uri: A url path context
+                  *options available*
+
+                  * ``failed`` - Returns webhooks that have recently
+                         failed
+                  * ``refresh`` - Extends the life of webhook.
+
+        :request GET: After 72 hours the failure may no longer be
+           returned by this operation.
+
+        :request PUT: Webhooks registered through the REST
+            API expire after 30 days
+
+        :return: str
+        """
+        if uri:
+            return "{}/rest/api/{}/webhook/{}". \
+                format(LOGIN.base_url, "3" if LOGIN.api is True
+                       else "latest",
+                       uri)
+        else:
+            return "{}/rest/api/{}/webhook".\
+                format(LOGIN.base_url, "3" if LOGIN.api is True
+                else "latest")
+
+    @classmethod
+    def task(cls, task_id: Optional[str] = None,
+             method: Optional[str] = "GET") -> str:
+        """When a task has finished, this operation
+        returns the JSON blob applicable to the task
+
+        :request GET: Returns the status of a long-running
+             asynchronous task.
+
+        :request POST: Cancels a task.
+
+        :param task_id: The ID of the task.
+
+        :param method: A HTTP request type
+
+        :return: str
+        """
+        if method.lower() == "get":
+            return "{}/rest/api/3/task/{}"\
+            .format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
+                    else "latest",
+                    task_id)
+        else:
+            return "{}/rest/api/3/task/{}/cancel" \
+                .format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
+                      else "latest",
+                      task_id)
+
+    @classmethod
+    def issue_watchers(cls,
+                       key_or_id: Optional[str] = None,
+                       account_id: Optional[str] = None) -> str:
+        """This operation requires the Allow users
+        to watch issues option to be ON.
+
+        :request GET: Returns the watchers for an issue.
+
+        :request POST: Adds a user as a watcher of an issue
+            by passing the account ID of the user.
+
+        :request DELETE: Deletes a user as a watcher of an issue.
+
+
+        :param key_or_id: The ID or key of the issue.
+
+        :request POST: Returns, for the user, details of the
+            watched status of issues from a list.
+            :body param: issueIds - List[int]
+
+
+        :param account_id: The account ID of the user
+
+        :return: str
+        """
+        if key_or_id:
+            if account_id:
+                return "{}/rest/api/{}/issue/{}/watchers?accountId={}". \
+                    format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
+                           else "latest",
+                           key_or_id, account_id)
+            else:
+                return "{}/rest/api/{}/issue/{}/watchers". \
+                    format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
+                           else "latest",
+                           key_or_id)
+        else:
+            return "{}/rest/api/{}/issue/watching".\
+                format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
+                      else "latest")
+
+    @classmethod
+    def issue_votes(cls,
+                    key_or_id: Optional[str] = None) -> str:
+        """Return the  number of votes on an issue
+
+        :request GET: Returns details about the votes on an issue.
+
+        :request POST: Adds the user's vote to an issue.
+
+        :request DELETE: Deletes a user's vote from an issue.
+
+        :param key_or_id: The ID or key of the issue.
+
+        :return: str
+        """
+        return "{}/rest/api/{}/issue/{}/votes".\
+            format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
+                   else "latest",
+                   key_or_id)
+
+    @classmethod
+    def instance_info(cls):
+        """Returns licensing information about the Jira instance.
+        """
+        return "{}/rest/api/{}/instance/license"\
+            .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+
+    @classmethod
+    def worklog_properties(cls,
+                           key_or_id: Optional[str] = None,
+                           worklog_id: Optional[str] = None,
+                           property_key: Optional[str] = None) -> str:
+        """
+        Returns the worklog properties of an issue
+
+        :request GET: Returns the keys of all properties for a worklog.
+
+        :param key_or_id: The ID or key of the issue.
+
+        :param worklog_id: The ID of the worklog.
+
+        :request GET: Returns the value of a worklog property.
+
+        :request PUT: Sets the value of a worklog property.
+                :body param: The request body can contain any
+                      valid application/json.
+
+        :request DELETE: Deletes a worklog property.
+
+        :param property_key: The key of the property.
+
+        :return: str
+        """
+        if property_key is None:
+            return "{}/rest/api/{}/issue/{}/worklog/{}/properties" \
+                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                        key_or_id, worklog_id)
+        else:
+            return "{}/rest/api/{}/issue/{}/worklog/{}/properties/{}"\
+                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                        key_or_id, worklog_id, property_key)
 
     ################################################
     # Jira Software Specifics API endpoints
