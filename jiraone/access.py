@@ -434,32 +434,6 @@ class Credentials(object):
                                     headers=self.headers, **kwargs)
         return response
 
-    @staticmethod
-    def load_jira(obj: object) -> None:
-        """Performs a login initialization from a ``Jira`` object.
-        The authentication, looks into basic authentication.
-
-        :param obj: A call to a ``JIRA`` Interface
-        :return: None
-        """
-        try:
-            if hasattr(obj, "JIRA"):
-                if obj.basic_auth:
-                    auth = {
-                        "user": obj._session.auth[0],
-                        "password": obj._session.auth[1],
-                        "url": obj._options["server"],
-                    }
-                    LOGIN(**auth)
-        except Exception as err:
-            raise JiraOneErrors("wrong",
-                                "You do not seem to have the Jira python "
-                                "package installed."
-                                " Please run pip install jira or python3 -m "
-                                "pip install jira "
-                                " to begin. Other errors: "
-                                " {}".format(err))
-
 
 class Echo(PrettyPrinter):
     """A Class used to inherit from PrettyPrinter."""
