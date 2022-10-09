@@ -83,6 +83,8 @@ Example usage:
 
 * ``LOGIN.session`` represents the session from the initialization
 
+* ``LOGIN.auth2_0`` represents the oauth attribute for the property setter.
+
 **Methods**, available to the LOGIN alias, it returns a response object.
 
 The keyword argument of payload can be any json object you want to pass to the method. Subsequently, you can pass other keyword arguments
@@ -96,6 +98,8 @@ such as ``files``, ``data`` etc.
 
 * ``LOGIN.put(url, *args, payload=None, **kwargs)``
 
+* ``LOGIN.custom_method(*args, **kwargs)``
+
 
 .. note::
  
@@ -103,7 +107,7 @@ such as ``files``, ``data`` etc.
   This property is set once an OAuth authentication  has been initialized. If an OAuth session is not created, the value won't return anything.
   
   Also, if you want to save the OAuth data session into a ``DB`` of ``file``, you can call this property value ``LOGIN.save_oauth``. 
-  To access the saved oauth session, please see the example used by the oauth method. You will need to push the data to the environment variabled called ``JIRAONE_OAUTH``.
+  To access the saved oauth session, please see the example used by the oauth method. You will need to push the data to the property setter using ``LOGIN.save_oauth``.
 
 
 
@@ -167,6 +171,7 @@ This function helps in creating a csv file or a normal file. It comes with the b
   * ``mode``: string - file mode, available options ["a", "w", "a+", "w+", "wb"], by default the mode is set to "a+".
   * ``content``: string - outputs the file in bytes.
   * ``delimiter``: string - a file separator. Defaults to ","
+  * ``encoding``: string - a string of character encoding. Defaults to "utf-8"
  Example usage:
  
 .. code-block:: python
