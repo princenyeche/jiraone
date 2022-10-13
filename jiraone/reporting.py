@@ -1026,9 +1026,10 @@ class Projects:
                 else:
                     print("Starting extraction from scratch.")
                     set_up = None
-        os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT) if allow_cp is True else None
+        fd = os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT) if allow_cp is True else None
         file_writer(folder=folder, file_name=file, data=headers, mode="w+") if set_up is None else None
         depth = 1
+        fd.close()
         while True:
             load = LOGIN.get(endpoint.search_issues_jql(query=set_up["jql"], start_at=set_up["iter"],
                                                         max_results=100)) if back_up is True and depth == 1 else \
