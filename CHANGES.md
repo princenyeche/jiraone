@@ -1,5 +1,28 @@
 # Jira one change log
 
+**Release 0.7.3** - 2022-10-28
+### Update #98
+* Patch to file descriptor error in windows machine. Thanks to [@NomadSU](https://github.com/NomadSU)
+* Patch to file_writer encoding. This will help to prevent any encoding errors that might happen due to non utf-8 encoding use cases.
+* Added a new method `LOGIN.from_jira()` which takes an instance of the `jira` object from the python jira package.
+  * This allows the ability to access jira's object methods, classes and properties. Making it possible to combine both 
+   jiraone's and jira's packages as one. Please note this will only work with basic authentication as of now!
+
+Example: 
+```python
+from jira import JIRA
+from jiraone import LOGIN, endpoint
+
+my_jira = JIRA(server="https://nexusfive.atlassian.net",
+                 basic_auth=("prince@example.com",
+                 "MXKSlsXXXXX"))
+LOGIN.from_jira(my_jira)
+print(LOGIN.get(endpoint.myself()))
+# response
+# <Response [200]>
+```
+
+
 **Release 0.7.2** - 2022-10-04
 ### Update #97
 * Patch to OAuth 2.0 connection error - which caused the connection not to work.

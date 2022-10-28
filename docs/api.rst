@@ -63,6 +63,20 @@ Example usage:
  LOGIN(user=user, password=password, url=link)
 
 
+**Adding your own custom SSL or self-signed certificate**
+ 
+  You can do this by providing a direct path to your certificate. This way, the entire jiraone library can use your self-signed certificate in performing the HTTP request.
+  
+  For example::
+   
+   import os
+   
+   your_cert_path = "direct_absolute_path/to/cert"
+   os.environ["REQUESTS_CA_BUNDLE"] = your_cert_path
+   # before calling jiraone statements
+ 
+  
+  
 **Attributes**, available to the LOGIN alias
 
 * ``LOGIN.base_url``
