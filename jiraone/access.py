@@ -414,7 +414,7 @@ class Credentials(object):
 
            import jiraone
            # previous login expression
-           req = jiraone.LOGIN.custom_method('GET', 'https://elfapp.website')
+           req = jiraone.LOGIN.custom_method('GET', 'https://nexusfive.atlassian.net')
            print(req)
            # <Response [200]>
 
@@ -433,6 +433,84 @@ class Credentials(object):
         response = requests.request(*args, auth=self.auth_request,
                                     headers=self.headers, **kwargs)
         return response
+
+    @staticmethod
+    def from_jira(obj: object) -> Any:
+        """Performs a login initialization from a ``JIRA`` object.
+        The authentication, looks into basic auth from
+        the ``jira`` python package. It returns the same JIRA object
+        after authentication happens, so you can easily access all
+        the authenticated instances both ``jira`` and ``jiraone``
+        packages.
+
+        Example 1::
+
+         from jira import JIRA
+         from jiraone import LOGIN, endpoint
+
+         my_jira = JIRA(server="https://nexusfive.atlassian.net",
+                 basic_auth=("prince@example.com",
+                 "MXKSlsXXXXX"))
+         LOGIN.from_jira(my_jira)
+         print(LOGIN.get(endpoint.myself()))
+         # response
+         # <Response [200]>
+
+
+        You can assign a variable to the jiraone :meth:`from_jira`
+        and continue to use both ``jira`` and ``jiraone`` packages
+        simultaneously.
+
+        Example 2::
+
+         from jira import JIRA
+         from jiraone import LOGIN, PROJECT
+
+         jiras = JIRA(server="https://nexusfive.atlassian.net",
+                 basic_auth=("prince@example.com",
+                 "MXKSlsXXXXX"))
+         my_jira = LOGIN.from_jira(my_jira)
+         # Making a request to JIRA's methods
+         print(my_jira.myself())
+         # response
+         # {'self': 'https://example.atlassian.net/rest/api/2/user?
+                     accountId=557058:xxx',
+                    'accountId': '557058:xxx'}
+         # Making a request to jiraone's methods
+         jql = "project = CT ORDER BY Created DESC"
+         print(PROJECT.issue_count(jql))
+         # response
+         # {'count': 18230, 'max_page': 18}
+
+        :param obj: A call to a ``JIRA`` Interface
+
+        :return: JIRA object
+        """
+        try:
+            if hasattr(obj, "_session"):
+                if obj._session.auth:
+                    auth = {
+                        "user": obj._session.auth[0],
+                        "password": obj._session.auth[1],
+                        "url": obj._options["server"],
+                    }
+                    LOGIN(**auth)
+                    return obj
+                else:
+                    exit("Unable to read other values within the ``JIRA``"
+                          " object. Authentication cannot proceed further.")
+            else:
+                exit("Could not detect a `JIRA` object from the command."
+                     " Please check that you have the `jira` python package "
+                     "installed.")
+        except ImportError as err:
+            raise JiraOneErrors("wrong",
+                                "You do not seem to have the Jira python "
+                                "package installed."
+                                " Please run pip install jira or python3 -m "
+                                "pip install jira "
+                                " to begin. Other errors: "
+                                " {}".format(err))
 
 
 class Echo(PrettyPrinter):
