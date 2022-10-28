@@ -2577,8 +2577,7 @@ def file_reader(folder: str = WORK_PATH, file_name: str = None, mode: str = "r",
             if skip is True:
                 next(read, None)
             if content is True:
-                feed = f.read() if "encoding" not in kwargs else f.read().encode(encoding,
-                                                                                 errors=errors)
+                feed = f.read() if "encoding" not in kwargs else f.read().encode(encoding)
             load = [d for d in read]
             add_log(f"Read file {file_name}", "info")
             return load if content is False else feed
