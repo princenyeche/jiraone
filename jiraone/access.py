@@ -440,7 +440,7 @@ class Credentials(object):
         The authentication, looks into basic auth from
         the ``jira`` python package. It returns the same JIRA object
         after authentication happens, so you can easily access all
-        the authenticated instances both ``jira`` and ``jiraone``
+        the authenticated instances of both ``jira`` and ``jiraone``
         packages.
 
         Example 1::
@@ -457,7 +457,7 @@ class Credentials(object):
          # <Response [200]>
 
 
-        You can assign a variable to the jiraone :meth:`from_jira`
+        You can assign a variable to the jiraone :meth:`LOGIN.from_jira`
         and continue to use both ``jira`` and ``jiraone`` packages
         simultaneously.
 
