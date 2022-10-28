@@ -1026,7 +1026,9 @@ class Projects:
                 else:
                     print("Starting extraction from scratch.")
                     set_up = None
-        os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT) if allow_cp is True else None
+        descriptor = os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT) \
+            if allow_cp is True else None
+        os.close(descriptor) if allow_cp is True else None
         file_writer(folder=folder, file_name=file, data=headers, mode="w+") if set_up is None else None
         depth = 1
         while True:
@@ -1346,13 +1348,13 @@ class Projects:
 
                   **Available options**
 
-                  temp_file: Datatype (str) A temporary file name
+                  * temp_file: Datatype (str) A temporary file name
                   when combining the exported file.
 
-                  final_file: Datatype (str) Name of the final
+                  * final_file: Datatype (str) Name of the final
                   combined CSV file name.
 
-                  target: Datatype (str or dict) Ability to change or get
+                  * target: Datatype (str or dict) Ability to change or get
                   certain values from another instance. If and only if it
                   is the same user who exist on both. As the same
                   authentication needs to be used to extract or create the
@@ -1362,7 +1364,8 @@ class Projects:
 
                   When used as a string, just supply the instance baseURL
                   as string only.
-                  .. code-block: python
+
+                  .. code-block:: python
 
                      # previous expression
                      base = "https://yourinstance.atlassian.net"
@@ -1371,7 +1374,7 @@ class Projects:
                   Example of dict construct which can be stored as
                   a ``.json`` file.
 
-                  .. code-block: json
+                  .. code-block:: json
 
                      {
                       "user": "prince@example.com",
@@ -1380,7 +1383,7 @@ class Projects:
                      }
 
 
-                  fields: Datatype (list) Ability to alter the row value
+                  * fields: Datatype (list) Ability to alter the row value
                   of a field. Useful when you want to change the value
                   used for imports into Jira. Such as sprint name to id
                   or username to accountId (Server or DC to cloud migration).
@@ -1938,7 +1941,6 @@ class Projects:
                     cook_item = populate_column_data(make_item, attr)
                     look_up = \
                         DotNotation(value=cook_item)
-                    _main_dupe = deepcopy(make_item)
                     stop_loop = 0
                     _limit_copy = deepcopy(config["set_headers_main"])
                     _limit = len(_limit_copy)
@@ -2149,8 +2151,6 @@ class Projects:
                         for rows_ in columns_:
                             if _max_length == length:
                                 break
-                            if start == 0:
-                                continue
                             if start > 0:
                                 if check_id(_max_length, field_column) \
                                         and rows_ != "" \
@@ -2214,15 +2214,17 @@ class Projects:
               .format(path_builder(folder, final_file)))
 
     @staticmethod
-    def issue_count(jql: Optional[str] = None) -> dict:
+    def issue_count(jql: str) -> dict:
         """Returns the total count of issues within a
         JQL search phrase.
 
-        :param jql: A valid JQL query
+        :param jql: A valid JQL query (required)
+
+        :type jql: str
 
          Example of the dict return value
 
-        .. code-block: json
+        .. code-block:: json
            {
             "count": 2345,
             "max_page": 2
@@ -2264,7 +2266,8 @@ class Users:
 
     You can customize it to determine which user you're looking for.
 
-    * It's method such as ``get_all_users`` displays active or inactive users, so you'll be getting all users
+    * It's method such as ``get_all_users`` displays active or inactive users,
+       so you'll be getting all users
 
     """
     user_list = deque()
@@ -2496,6 +2499,11 @@ def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable =
 
                encoding: defaults to utf-8 - datatype (strings)
 
+    .. versionchanged:: 0.7.3
+
+    errors - added keyword argument which helps determine how encoding and decording
+             errors are handled
+
     .. versionchanged:: 0.6.3
 
     encoding - added keyword argument encoding to handle encoding issues on Windows
@@ -2507,8 +2515,10 @@ def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable =
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
     file = path_builder(path=folder, file_name=file_name)
     encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
+    errors = kwargs["errors"] if "errors" in kwargs else "replace"
     # Bug:fix:JIR-8 on https://github.com/princenyeche/jiraone/issues/89
-    windows = open(file, mode, encoding=encoding, newline="") \
+    windows = open(file, mode, encoding=encoding, newline="",
+                   errors=errors) \
         if system() == "Windows" and mark != "file" else open(file, mode)
     if mode:
         with windows as f:
@@ -2545,13 +2555,21 @@ def file_reader(folder: str = WORK_PATH, file_name: str = None, mode: str = "r",
               delimiter: defaults to comma.
 
 
+    .. versionchanged:: 0.7.3
+
+    errors - added keyword argument which helps determine how encoding and decording
+             errors are handled
+
+
     :return: A list comprehension data or binary data
     """
     from platform import system
     file = path_builder(path=folder, file_name=file_name)
     encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
+    errors = kwargs["errors"] if "errors" in kwargs else "replace"
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
-    windows = open(file, mode, encoding=encoding, newline="") \
+    windows = open(file, mode, encoding=encoding, newline="",
+                   errors=errors) \
         if system() == "Windows" and content is False else open(file, mode)
     if mode:
         with windows as f:
@@ -2559,7 +2577,8 @@ def file_reader(folder: str = WORK_PATH, file_name: str = None, mode: str = "r",
             if skip is True:
                 next(read, None)
             if content is True:
-                feed = f.read() if "encoding" not in kwargs else f.read().encode(encoding)
+                feed = f.read() if "encoding" not in kwargs else f.read().encode(encoding,
+                                                                                 errors=errors)
             load = [d for d in read]
             add_log(f"Read file {file_name}", "info")
             return load if content is False else feed
@@ -2614,8 +2633,10 @@ def delete_attachments(
         **kwargs: Union[str, bool]
 ) -> None:
     """
-    A function that helps to delete attachments on Jira issues. You can export a JQL search of issues
-    containing the ``Attachment`` column either in CSV or xlsx from your advanced filter search,
+    A function that helps to delete attachments on Jira issues.
+    You can export a JQL search of issues
+    containing the ``Attachment`` column either in CSV or xlsx
+    from your advanced filter search,
     or you can search using a JQL search query to delete attachments.
 
     .. code-block:: python
@@ -2985,7 +3006,8 @@ def delete_attachments(
             else:
                 print("Starting search from scratch.")
                 add_log("Starting search from scratch, any previous data will be removed", "info")
-    os.open(data_file, flags=os.O_CREAT) if allow_cp is True else None
+    descriptor = os.open(data_file, flags=os.O_CREAT) if allow_cp is True else None
+    os.close(descriptor) if allow_cp is True else None
     count, cycle, step = 0, 0, 0
     if file is None:
         if search is None:
