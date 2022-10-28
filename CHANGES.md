@@ -2,7 +2,7 @@
 
 **Release 0.7.3** - 2022-10-28
 ### Update #98
-* Patch to file descriptor error in windows machine
+* Patch to file descriptor error in windows machine. Thanks to [@NomadSU](https://github.com/NomadSU)
 * Patch to file_writer encoding. This will help to prevent any encoding errors that might happen due to non utf-8 encoding use cases.
 * Added a new method `LOGIN.from_jira()` which takes an instance of the `jira` object from the python jira package.
   * This allows the ability to access jira's object methods, classes and properties. Making it possible to combine both 
