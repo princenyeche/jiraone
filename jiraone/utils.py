@@ -8,35 +8,36 @@ import typing as t
 
 
 class DotNotation(dict):
-    """Provides the ability of using a dot notion on any dict object.
+    """Provides the ability of using a dot notation on any dict object.
     Makes it easier when working with dictionary objects.
 
-    .. code-block:: python
-
-        # for dict operation
-        my_dict = {"name": "John", "unit": 7}
-        notation =  DotNotation(my_dict)
-        print(notation.name)
-        # result
-        # >>> John
-
-        # for list[dict] operations
-        my_dict = [{"name": "John", "unit": 7}, {"name": "Jane", "unit" 8}]
-        notation =  DotNotation(value=my_dict)
-        print(notation.value[0].name)
-        # result - access the list using index
-        # >>> John
     """
 
     def __init__(self, *args, **kwargs) -> None:
         """
-        Initializes the data within this class.
+         Initializes the data within this class.
 
-        :param args: Any argument
+        .. code-block:: python
 
-        :param kwargs: Any argument
+             # for dict operation
+             my_dict = {"name": "John", "unit": 7}
+             notation =  DotNotation(my_dict)
+             print(notation.name)
+             # result
+             # >>> John
 
-        :return: None
+             # for list[dict] operations
+             my_dict = [{"name": "John", "unit": 7}, {"name": "Jane", "unit" 8}]
+             notation =  DotNotation(value=my_dict)
+             print(notation.value[0].name)
+             # result - access the list using index
+             # >>> John
+
+         :param args: Any argument
+
+         :param kwargs: Any argument
+
+         :return: None
 
         """
         super(DotNotation, self).__init__(*args, **kwargs)

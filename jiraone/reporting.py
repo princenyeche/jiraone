@@ -19,10 +19,14 @@ class Projects:
     """Get report on a Project based on user or user's attributes or groups."""
 
     @staticmethod
-    def projects_accessible_by_users(*args: str, project_folder: str = "Project",
-                                     project_file_name: str = "project_file.csv",
-                                     user_extraction_file: str = "project_extract.csv",
-                                     permission: str = "BROWSE", **kwargs) -> None:
+    def projects_accessible_by_users(
+        *args: str,
+        project_folder: str = "Project",
+        project_file_name: str = "project_file.csv",
+        user_extraction_file: str = "project_extract.csv",
+        permission: str = "BROWSE",
+        **kwargs,
+    ) -> None:
         """
         Send an argument as String equal to a value, example: status=live.
 
@@ -63,18 +67,30 @@ class Projects:
                 display_name = user[2]
                 active_status = user[3]
                 project_key = keys
-                find = LOGIN.get(endpoint.find_users_with_permission(account_id, project_key, permission))
+                find = LOGIN.get(
+                    endpoint.find_users_with_permission(
+                        account_id, project_key, permission
+                    )
+                )
                 data = json.loads(find.content)
                 if str(data) == "[]":
-                    raw_vision = [display_name, f"Has {permission} Permission: False",
-                                  f"Project: {name}", f"User Status: {active_status}"]
+                    raw_vision = [
+                        display_name,
+                        f"Has {permission} Permission: False",
+                        f"Project: {name}",
+                        f"User Status: {active_status}",
+                    ]
                     file_writer(project_folder, project_file_name, data=raw_vision)
                 else:
                     for d in data:
                         d_name = d["displayName"]
                         active = d["active"]
-                        raw_vision = [d_name, f"Has {permission} Permission: {active}",
-                                      f"Project: {name}", f"User Status: {active_status}"]
+                        raw_vision = [
+                            d_name,
+                            f"Has {permission} Permission: {active}",
+                            f"Project: {name}",
+                            f"User Status: {active_status}",
+                        ]
 
                         file_writer(project_folder, project_file_name, data=raw_vision)
 
@@ -93,12 +109,23 @@ class Projects:
                     if "insight" in key:
                         insight = key["insight"]
                         if "totalIssueCount" and "lastIssueUpdateTime" in insight:
-                            raw = [keys, name, f"{insight['totalIssueCount']}",
-                                   f"{insight['lastIssueUpdateTime']}"]
+                            raw = [
+                                keys,
+                                name,
+                                f"{insight['totalIssueCount']}",
+                                f"{insight['lastIssueUpdateTime']}",
+                            ]
                             project()
-                        elif "totalIssueCount" in insight and "lastIssueUpdateTime" not in insight:
-                            raw = [keys, name, f"{insight['totalIssueCount']}",
-                                   "No data available"]
+                        elif (
+                            "totalIssueCount" in insight
+                            and "lastIssueUpdateTime" not in insight
+                        ):
+                            raw = [
+                                keys,
+                                name,
+                                f"{insight['totalIssueCount']}",
+                                "No data available",
+                            ]
                             project()
                     else:
                         raw = [keys, name, "No data available", "No data available"]
@@ -106,19 +133,28 @@ class Projects:
 
                 if count_start_at > results["total"]:
                     print("Project Reporting Completed")
-                    print("File extraction completed. Your file is located at {}"
-                          .format(path_builder(path=project_folder, file_name=project_file_name)))
+                    print(
+                        "File extraction completed. Your file is located at {}".format(
+                            path_builder(
+                                path=project_folder, file_name=project_file_name
+                            )
+                        )
+                    )
                     add_log("Project Reporting Completed", "info")
                     break
             else:
-                sys.stderr.write("Unable to fetch data status {} ".format(load.status_code))
+                sys.stderr.write(
+                    "Unable to fetch data status {} ".format(load.status_code)
+                )
                 add_log(f"Data retrieval failure due to {load.reason}", "error")
                 sys.exit(1)
 
     @staticmethod
-    def dashboards_shared_with(dashboard_folder: str = "Dashboard",
-                               dashboard_file_name: str = "dashboard_file.csv",
-                               **kwargs) -> None:
+    def dashboards_shared_with(
+        dashboard_folder: str = "Dashboard",
+        dashboard_file_name: str = "dashboard_file.csv",
+        **kwargs,
+    ) -> None:
         """
         Retrieve the Dashboard Id/Name/owner and who it is shared with.
 
@@ -138,7 +174,12 @@ class Projects:
         put_list = deque()  # arrange the different values associated with dashboard
         dump_list = deque()  # dump the results into our csv writer
         headers = ["Dashboard Id", "Dashboard Name", "Owner", "Shared Permission"]
-        file_writer(folder=dashboard_folder, file_name=dashboard_file_name, data=headers, **kwargs)
+        file_writer(
+            folder=dashboard_folder,
+            file_name=dashboard_file_name,
+            data=headers,
+            **kwargs,
+        )
 
         while True:
             load = LOGIN.get(endpoint.search_for_dashboard(start_at=count_start_at))
@@ -185,20 +226,29 @@ class Projects:
                         dash_run()
                         put_list = deque()
 
-                file_writer(dashboard_folder, dashboard_file_name, data=dump_list, mark="many")
+                file_writer(
+                    dashboard_folder, dashboard_file_name, data=dump_list, mark="many"
+                )
 
                 if count_start_at > results["total"]:
                     print("Dashboard Reporting Completed")
-                    print("File extraction completed. Your file is located at {}"
-                          .format(path_builder(path=dashboard_folder, file_name=dashboard_file_name)))
+                    print(
+                        "File extraction completed. Your file is located at {}".format(
+                            path_builder(
+                                path=dashboard_folder, file_name=dashboard_file_name
+                            )
+                        )
+                    )
                     add_log("Dashboard Reporting Completed", "info")
                     break
 
     @staticmethod
-    def get_all_roles_for_projects(roles_folder: str = "Roles",
-                                   roles_file_name: str = "roles_file.csv",
-                                   user_extraction: str = "role_users.csv",
-                                   **kwargs) -> None:
+    def get_all_roles_for_projects(
+        roles_folder: str = "Roles",
+        roles_file_name: str = "roles_file.csv",
+        user_extraction: str = "role_users.csv",
+        **kwargs,
+    ) -> None:
         """
         Get the roles available in a project and which user is assigned to which
         role within the project.
@@ -214,9 +264,18 @@ class Projects:
         :return: None
         """
         count_start_at = 0
-        headers = ["Project Id ", "Project Key", "Project Name", "Project roles", "User AccountId", "User DisplayName",
-                   "User role in Project"]
-        file_writer(folder=roles_folder, file_name=roles_file_name, data=headers, **kwargs)
+        headers = [
+            "Project Id ",
+            "Project Key",
+            "Project Name",
+            "Project roles",
+            "User AccountId",
+            "User DisplayName",
+            "User role in Project",
+        ]
+        file_writer(
+            folder=roles_folder, file_name=roles_file_name, data=headers, **kwargs
+        )
 
         # get extraction of projects data
         def role_on() -> None:
@@ -270,9 +329,20 @@ class Projects:
                             project_key = data[1]
                             project_name = data[2]
                             project_roles = data[3]
-                            raw_dump = [project_id, project_key, project_name, project_roles, account_id, display_name,
-                                        role_puller]
-                            file_writer(folder=roles_folder, file_name=roles_file_name, data=raw_dump)
+                            raw_dump = [
+                                project_id,
+                                project_key,
+                                project_name,
+                                project_roles,
+                                account_id,
+                                display_name,
+                                role_puller,
+                            ]
+                            file_writer(
+                                folder=roles_folder,
+                                file_name=roles_file_name,
+                                data=raw_dump,
+                            )
 
                         for data in role_list:
                             pull_data()
@@ -281,7 +351,9 @@ class Projects:
                     project_role_list = deque()
 
         USER.get_all_users(folder=roles_folder, file=user_extraction, **kwargs)
-        read_users = file_reader(folder=roles_folder, file_name=user_extraction, **kwargs)
+        read_users = file_reader(
+            folder=roles_folder, file_name=user_extraction, **kwargs
+        )
         while True:
             init = LOGIN.get(endpoint.get_projects(start_at=count_start_at))
             if init.status_code == 200:
@@ -294,14 +366,19 @@ class Projects:
                     role_on()
             count_start_at += 50
 
-        print("File extraction completed. Your file is located at {}".format(path_builder
-                                                                             (path=roles_folder,
-                                                                              file_name=roles_file_name)))
+        print(
+            "File extraction completed. Your file is located at {}".format(
+                path_builder(path=roles_folder, file_name=roles_file_name)
+            )
+        )
         add_log("File extraction completed", "info")
 
-    def get_attachments_on_projects(self, attachment_folder: str = "Attachment",
-                                    attachment_file_name: str = "attachment_file.csv",
-                                    **kwargs) -> None:
+    def get_attachments_on_projects(
+        self,
+        attachment_folder: str = "Attachment",
+        attachment_file_name: str = "attachment_file.csv",
+        **kwargs,
+    ) -> None:
         """Return all attachments of a Project or Projects
 
         Get the size of attachments on an Issue, count those attachments collectively and return the total number
@@ -317,9 +394,23 @@ class Projects:
         """
         attach_list = deque()
         count_start_at = 0
-        headers = ["Project id", "Project key", "Project name", "Issue key", "Attachment size",
-                   "Attachment type", "Name of file", "Created on by user", "Attachment url"]
-        file_writer(folder=attachment_folder, file_name=attachment_file_name, data=headers, **kwargs)
+        headers = [
+            "Project id",
+            "Project key",
+            "Project name",
+            "Issue key",
+            "Attachment size",
+            "Attachment type",
+            "Name of file",
+            "Created on by user",
+            "Attachment url",
+        ]
+        file_writer(
+            folder=attachment_folder,
+            file_name=attachment_file_name,
+            data=headers,
+            **kwargs,
+        )
 
         def pull_attachment_sequence() -> None:
             """
@@ -350,26 +441,43 @@ class Projects:
                                     :return: None
                                     """
                                     file_name = attach["filename"]  # name of the file
-                                    created = attach["created"]  # datetime need to convert it
-                                    attachment_size = attach["size"]  # in bytes, need to convert to mb
+                                    created = attach[
+                                        "created"
+                                    ]  # datetime need to convert it
+                                    attachment_size = attach[
+                                        "size"
+                                    ]  # in bytes, need to convert to mb
                                     mime_type = attach["mimeType"]
                                     attachment_url = attach["content"]
 
                                     calc_size = self.byte_converter(attachment_size)
                                     calc_date = self.date_converter(created)
 
-                                    pull = [project_id, project_key, project_name, keys, calc_size, mime_type,
-                                            file_name, f"{calc_date} by {display_name}", attachment_url]
+                                    pull = [
+                                        project_id,
+                                        project_key,
+                                        project_name,
+                                        keys,
+                                        calc_size,
+                                        mime_type,
+                                        file_name,
+                                        f"{calc_date} by {display_name}",
+                                        attachment_url,
+                                    ]
                                     attach_list.append(pull)
 
                                 pull_attachment()
 
             raw_data = [x for x in attach_list]
-            file_writer(attachment_folder, attachment_file_name, data=raw_data, mark="many")
+            file_writer(
+                attachment_folder, attachment_file_name, data=raw_data, mark="many"
+            )
             attach_list.clear()
 
         while True:
-            get_issue = LOGIN.get(endpoint.search_issues_jql(start_at=count_start_at, **kwargs))
+            get_issue = LOGIN.get(
+                endpoint.search_issues_jql(start_at=count_start_at, **kwargs)
+            )
             if get_issue.status_code == 200:
                 result_data = json.loads(get_issue.content)
                 if count_start_at > result_data["total"]:
@@ -403,21 +511,42 @@ class Projects:
                 _attach_type = i[6]
                 _created_by = i[7]
                 _attach_url = i[8]
-                raw_data_file = [_project_id, _project_key, _project_name, _issue_key,
-                                 _attach_size, _file_name, _attach_type, _created_by, _attach_url]
+                raw_data_file = [
+                    _project_id,
+                    _project_key,
+                    _project_name,
+                    _issue_key,
+                    _attach_size,
+                    _file_name,
+                    _attach_type,
+                    _created_by,
+                    _attach_url,
+                ]
                 file_writer(attachment_folder, attachment_file_name, data=raw_data_file)
 
             # lastly we want to append the total sum of attachment size.
-            raw_data_file = ["", "", "", "", "Total Size: {:.2f} MB".format(calc_made), "", "", "", ""]
+            raw_data_file = [
+                "",
+                "",
+                "",
+                "",
+                "Total Size: {:.2f} MB".format(calc_made),
+                "",
+                "",
+                "",
+                "",
+            ]
             file_writer(attachment_folder, attachment_file_name, data=raw_data_file)
 
         read_file = file_reader(attachment_folder, attachment_file_name, skip=True)
         file_writer(attachment_folder, attachment_file_name, data=headers, mode="w")
         re_write()
 
-        print("File extraction completed. Your file is located at {}".format(path_builder
-                                                                             (path=attachment_folder,
-                                                                              file_name=attachment_file_name)))
+        print(
+            "File extraction completed. Your file is located at {}".format(
+                path_builder(path=attachment_folder, file_name=attachment_file_name)
+            )
+        )
         add_log("File extraction completed", "info")
 
     @staticmethod
@@ -501,13 +630,15 @@ class Projects:
         return "Size: {:.2f} {}".format(visor, unit)
 
     @staticmethod
-    def move_attachments_across_instances(attach_folder: str = "Attachment",
-                                          attach_file: str = "attachment_file.csv",
-                                          key: int = 3,
-                                          attach: int = 8,
-                                          file: int = 6,
-                                          last_cell: bool = True,
-                                          **kwargs) -> None:
+    def move_attachments_across_instances(
+        attach_folder: str = "Attachment",
+        attach_file: str = "attachment_file.csv",
+        key: int = 3,
+        attach: int = 8,
+        file: int = 6,
+        last_cell: bool = True,
+        **kwargs,
+    ) -> None:
         """Ability to post an attachment into another Instance.
 
         given the data is extracted from a csv file which contains the below information
@@ -543,7 +674,9 @@ class Projects:
 
          :return: None
         """
-        read = file_reader(folder=attach_folder, file_name=attach_file, skip=True, **kwargs)
+        read = file_reader(
+            folder=attach_folder, file_name=attach_file, skip=True, **kwargs
+        )
         add_log("Reading attachment {}".format(attach_file), "info")
         count = 0
         cols = read
@@ -557,15 +690,28 @@ class Projects:
             # use the file's keyword args to send multipart/form-data in the post request of LOGIN.post
             payload = {"file": (_file_name, fetch)}
             # modified our initial headers to accept X-Atlassian-Token to avoid (CSRF/XSRF)
-            new_headers = {"Accept": "application/json",
-                           "X-Atlassian-Token": "no-check"}
+            new_headers = {
+                "Accept": "application/json",
+                "X-Atlassian-Token": "no-check",
+            }
             LOGIN.headers = new_headers
-            run = LOGIN.post(endpoint.issue_attachments(keys, query="attachments"), files=payload)
+            run = LOGIN.post(
+                endpoint.issue_attachments(keys, query="attachments"), files=payload
+            )
             if run.status_code != 200:
-                print("Attachment not added to {}".format(keys), "Status code: {}".format(run.status_code))
-                add_log("Attachment not added to {} due to {}".format(keys, run.reason), "error")
+                print(
+                    "Attachment not added to {}".format(keys),
+                    "Status code: {}".format(run.status_code),
+                )
+                add_log(
+                    "Attachment not added to {} due to {}".format(keys, run.reason),
+                    "error",
+                )
             else:
-                print("Attachment added to {}".format(keys), "Status code: {}".format(run.status_code))
+                print(
+                    "Attachment added to {}".format(keys),
+                    "Status code: {}".format(run.status_code),
+                )
                 add_log("Attachment added to {}".format(keys), "info")
             # remove the last column since if it contains empty cells.
             if last_cell is True:
@@ -573,11 +719,14 @@ class Projects:
                     break
 
     @staticmethod
-    def download_attachments(file_folder: str = None, file_name: str = None,
-                             download_path: str = "Downloads",
-                             attach: int = 8,
-                             file: int = 6,
-                             **kwargs) -> None:
+    def download_attachments(
+        file_folder: str = None,
+        file_name: str = None,
+        download_path: str = "Downloads",
+        attach: int = 8,
+        file: int = 6,
+        **kwargs,
+    ) -> None:
         """Download the attachments to your local device read from a csv file.
 
         we assume you're getting this from   ``def get_attachments_on_project()`` method.
@@ -612,16 +761,26 @@ class Projects:
             attachment = r[attach]
             _file_name = r[file]
             fetch = LOGIN.get(attachment)
-            file_writer(download_path, file_name=_file_name, mode="wb", content=fetch.content, mark="file")
-            print("Attachment downloaded to {}".format(download_path), "Status code: {}".format(fetch.status_code))
+            file_writer(
+                download_path,
+                file_name=_file_name,
+                mode="wb",
+                content=fetch.content,
+                mark="file",
+            )
+            print(
+                "Attachment downloaded to {}".format(download_path),
+                "Status code: {}".format(fetch.status_code),
+            )
             add_log("Attachment downloaded to {}".format(download_path), "info")
             if last_cell is True:
                 if count >= (length - 1):
                     break
 
     @staticmethod
-    def get_total_comments_on_issues(folder: str = "Comment", file_name: str = "comment_file.csv",
-                                     **kwargs) -> None:
+    def get_total_comments_on_issues(
+        folder: str = "Comment", file_name: str = "comment_file.csv", **kwargs
+    ) -> None:
         """Return a report with the number of comments sent to or by a reporter (if any).
 
         This api will return comment count, the total comment sent by a reporter
@@ -644,14 +803,22 @@ class Projects:
         duration = "startOfWeek(-1)" if "duration" not in kwargs else kwargs["duration"]
         status = None if "status" not in kwargs else kwargs["status"]
         get_user = ""
-        headers = ["Project Id", "Project Key", "Project Name", "Issue Key", "Total Comment",
-                   "Reporter accountId", "Display name of Reporter", "Comment by Reporter",
-                   "Comment by others"]
+        headers = [
+            "Project Id",
+            "Project Key",
+            "Project Name",
+            "Issue Key",
+            "Total Comment",
+            "Reporter accountId",
+            "Display name of Reporter",
+            "Comment by Reporter",
+            "Comment by others",
+        ]
         file_writer(folder, file_name, data=headers)
-        USER.get_all_users(pull=pull,
-                           user_type=user_type,
-                           file=file, folder=folder)
-        CheckUser = namedtuple("CheckUser", ["accountId", "account_type", "display_name", "active"])
+        USER.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
+        CheckUser = namedtuple(
+            "CheckUser", ["accountId", "account_type", "display_name", "active"]
+        )
         read = file_reader(folder=folder, file_name=file)
         for _ in read:
             f = CheckUser._make(_)
@@ -662,9 +829,13 @@ class Projects:
         if get_user == "":
             print("User: {}, not found exiting search...".format(find_user))
             sys.exit(1)
-        search_issues = "reporter = {} AND updated <= {}".format(get_user, duration) if "status" not in kwargs \
-                                                                                        or status is None \
-            else "reporter = {} AND updated <= {} AND status in ({})".format(get_user, duration, status)
+        search_issues = (
+            "reporter = {} AND updated <= {}".format(get_user, duration)
+            if "status" not in kwargs or status is None
+            else "reporter = {} AND updated <= {} AND status in ({})".format(
+                get_user, duration, status
+            )
+        )
         print("Searching with JQL:", search_issues)
         count_start_at = 0
 
@@ -709,9 +880,17 @@ class Projects:
                                     Pulls and arranges data
                                     :return: None
                                     """
-                                    raw_dump = [project_id, project_key, project_name, keys,
-                                                comment_total, reporter_aid, reporter_name,
-                                                comment_by_users, comment_by_others]
+                                    raw_dump = [
+                                        project_id,
+                                        project_key,
+                                        project_name,
+                                        keys,
+                                        comment_total,
+                                        reporter_aid,
+                                        reporter_name,
+                                        comment_by_users,
+                                        comment_by_others,
+                                    ]
                                     comment_list.append(raw_dump)
 
                                 pull_comments()
@@ -723,7 +902,9 @@ class Projects:
             comment_list.clear()
 
         while True:
-            get_issues = LOGIN.get(endpoint.search_issues_jql(query=search_issues, start_at=count_start_at))
+            get_issues = LOGIN.get(
+                endpoint.search_issues_jql(query=search_issues, start_at=count_start_at)
+            )
             if get_issues.status_code == 200:
                 result_data = json.loads(get_issues.content)
                 if count_start_at > result_data["total"]:
@@ -773,30 +954,52 @@ class Projects:
                 _comm_by_reporter = c[7]
                 _comm_by_others = c[8]
 
-                raw_data_file = [_project_id, _project_key, _project_name, _issue_key, _comment_total,
-                                 _get_user, _reporter_name, _comm_by_reporter, _comm_by_others]
+                raw_data_file = [
+                    _project_id,
+                    _project_key,
+                    _project_name,
+                    _issue_key,
+                    _comment_total,
+                    _get_user,
+                    _reporter_name,
+                    _comm_by_reporter,
+                    _comm_by_others,
+                ]
                 file_writer(folder, file_name, data=raw_data_file)
 
             # arranging the file last row
-            raw_data_file = ["", "", "", "", "Total comments: {}".format(list_data[0]),
-                             "", "", "Total comments by Reporter: {}".format(list_data[1]),
-                             "Total comments by others: {}".format(list_data[2])]
+            raw_data_file = [
+                "",
+                "",
+                "",
+                "",
+                "Total comments: {}".format(list_data[0]),
+                "",
+                "",
+                "Total comments by Reporter: {}".format(list_data[1]),
+                "Total comments by others: {}".format(list_data[2]),
+            ]
             file_writer(folder, file_name, data=raw_data_file)
 
         read_file = file_reader(folder, file_name, skip=True)
         file_writer(folder, file_name, mode="w", data=headers)
         write_result()
 
-        print("File extraction for comments completed. Your file is located at {}".format(path_builder
-                                                                                          (path=folder,
-                                                                                           file_name=file_name)))
+        print(
+            "File extraction for comments completed. Your file is located at {}".format(
+                path_builder(path=folder, file_name=file_name)
+            )
+        )
         add_log("File extraction for comments completed", "info")
 
     @staticmethod
-    def change_log(folder: str = "ChangeLog", file: str = "change_log.csv",
-                   back_up: bool = False,
-                   allow_cp: bool = True,
-                   **kwargs: Union[str, bool]) -> None:
+    def change_log(
+        folder: str = "ChangeLog",
+        file: str = "change_log.csv",
+        back_up: bool = False,
+        allow_cp: bool = True,
+        **kwargs: Union[str, bool],
+    ) -> None:
         """Extract the issue history of an issue.
 
         Query the changelog endpoint if using cloud instance or straight away define access to it on server.
@@ -823,12 +1026,19 @@ class Projects:
         :return: None
         """
         from jiraone.exceptions import JiraOneErrors
+
         if LOGIN.get(endpoint.myself()).status_code > 300:
-            raise JiraOneErrors("login", "Authentication failed. Please check your credentials.")
+            raise JiraOneErrors(
+                "login", "Authentication failed. Please check your credentials."
+            )
         changes = deque()
         item_list = deque()
-        jql: str = kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
-        saved_file: str = "iter_saves.json" if "saved_file" not in kwargs else kwargs["saved_file"]
+        jql: str = (
+            kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
+        )
+        saved_file: str = (
+            "iter_saves.json" if "saved_file" not in kwargs else kwargs["saved_file"]
+        )
         field_name = kwargs["field_name"] if "field_name" in kwargs else None
         show_output: bool = False if "show_output" in kwargs else True
         print("Extracting issue histories...")
@@ -846,7 +1056,7 @@ class Projects:
 
             :param sums: A summary of an issue
 
-            :param item_val: An dictionary of values
+            :param item_val: A dictionary of values
 
             :param name_: displayName of the user
 
@@ -858,12 +1068,36 @@ class Projects:
                 create = LOGIN.get(endpoint.issues(key_val))
                 if create.status_code < 300:
                     adjust = create.json().get("fields").get("created")
-                    raw_ = [key_val, sums, name_, adjust, "", item_val.field,
-                            item_val.from_, item_val.fromString, item_val.to, item_val.toString] if LOGIN.api is \
-                                                                                                    False else [
-                        key_val, sums, name_, adjust, "", item_val.field,
-                        item_val.field_id, item_val.from_, item_val.fromString, item_val.to, item_val.toString,
-                        item_val.tmpFromAccountId, item_val.tmpToAccountId]
+                    raw_ = (
+                        [
+                            key_val,
+                            sums,
+                            name_,
+                            adjust,
+                            "",
+                            item_val.field,
+                            item_val.from_,
+                            item_val.fromString,
+                            item_val.to,
+                            item_val.toString,
+                        ]
+                        if LOGIN.api is False
+                        else [
+                            key_val,
+                            sums,
+                            name_,
+                            adjust,
+                            "",
+                            item_val.field,
+                            item_val.field_id,
+                            item_val.from_,
+                            item_val.fromString,
+                            item_val.to,
+                            item_val.toString,
+                            item_val.tmpFromAccountId,
+                            item_val.tmpToAccountId,
+                        ]
+                    )
                     file_writer(folder, file, data=raw_, mode="a+")
                     attempt += 2
 
@@ -886,9 +1120,13 @@ class Projects:
                     nonlocal attempt
                     # reach the changelog endpoint and extract the data of history for servers.
                     # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
-                    get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=val,
-                                                               query="expand=renderedFields,names,schema,operations,"
-                                                                     "editmeta,changelog,versionedRepresentations"))
+                    get_issue_keys = LOGIN.get(
+                        endpoint.issues(
+                            issue_key_or_id=val,
+                            query="expand=renderedFields,names,schema,operations,"
+                            "editmeta,changelog,versionedRepresentations",
+                        )
+                    )
                     if get_issue_keys.status_code == 200:
                         key_data = json.loads(get_issue_keys.content)
                         # Bug Fix to "Extraction Of Jira History Error #47" return value of None in some issue keys.
@@ -896,42 +1134,63 @@ class Projects:
                         load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=val))
                         _summary = None
                         if load_summary.status_code < 300:
-                            _summary = json.loads(load_summary.content).get('fields').get('summary')
+                            _summary = (
+                                json.loads(load_summary.content)
+                                .get("fields")
+                                .get("summary")
+                            )
                         if LOGIN.api is False:
                             if "changelog" in key_data:
                                 _data = key_data["changelog"]
                                 # grab the change_histories on an issue
                                 print(f"Getting history from issue: {val}")
                                 add_log(f"Getting history from issue: {val}", "info")
-                                changelog_history(_data, proj=(val, project_key, _summary))
+                                changelog_history(
+                                    _data, proj=(val, project_key, _summary)
+                                )
                                 print("*" * 100)
                         else:
                             starter = 0
                             while True:
-                                key_data = LOGIN.get(endpoint.issues(issue_key_or_id=val,
-                                                                     query="changelog?startAt={}".format(starter),
-                                                                     event=True))
+                                key_data = LOGIN.get(
+                                    endpoint.issues(
+                                        issue_key_or_id=val,
+                                        query="changelog?startAt={}".format(starter),
+                                        event=True,
+                                    )
+                                )
                                 loads = json.loads(key_data.content)
                                 if starter >= loads["total"]:
                                     break
                                 print(f"Getting history from issue: {val}")
                                 add_log(f"Getting history from issue: {val}", "info")
-                                changelog_history(loads, proj=(val, project_key, _summary))
+                                changelog_history(
+                                    loads, proj=(val, project_key, _summary)
+                                )
                                 print("*" * 100)
                                 starter += 100
 
                 infinity_counter += 1
                 data_brick.update({"iter": infinity_counter, "key": keys})
                 project_key = keys.split("-")[0]
-                json.dump(data_brick, open(f"{path_builder(path=folder, file_name=saved_file)}",
-                                           encoding='utf-8', mode='w+'), indent=4) if allow_cp is True else None
+                json.dump(
+                    data_brick,
+                    open(
+                        f"{path_builder(path=folder, file_name=saved_file)}",
+                        encoding="utf-8",
+                        mode="w+",
+                    ),
+                    indent=4,
+                ) if allow_cp is True else None
                 if back_up is True and keys != set_up["key"] and loop is False:
                     re_instantiate(set_up["key"])
 
                 loop = True
                 re_instantiate(keys)
 
-        def changelog_history(history: Any = Any, proj: tuple = (str, str, str)) -> None:
+        def changelog_history(
+            history: Any = Any, proj: tuple = (str, str, str)
+        ) -> None:
             """Structure the change history data after being retrieved.
 
             :return: None
@@ -943,7 +1202,11 @@ class Projects:
                 created = ""
                 name = ""
                 if "author" in past:
-                    name = past["author"]["name"] if "name" in past["author"] else past["author"]["displayName"]
+                    name = (
+                        past["author"]["name"]
+                        if "name" in past["author"]
+                        else past["author"]["displayName"]
+                    )
                 if "created" in past:
                     created = past["created"]
                 if "items" in past:
@@ -963,31 +1226,117 @@ class Projects:
                         _to = item.get("to")
                         _toString = item.get("toString")
                         if field_name == _field:
-                            raw = [_field, _field_type, _from, _fromString, _to, _toString] if LOGIN.api is False \
-                                else [_field, _field_type, _field_id, _from, _fromString, _to, _toString,
-                                      _tmpFromAccountId, _tmpToAccountId]
+                            raw = (
+                                [
+                                    _field,
+                                    _field_type,
+                                    _from,
+                                    _fromString,
+                                    _to,
+                                    _toString,
+                                ]
+                                if LOGIN.api is False
+                                else [
+                                    _field,
+                                    _field_type,
+                                    _field_id,
+                                    _from,
+                                    _fromString,
+                                    _to,
+                                    _toString,
+                                    _tmpFromAccountId,
+                                    _tmpToAccountId,
+                                ]
+                            )
                             item_list.append(raw)
                         elif field_name is None:
-                            raw = [_field, _field_type, _from, _fromString, _to, _toString] if LOGIN.api is False \
-                                else [_field, _field_type, _field_id, _from, _fromString, _to, _toString,
-                                      _tmpFromAccountId, _tmpToAccountId]
+                            raw = (
+                                [
+                                    _field,
+                                    _field_type,
+                                    _from,
+                                    _fromString,
+                                    _to,
+                                    _toString,
+                                ]
+                                if LOGIN.api is False
+                                else [
+                                    _field,
+                                    _field_type,
+                                    _field_id,
+                                    _from,
+                                    _fromString,
+                                    _to,
+                                    _toString,
+                                    _tmpFromAccountId,
+                                    _tmpToAccountId,
+                                ]
+                            )
                             item_list.append(raw)
 
-                        ItemList = namedtuple("ItemList", ["field", "field_type", "from_", "fromString",
-                                                           "to", "toString"]) if LOGIN.api is False else \
-                            namedtuple("ItemList", ["field", "field_type", "field_id", "from_", "fromString",
-                                                    "to", "toString", "tmpFromAccountId", "tmpToAccountId"])
+                        ItemList = (
+                            namedtuple(
+                                "ItemList",
+                                [
+                                    "field",
+                                    "field_type",
+                                    "from_",
+                                    "fromString",
+                                    "to",
+                                    "toString",
+                                ],
+                            )
+                            if LOGIN.api is False
+                            else namedtuple(
+                                "ItemList",
+                                [
+                                    "field",
+                                    "field_type",
+                                    "field_id",
+                                    "from_",
+                                    "fromString",
+                                    "to",
+                                    "toString",
+                                    "tmpFromAccountId",
+                                    "tmpToAccountId",
+                                ],
+                            )
+                        )
 
                         for _ in item_list:
                             issue = ItemList._make(_)
                             # Fix for time in status
                             blank_data(_keys, _summary, issue, name)
-                            raw_vision = [_keys, _summary, name, created, issue.field_type, issue.field,
-                                          issue.from_, issue.fromString, issue.to, issue.toString] if LOGIN.api is \
-                                                                                                      False else [
-                                _keys, _summary, name, created, issue.field_type, issue.field,
-                                issue.field_id, issue.from_, issue.fromString, issue.to, issue.toString,
-                                issue.tmpFromAccountId, issue.tmpToAccountId]
+                            raw_vision = (
+                                [
+                                    _keys,
+                                    _summary,
+                                    name,
+                                    created,
+                                    issue.field_type,
+                                    issue.field,
+                                    issue.from_,
+                                    issue.fromString,
+                                    issue.to,
+                                    issue.toString,
+                                ]
+                                if LOGIN.api is False
+                                else [
+                                    _keys,
+                                    _summary,
+                                    name,
+                                    created,
+                                    issue.field_type,
+                                    issue.field,
+                                    issue.field_id,
+                                    issue.from_,
+                                    issue.fromString,
+                                    issue.to,
+                                    issue.toString,
+                                    issue.tmpFromAccountId,
+                                    issue.tmpToAccountId,
+                                ]
+                            )
                             changes.append(raw_vision)
                         item_list.clear()
 
@@ -1006,43 +1355,96 @@ class Projects:
                             render_history(change)
 
         count = 0  # get a counter of the issue record
-        headers = ["Issue Key", "Summary", "Author", "Created", "Field Type",
-                   "Field", "From", "From String", "To", "To String"] if LOGIN.api is False else \
-            ["Issue Key", "Summary", "Author", "Created", "Field Type",
-             "Field", "Field Id", "From", "From String", "To", "To String", "From AccountId", "To AccountId"]
+        headers = (
+            [
+                "Issue Key",
+                "Summary",
+                "Author",
+                "Created",
+                "Field Type",
+                "Field",
+                "From",
+                "From String",
+                "To",
+                "To String",
+            ]
+            if LOGIN.api is False
+            else [
+                "Issue Key",
+                "Summary",
+                "Author",
+                "Created",
+                "Field Type",
+                "Field",
+                "Field Id",
+                "From",
+                "From String",
+                "To",
+                "To String",
+                "From AccountId",
+                "To AccountId",
+            ]
+        )
         cycle: int = 0
         # stores our iteration here
         data_brick = {}
         set_up = None
         loop: bool = False
         if allow_cp is True:
-            if os.path.isfile(path_builder(folder, file_name=saved_file)) and \
-                    os.stat(path_builder(folder, file_name=saved_file)).st_size != 0:
-                user_input = input("An existing save point exist from your last extraction, "
-                                   "do you want to use it? (Y/N) \n")
-                set_up = json.load(open(path_builder(path=folder, file_name=saved_file)))
+            if (
+                os.path.isfile(path_builder(folder, file_name=saved_file))
+                and os.stat(path_builder(folder, file_name=saved_file)).st_size != 0
+            ):
+                user_input = input(
+                    "An existing save point exist from your last extraction, "
+                    "do you want to use it? (Y/N) \n"
+                )
+                set_up = json.load(
+                    open(path_builder(path=folder, file_name=saved_file))
+                )
                 if user_input.lower() in ["y", "yes"]:
                     back_up = True
                 else:
                     print("Starting extraction from scratch.")
                     set_up = None
-        descriptor = os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT) \
-            if allow_cp is True else None
+        descriptor = (
+            os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT)
+            if allow_cp is True
+            else None
+        )
         os.close(descriptor) if allow_cp is True else None
-        file_writer(folder=folder, file_name=file, data=headers, mode="w+") if set_up is None else None
+        file_writer(
+            folder=folder, file_name=file, data=headers, mode="w+"
+        ) if set_up is None else None
         depth = 1
         while True:
-            load = LOGIN.get(endpoint.search_issues_jql(query=set_up["jql"], start_at=set_up["iter"],
-                                                        max_results=100)) if back_up is True and depth == 1 else \
-                LOGIN.get(endpoint.search_issues_jql(query=jql, start_at=count, max_results=100))
+            load = (
+                LOGIN.get(
+                    endpoint.search_issues_jql(
+                        query=set_up["jql"], start_at=set_up["iter"], max_results=100
+                    )
+                )
+                if back_up is True and depth == 1
+                else LOGIN.get(
+                    endpoint.search_issues_jql(
+                        query=jql, start_at=count, max_results=100
+                    )
+                )
+            )
             if load.status_code == 200:
                 data = json.loads(load.content)
                 cycle = 0
-                data_brick.update({
-                    "jql": jql,
-                    "iter": set_up["iter"] if back_up is True and depth == 1 else count,
-                    "save": set_up["save"] if back_up is True and depth == 1 else attempt
-                })
+                data_brick.update(
+                    {
+                        "jql": jql,
+                        "iter": set_up["iter"]
+                        if back_up is True and depth == 1
+                        else count,
+                        "save": set_up["save"]
+                        if back_up is True and depth == 1
+                        else attempt,
+                    }
+                )
                 if count > data["total"]:
                     break
                 changelog_search()
@@ -1053,16 +1455,30 @@ class Projects:
             if load.status_code > 300:
                 cycle += 1
                 if cycle > 99:
-                    raise JiraOneErrors("value", "It seems that the search \"{}\" cannot be "
-                                                 "retrieved as we've attempted it {} times".format(jql, cycle))
+                    raise JiraOneErrors(
+                        "value",
+                        'It seems that the search "{}" cannot be '
+                        "retrieved as we've attempted it {} times".format(jql, cycle),
+                    )
 
         if show_output is True:
-            print("A CSV file has been written to disk, find it here {}".format(
-                path_builder(folder, file_name=file)))
+            print(
+                "A CSV file has been written to disk, find it here {}".format(
+                    path_builder(folder, file_name=file)
+                )
+            )
         add_log("File extraction for change log completed", "info")
-        os.remove(path_builder(path=folder, file_name=saved_file)) if allow_cp is True else None
+        os.remove(
+            path_builder(path=folder, file_name=saved_file)
+        ) if allow_cp is True else None
 
-    def comment_on(self, key_or_id: str = None, comment_id: int = None, method: str = "GET", **kwargs) -> Any:
+    def comment_on(
+        self,
+        key_or_id: str = None,
+        comment_id: int = None,
+        method: str = "GET",
+        **kwargs,
+    ) -> Any:
         """Comment on a ticket or write on a description field.
 
         :request GET: comments
@@ -1089,9 +1505,16 @@ class Projects:
         placer = kwargs["placer"] if "placer" in kwargs else None
         visible = kwargs["visible"] if "visible" in kwargs else None
         if method.upper() == "GET":
-            load = LOGIN.get(endpoint.comment(key_or_id=key_or_id, ids=comment_id,
-                                              start_at=start_at, max_results=max_results,
-                                              event=event, query=query))
+            load = LOGIN.get(
+                endpoint.comment(
+                    key_or_id=key_or_id,
+                    ids=comment_id,
+                    start_at=start_at,
+                    max_results=max_results,
+                    event=event,
+                    query=query,
+                )
+            )
             data = load.json()
 
             class ReturnCommentData:
@@ -1100,42 +1523,42 @@ class Projects:
                 def __init__(self, results) -> None:
                     """Get all data from a comment field.
 
-                This calls the comment endpoint and returns a list of the data.
-                Depending on what method you're calling. It is either you call the
-                method ``comment()`` or you call a property within the method.
+                    This calls the comment endpoint and returns a list of the data.
+                    Depending on what method you're calling. It is either you call the
+                    method ``comment()`` or you call a property within the method.
 
-                .. code-block:: python
+                    .. code-block:: python
 
-                    iss_key = "COM-42"
-                    get_com = comment(iss_key).comment("body").result
-                    echo(get_com)
-                    # This will return the data of the body content
+                        iss_key = "COM-42"
+                        get_com = comment(iss_key).comment("body").result
+                        echo(get_com)
+                        # This will return the data of the body content
 
-                OR
-                .. code-block:: python
+                    OR
+                    .. code-block:: python
 
-                    iss_key = "COM-42"
-                    get_com = comment(iss_key).data
-                    echo(get_com)
-                    # This will simply return the comment endpoint data
+                        iss_key = "COM-42"
+                        get_com = comment(iss_key).data
+                        echo(get_com)
+                        # This will simply return the comment endpoint data
 
-                @properties that can be called
+                    @properties that can be called
 
-                i) body - returns the body content of the comment.
-                ii) mention - returns the users mentioned on a comment.
-                iii) text - returns an array of strings of the text in the comment.
-                iv) author - returns the author who triggered the comment.
+                    i) body - returns the body content of the comment.
+                    ii) mention - returns the users mentioned on a comment.
+                    iii) text - returns an array of strings of the text in the comment.
+                    iv) author - returns the author who triggered the comment.
 
-                .. code-block:: python
+                    .. code-block:: python
 
-                    iss_key = "COM-42"
-                    get_com = comment(iss_key).comment("body").text
-                    echo(get_com)
-                    # This will simply return the comment text separated by comma
+                        iss_key = "COM-42"
+                        get_com = comment(iss_key).comment("body").text
+                        echo(get_com)
+                        # This will simply return the comment text separated by comma
 
-                :param results: A dict object that loads the result of comments.
+                    :param results: A dict object that loads the result of comments.
 
-                """
+                    """
                     self.data = results
                     self._author = None
                     self._body = None
@@ -1157,28 +1580,52 @@ class Projects:
                         if type_field in f:
                             if type_field == "author":
                                 self._author = f.get("author")
-                                self._other_fields = {"created": f.get("created"), "id": f.get("id"),
-                                                      "jsdPublic": f.get("jsdPublic"), "self": f.get("self"),
-                                                      "updated": f.get("updated")}
-                                result_data.append({"author": self._author, "fieldset": self._other_fields})
+                                self._other_fields = {
+                                    "created": f.get("created"),
+                                    "id": f.get("id"),
+                                    "jsdPublic": f.get("jsdPublic"),
+                                    "self": f.get("self"),
+                                    "updated": f.get("updated"),
+                                }
+                                result_data.append(
+                                    {
+                                        "author": self._author,
+                                        "fieldset": self._other_fields,
+                                    }
+                                )
 
                             if type_field == "body":
                                 self._body = f.get("body")
-                                self._other_fields = {"created": f.get("created"), "id": f.get("id"),
-                                                      "jsdPublic": f.get("jsdPublic"), "self": f.get("self"),
-                                                      "updated": f.get("updated")}
-                                result_data.append({"body": self._body, "fieldset": self._other_fields})
+                                self._other_fields = {
+                                    "created": f.get("created"),
+                                    "id": f.get("id"),
+                                    "jsdPublic": f.get("jsdPublic"),
+                                    "self": f.get("self"),
+                                    "updated": f.get("updated"),
+                                }
+                                result_data.append(
+                                    {"body": self._body, "fieldset": self._other_fields}
+                                )
 
                             if type_field == "updateAuthor":
                                 self._update_author = f.get("updateAuthor")
-                                self._other_fields = {"created": f.get("created"), "id": f.get("id"),
-                                                      "jsdPublic": f.get("jsdPublic"), "self": f.get("self"),
-                                                      "updated": f.get("updated")}
+                                self._other_fields = {
+                                    "created": f.get("created"),
+                                    "id": f.get("id"),
+                                    "jsdPublic": f.get("jsdPublic"),
+                                    "self": f.get("self"),
+                                    "updated": f.get("updated"),
+                                }
                                 result_data.append(
-                                    {"updateAuthor": self._update_author, "fieldset": self._other_fields})
+                                    {
+                                        "updateAuthor": self._update_author,
+                                        "fieldset": self._other_fields,
+                                    }
+                                )
 
                     class Text:
                         """Return the text of data."""
+
                         pull = deque()
 
                         def __init__(self):
@@ -1191,11 +1638,17 @@ class Projects:
                             for d in self.result:
                                 if "author" in d:
                                     if self._author_ is None:
-                                        self.author = [{"author": j["author"]["displayName"],
-                                                        "accountId": j["author"]["accountId"],
-                                                        "active": j["author"]["active"],
-                                                        "accountType": j["author"]["accountType"]} for j in
-                                                       self.result]
+                                        self.author = [
+                                            {
+                                                "author": j["author"]["displayName"],
+                                                "accountId": j["author"]["accountId"],
+                                                "active": j["author"]["active"],
+                                                "accountType": j["author"][
+                                                    "accountType"
+                                                ],
+                                            }
+                                            for j in self.result
+                                        ]
                                 if "body" in d:
                                     if self._body_ is None:
                                         self.body = [j.get("body") for j in self.result]
@@ -1236,22 +1689,55 @@ class Projects:
                                                 if self._text_ is None:
                                                     if "text" in value:
                                                         if value["type"] == "mention":
-                                                            self.pull.append({"mention": value["attrs"],
-                                                                              "type": value["type"],
-                                                                              "text_type": value["text"]})
-                                                        self.pull.append({"text": value["text"], "type": value["type"]})
+                                                            self.pull.append(
+                                                                {
+                                                                    "mention": value[
+                                                                        "attrs"
+                                                                    ],
+                                                                    "type": value[
+                                                                        "type"
+                                                                    ],
+                                                                    "text_type": value[
+                                                                        "text"
+                                                                    ],
+                                                                }
+                                                            )
+                                                        self.pull.append(
+                                                            {
+                                                                "text": value["text"],
+                                                                "type": value["type"],
+                                                            }
+                                                        )
 
                                                 if self._mention_ is None:
                                                     if "type" in value:
                                                         if value["type"] == "mention":
-                                                            self.pull.append({"mention": value["attrs"],
-                                                                              "type": value["type"]})
+                                                            self.pull.append(
+                                                                {
+                                                                    "mention": value[
+                                                                        "attrs"
+                                                                    ],
+                                                                    "type": value[
+                                                                        "type"
+                                                                    ],
+                                                                }
+                                                            )
                             # will only show value on API v3.
-                            self.text = [OrderedDict({"text": a.get("text"), "type": a.get("type")})
-                                         for a in self.pull if "text" in a]
+                            self.text = [
+                                OrderedDict(
+                                    {"text": a.get("text"), "type": a.get("type")}
+                                )
+                                for a in self.pull
+                                if "text" in a
+                            ]
                             # will only show value on API v3.
-                            self.mention = [OrderedDict({"mention": a.get("mention"),
-                                                         "type": a.get("type")}) for a in self.pull if "mention" in a]
+                            self.mention = [
+                                OrderedDict(
+                                    {"mention": a.get("mention"), "type": a.get("type")}
+                                )
+                                for a in self.pull
+                                if "mention" in a
+                            ]
 
                         @property
                         def text(self):
@@ -1300,39 +1786,39 @@ class Projects:
                     "content": [
                         {
                             "type": "paragraph",
-                            "content": [
-                                {
-                                    "text": text[0],
-                                    "type": "text"
-                                }
-
-                            ]
+                            "content": [{"text": text[0], "type": "text"}],
                         }
-                    ]
+                    ],
                 }
             }
-            field_text = {
-                "body": text[0]
-            } if visible is None and LOGIN.api is False else body_content if visible is None and LOGIN.api is True \
-                else {
-                "visibility": {
-                    "type": "role",
-                    "value": visible
-                },
-                "body": text[0]
-            }
-            result = LOGIN.post(endpoint.comment(key_or_id=key_or_id, event=event), payload=field_text)
+            field_text = (
+                {"body": text[0]}
+                if visible is None and LOGIN.api is False
+                else body_content
+                if visible is None and LOGIN.api is True
+                else {"visibility": {"type": "role", "value": visible}, "body": text[0]}
+            )
+            result = LOGIN.post(
+                endpoint.comment(key_or_id=key_or_id, event=event), payload=field_text
+            )
             if result.status_code < 300:
                 print("Comment added to {}".format(key_or_id))
             else:
-                print("Comment not added to {}, error: {}".format(key_or_id, result.status_code))
+                print(
+                    "Comment not added to {}, error: {}".format(
+                        key_or_id, result.status_code
+                    )
+                )
             block.clear()
 
     @staticmethod
-    def export_issues(*, folder: Optional[str] = "EXPORT",
-                      jql: Optional[str] = None,
-                      page: Optional[tuple] = None,
-                      **kwargs: Union[str, dict]) -> None:
+    def export_issues(
+        *,
+        folder: Optional[str] = "EXPORT",
+        jql: Optional[str] = None,
+        page: Optional[tuple] = None,
+        **kwargs: Union[str, dict],
+    ) -> None:
         """
         Exports all Jira issue based on JQL search. If the number of issues
         returned is greater than 1K issues, all the issues are finally
@@ -1390,6 +1876,20 @@ class Projects:
                   This argument requires the ``target`` argument to be set
                   first before it can become useful.
 
+                  * encoding: Datatype (str) Ability to alter the encoding
+                  of the exported data to file_writer function.
+
+                  * errors: Datatype (str) Ability to alter the error type used
+                  in encoding argument if the encoded character fails to decode.
+
+        .. versionchanged:: 0.7.4
+
+        encoding: added keyword argument which helps determine how encoding
+             are handled
+
+        errors: added keyword argument which helps determine decoding
+             errors are handled
+
         :return: None
 
         """
@@ -1398,177 +1898,278 @@ class Projects:
         from copy import deepcopy
         from jiraone import field
         import shutil
+
         reason = LOGIN.get(endpoint.myself())
         if reason.status_code > 300:
-            add_log("Authentication failed.Please check your credential "
-                    "data to determine "
-                    "what went wrong with reason: {}".format(reason.json()),
-                    "error")
-            raise JiraOneErrors("login", "Authentication failed. "
-                                         "Please check your credentials."
-                                         " Reason: {}".format(reason.reason))
+            add_log(
+                "Authentication failed.Please check your credential "
+                "data to determine "
+                "what went wrong with reason: {} & code {}".format(
+                    reason.reason, reason.status_code
+                ),
+                "error",
+            )
+            raise JiraOneErrors(
+                "login",
+                "Authentication failed. "
+                "Please check your credentials."
+                " Reason: {}".format(reason.reason),
+            )
         # check if the target instance is accessible
         source: str = LOGIN.base_url
-        target: Union[str, dict] = kwargs["target"] if "target" in kwargs \
-            else ""
+        target: Union[str, dict] = kwargs["target"] if "target" in kwargs else ""
         active: bool = False
-        _field_names_: list = kwargs["fields"] if "fields" in kwargs else \
-            ["Sprint", "Watchers", "Reporter", "Assignee"]
-        temp_file: str = kwargs["temp_file"] if "temp_file" in kwargs \
-            else "temp_file.csv"
-        final_file: str = kwargs["final_file"] if "final_file" in kwargs \
-            else "final_file.csv"
+        _field_names_: list = (
+            kwargs["fields"]
+            if "fields" in kwargs
+            else ["Sprint", "Watchers", "Reporter", "Assignee"]
+        )
+        temp_file: str = (
+            kwargs["temp_file"] if "temp_file" in kwargs else "temp_file.csv"
+        )
+        final_file: str = (
+            kwargs["final_file"] if "final_file" in kwargs else "final_file.csv"
+        )
+        encoding: str = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
+        errors: str = kwargs["errors"] if "errors" in kwargs else "replace"
         # stores most configuration data using a dictionary
         config = {}
         # Checking that the arguments are passing correct data structure.
         if not isinstance(_field_names_, list):
-            add_log("The `fields` argument seems to be using the wrong "
-                    "data structure {}"
-                    "expecting a list of items.".format(_field_names_),
-                    "error")
-            raise JiraOneErrors("wrong", "The `fields` argument should be a "
-                                         "list of field names. "
-                                         "Detected {} instead.".
-                                format(type(_field_names_)))
+            add_log(
+                "The `fields` argument seems to be using the wrong "
+                "data structure {}"
+                "expecting a list of items.".format(_field_names_),
+                "error",
+            )
+            raise JiraOneErrors(
+                "wrong",
+                "The `fields` argument should be a "
+                "list of field names. "
+                "Detected {} instead.".format(type(_field_names_)),
+            )
         if not isinstance(target, (str, dict)):
-            add_log("The `target` argument seems to be using the wrong data "
-                    "structure {}"
-                    "expecting a dictionary or a string.".format(target),
-                    "error")
-            raise JiraOneErrors("wrong", "The `target` argument should be "
-                                         "a dictionary of auth items "
-                                         "or a string of the url"
-                                         "Detected {} instead.". \
-                                format(type(target)))
+            add_log(
+                "The `target` argument seems to be using the wrong data "
+                "structure {}"
+                "expecting a dictionary or a string.".format(target),
+                "error",
+            )
+            raise JiraOneErrors(
+                "wrong",
+                "The `target` argument should be "
+                "a dictionary of auth items "
+                "or a string of the url"
+                "Detected {} instead.".format(type(target)),
+            )
         if not isinstance(temp_file, str):
-            add_log("The `temp_file` argument seems to be using the wrong "
-                    "data structure {}"
-                    "expecting a string.".format(temp_file), "error")
-            raise JiraOneErrors("wrong", "The `temp_file` argument should be "
-                                         "a string of the file name."
-                                         "Detected {} instead.".
-                                format(type(temp_file)))
+            add_log(
+                "The `temp_file` argument seems to be using the wrong "
+                "data structure {}"
+                "expecting a string.".format(temp_file),
+                "error",
+            )
+            raise JiraOneErrors(
+                "wrong",
+                "The `temp_file` argument should be "
+                "a string of the file name."
+                "Detected {} instead.".format(type(temp_file)),
+            )
         if not isinstance(final_file, str):
-            add_log("The `final_file` argument seems to be using the wrong "
-                    "data structure {}"
-                    "expecting a string.".format(final_file), "error")
-            raise JiraOneErrors("wrong", "The `final_file` argument should be "
-                                         "a string of the file name."
-                                         "Detected {} instead.".
-                                format(type(final_file)))
+            add_log(
+                "The `final_file` argument seems to be using the wrong "
+                "data structure {}"
+                "expecting a string.".format(final_file),
+                "error",
+            )
+            raise JiraOneErrors(
+                "wrong",
+                "The `final_file` argument should be "
+                "a string of the file name."
+                "Detected {} instead.".format(type(final_file)),
+            )
         if not isinstance(jql, str):
-            add_log("The `jql` argument seems to be using the wrong data "
-                    "structure {}"
-                    "expecting a string.".format(jql), "error")
-            raise JiraOneErrors("wrong", "The `jql` argument should be a "
-                                         "string of a valid Jira query."
-                                         "Detected {} instead.".
-                                format(type(jql)))
+            add_log(
+                "The `jql` argument seems to be using the wrong data "
+                "structure {}"
+                "expecting a string.".format(jql),
+                "error",
+            )
+            raise JiraOneErrors(
+                "wrong",
+                "The `jql` argument should be a "
+                "string of a valid Jira query."
+                "Detected {} instead.".format(type(jql)),
+            )
+        if not isinstance(encoding, str):
+            add_log(
+                "The `encoding` argument seems to be using the wrong data "
+                "structure {}"
+                "expecting a string.".format(encoding),
+                "error",
+            )
+            raise JiraOneErrors(
+                "wrong",
+                "The `encoding` argument should be a "
+                "string of a character encoding "
+                "e.g utf-8."
+                "Detected {} instead.".format(type(encoding)),
+            )
+        if not isinstance(errors, str):
+            add_log(
+                "The `errors` argument seems to be using the wrong data "
+                "structure {}"
+                "expecting a string.".format(errors),
+                "error",
+            )
+            raise JiraOneErrors(
+                "wrong",
+                "The `errors` argument should be a "
+                "string of a character encoding "
+                "exception e.g. replace."
+                "Detected {} instead.".format(type(errors)),
+            )
 
         if page is None:
             pass
         elif page is not None:
             if not isinstance(page, tuple):
-                add_log("The `page` argument seems to be using the wrong data"
-                        " structure {}"
-                        "expecting a tuple.".format(page), "error")
-                raise JiraOneErrors("wrong", "The `page` argument should be a "
-                                             "tuple to determine valid page "
-                                             "index."
-                                             "Detected {} instead.".
-                                    format(type(page)))
+                add_log(
+                    "The `page` argument seems to be using the wrong data"
+                    " structure {}"
+                    "expecting a tuple.".format(page),
+                    "error",
+                )
+                raise JiraOneErrors(
+                    "wrong",
+                    "The `page` argument should be a "
+                    "tuple to determine valid page "
+                    "index."
+                    "Detected {} instead.".format(type(page)),
+                )
             elif isinstance(page, tuple):
                 fix_point = 0
                 for index_item in page:
                     answer = "first" if fix_point == 0 else "second"
                     if not isinstance(index_item, int):
-                        add_log("The {} `page` argument value seems to be "
-                                "using the wrong "
-                                "data "
-                                "structure {}"
-                                "expecting an integer.".format(answer, page),
-                                "error")
-                        raise JiraOneErrors("wrong", "The {} `page` argument "
-                                                     "value"
-                                                     " should be an integer "
-                                                     "to loop page records. "
-                                                     "Detected {} instead.".
-                                            format(answer, type(index_item)))
+                        add_log(
+                            "The {} `page` argument value seems to be "
+                            "using the wrong "
+                            "data "
+                            "structure {}"
+                            "expecting an integer.".format(answer, page),
+                            "error",
+                        )
+                        raise JiraOneErrors(
+                            "wrong",
+                            "The {} `page` argument "
+                            "value"
+                            " should be an integer "
+                            "to loop page records. "
+                            "Detected {} instead.".format(answer, type(index_item)),
+                        )
                     if fix_point > 1:
-                        add_log("The `page` argument value seems to be "
-                                "more than the expected "
-                                "length. Detected {} values."
-                                "".format(len(page)),
-                                "error")
-                        raise JiraOneErrors("wrong", "The `page` argument "
-                                                     "should not have more"
-                                                     " than 2 values. You "
-                                                     "seem "
-                                                     "to have added {} "
-                                                     "so far."
-                                                     "".format(len(page)))
+                        add_log(
+                            "The `page` argument value seems to be "
+                            "more than the expected "
+                            "length. Detected {} values."
+                            "".format(len(page)),
+                            "error",
+                        )
+                        raise JiraOneErrors(
+                            "wrong",
+                            "The `page` argument "
+                            "should not have more"
+                            " than 2 values. You "
+                            "seem "
+                            "to have added {} "
+                            "so far."
+                            "".format(len(page)),
+                        )
 
                     fix_point += 1
 
-        target_option = {
-            "user": target.get("user"),
-            "password": target.get("password"),
-            "url": target.get("url")
-        } if isinstance(target, dict) else target
-        source_option = {"user": LOGIN.user, "password": LOGIN.password,
-                         "url": LOGIN.base_url}
-        LOGIN.base_url = target_option.get("url") if \
-            isinstance(target, dict) else target
+        target_option = (
+            {
+                "user": target.get("user"),
+                "password": target.get("password"),
+                "url": target.get("url"),
+            }
+            if isinstance(target, dict)
+            else target
+        )
+        source_option = {
+            "user": LOGIN.user,
+            "password": LOGIN.password,
+            "url": LOGIN.base_url,
+        }
+        LOGIN.base_url = (
+            target_option.get("url") if isinstance(target, dict) else target
+        )
         if target != "":
             if isinstance(target, dict):
                 LOGIN(**target_option)
             locate = LOGIN.get(endpoint.myself())
             if locate.status_code > 300:
-                add_log("Authentication failed to target instance."
-                        "Please check your "
-                        "credential data to determine what went wrong "
-                        "with reason {}"
-                        ".".format(locate.json()), "error")
-                raise JiraOneErrors("login", "Authentication failed to "
-                                             "target instance. "
-                                             "Please check your credentials."
-                                             "Reason:{}.".
-                                    format(locate.reason))
+                add_log(
+                    "Authentication failed to target instance."
+                    "Please check your "
+                    "credential data to determine what went wrong "
+                    "with reason {}"
+                    ".".format(locate.json()),
+                    "error",
+                )
+                raise JiraOneErrors(
+                    "login",
+                    "Authentication failed to "
+                    "target instance. "
+                    "Please check your credentials."
+                    "Reason:{}.".format(locate.reason),
+                )
             else:
                 active = True
         source_option["url"] = source
         LOGIN(**source_option)
-        rows, total, validate_query = 0, 0, \
-                                      LOGIN.get(endpoint.
-                                                search_issues_jql(jql))
+        rows, total, validate_query = 0, 0, LOGIN.get(endpoint.search_issues_jql(jql))
         if validate_query.status_code < 300:
             total = validate_query.json()["total"]
         else:
-            add_log("Invalid JQL query received. Reason {} with status code: "
-                    "{} and addition info: {}"
-                    .format(validate_query.reason, validate_query.status_code,
-                            validate_query.json()), "debug")
-            raise JiraOneErrors("value", "Your JQL query seems to be invalid"
-                                         " as no issues were returned.")
+            add_log(
+                "Invalid JQL query received. Reason {} with status code: "
+                "{} and addition info: {}".format(
+                    validate_query.reason,
+                    validate_query.status_code,
+                    validate_query.json(),
+                ),
+                "debug",
+            )
+            raise JiraOneErrors(
+                "value",
+                "Your JQL query seems to be invalid" " as no issues were returned.",
+            )
         calc = int(total / 1000)
         # We assume each page is 1K that's downloaded.
         limiter, init = total, rows
         if page is not None:
-            assert page[0] > -1, "The `page` argument first " \
-                                 "range " \
-                                 "value {}, is lesser than 0 " \
-                                 "which is practically wrong." \
-                .format(page[0])
-            assert page[0] <= page[1], "The `page` argument first " \
-                                       "range " \
-                                       "value, should be lesser than " \
-                                       "the second range value of {}." \
-                .format(page[1])
-            assert page[1] <= calc, "The `page` argument second " \
-                                    "range " \
-                                    "value {}, seems to have " \
-                                    "exceed the issue record range " \
-                                    "searched.".format(page[1])
+            assert page[0] > -1, (
+                "The `page` argument first "
+                "range "
+                "value {}, is lesser than 0 "
+                "which is practically wrong.".format(page[0])
+            )
+            assert page[0] <= page[1], (
+                "The `page` argument first "
+                "range "
+                "value, should be lesser than "
+                "the second range value of {}.".format(page[1])
+            )
+            assert page[1] <= calc, (
+                "The `page` argument second "
+                "range "
+                "value {}, seems to have "
+                "exceed the issue record range "
+                "searched.".format(page[1])
+            )
 
             limiter = (page[1] + 1) * 1000
             init = page[0] * 1000
@@ -1579,12 +2180,19 @@ class Projects:
                 break
             file_name = temp_file.split(".")[0] + f"_{init}.csv"
             issues = LOGIN.get(endpoint.issue_export(jql, init))
-            print(issues, issues.reason, f"::downloading issues at page: "
-                                         f"{int(init / 1000)}", "of {}"
-                  .format(int((limiter - 1) / 1000)))
-            file_writer(folder, file_name,
-                        content=issues.content.decode('utf-8'),
-                        mark="file", mode="w+")
+            print(
+                issues,
+                issues.reason,
+                f"::downloading issues at page: " f"{int(init / 1000)}",
+                "of {}".format(int((limiter - 1) / 1000)),
+            )
+            file_writer(
+                folder,
+                file_name,
+                content=issues.content.decode(encoding, errors=errors),
+                mark="file",
+                mode="w+",
+            )
             # create a direct link to the new file
             # ensure that there's a unique list as the names are different.
             if file_name not in file_deposit:
@@ -1592,15 +2200,18 @@ class Projects:
             config.update({"exports": file_deposit})
             init += 1000
 
-        config["prev_list"], config["next_list"], \
-        config["set_headers_main"], config["make_file"], \
-        config["set_file"] = [], [], [], [], []
+        (
+            config["prev_list"],
+            config["next_list"],
+            config["set_headers_main"],
+            config["make_file"],
+            config["set_file"],
+        ) = ([], [], [], [], [])
 
         # Get an index of all columns within the first file
         # Then use it across other files in the list
 
-        def data_frame(files_=None, activate: bool = True, poll=None,
-                       **kwargs) -> None:
+        def data_frame(files_=None, activate: bool = True, poll=None, **kwargs) -> None:
             """Check each column width of each CSV file
             modify it and add the new rows.
 
@@ -1614,15 +2225,15 @@ class Projects:
 
             :return: None
             """
-            columns = file_reader(folder, files_, **kwargs) \
-                if activate is True else poll
+            columns = (
+                file_reader(folder, files_, **kwargs) if activate is True else poll
+            )
             column_count, config["headers"] = 0, []
             for column_ in columns:
                 each_col_count = 0
                 for each_col in column_:
                     # define the name and index of each column
-                    value = {"column_name": each_col,
-                             "column_index": each_col_count}
+                    value = {"column_name": each_col, "column_index": each_col_count}
                     config["headers"].append(value)
                     each_col_count += 1
                 column_count += 1
@@ -1647,13 +2258,14 @@ class Projects:
             # create a temp csv file with the header of the export
 
             def create_file(**kwargs) -> None:
-                """Create multiple files or data points.
-                """
+                """Create multiple files or data points."""
                 nonlocal max_col_length, headers, column_headers
-                data_frame(**kwargs) if push \
-                                        is not None else data_frame(files_)
-                column_headers, headers, \
-                max_col_length = [], DotNotation(value=config["headers"]), 0
+                data_frame(**kwargs) if push is not None else data_frame(files_)
+                column_headers, headers, max_col_length = (
+                    [],
+                    DotNotation(value=config["headers"]),
+                    0,
+                )
                 for header in headers.value:
                     column_headers.append(header.column_name)
                     max_col_length += 1
@@ -1667,8 +2279,7 @@ class Projects:
 
                 :return: None
                 """
-                file_writer(folder, temp_file,
-                            data=data, mark="many", mode=modes)
+                file_writer(folder, temp_file, data=data, mark="many", mode=modes)
 
             def make_headers_mark() -> None:
                 """Make and compare headers then recreate a new header.
@@ -1683,8 +2294,9 @@ class Projects:
                 # It should contain the previous data and header
                 config["prev_list"] = column_headers
 
-                def column_check(first_list: list,
-                                 second_list: list, _count_: int = 0) -> None:
+                def column_check(
+                    first_list: list, second_list: list, _count_: int = 0
+                ) -> None:
                     """Determine and defines the column headers.
 
                     :param first_list: A list of the previous headers
@@ -1696,8 +2308,9 @@ class Projects:
                     :return: None
                     """
 
-                    def column_populate(name_of_field: str = None,
-                                        ticker: int = None) -> None:
+                    def column_populate(
+                        name_of_field: str = None, ticker: int = None
+                    ) -> None:
                         """Receives a column count list with index.
                         which are inserted and arranged properly
                         into a new headers list.
@@ -1709,8 +2322,7 @@ class Projects:
 
                         :return: None
                         """
-                        config["set_headers_main"].insert(ticker,
-                                                          name_of_field)
+                        config["set_headers_main"].insert(ticker, name_of_field)
 
                     def determine_value(value: str) -> int:
                         """Determines how the headers of two files
@@ -1733,8 +2345,9 @@ class Projects:
                             _plus_value = next_occurrence
                         else:
                             _plus_value = prior_occurrence
-                        _main_value = int(abs(next_occurrence -
-                                              prior_occurrence)) + _plus_value
+                        _main_value = (
+                            int(abs(next_occurrence - prior_occurrence)) + _plus_value
+                        )
                         return _main_value
 
                     def call_column(items: list) -> None:
@@ -1755,14 +2368,9 @@ class Projects:
                             check = config["set_headers_main"].count(col_list)
 
                             if col_list not in check_value:
-                                column_populate(
-                                    col_list,
-                                    _count_)
-                            elif col_list in check_value \
-                                    and check < value_id:
-                                column_populate(
-                                    col_list,
-                                    _count_)
+                                column_populate(col_list, _count_)
+                            elif col_list in check_value and check < value_id:
+                                column_populate(col_list, _count_)
                             _count_ += 1
                         _count_ = 0
 
@@ -1774,11 +2382,9 @@ class Projects:
                     # - That would mean creating more variables with 2-3
                     # - lines of additional codes. It's simpler this way.
 
-                column_check(config["prev_list"],
-                             config["next_list"])
+                column_check(config["prev_list"], config["next_list"])
 
-                def populate_column_data(column_data: list,
-                                         attr: bool = False) -> list:
+                def populate_column_data(column_data: list, attr: bool = False) -> list:
                     """Tries and populate each rows
                     By first getting the headers and the rows beneath it
                     then adding the value of the column by rows.
@@ -1796,9 +2402,9 @@ class Projects:
                     corresponding data.
                     """
 
-                    header_choice = config["prev_list"] \
-                        if attr is False \
-                        else config["next_list"]
+                    header_choice = (
+                        config["prev_list"] if attr is False else config["next_list"]
+                    )
 
                     def load_count(my_list, conf) -> list:
                         """Loads a list into a dictionary of
@@ -1822,11 +2428,15 @@ class Projects:
                             nums += 1
                         return conf
 
-                    pre_config, after_config, = [], []
-                    my_value = load_count(config["set_headers_main"],
-                                          pre_config)
-                    other_value = load_count(header_choice,
-                                             after_config)
+                    (
+                        pre_config,
+                        after_config,
+                    ) = (
+                        [],
+                        [],
+                    )
+                    my_value = load_count(config["set_headers_main"], pre_config)
+                    other_value = load_count(header_choice, after_config)
                     # run a loop through the data and assign each value
                     # to their appropriate header
 
@@ -1838,8 +2448,7 @@ class Projects:
                         if box_item >= iter_count:
                             break
                         my_item = 0
-                        for that_row, inner_item in \
-                                zip(other_value, items):
+                        for that_row, inner_item in zip(other_value, items):
                             if my_item >= read_lock:
                                 break
                             # select everything from first row to last row
@@ -1857,24 +2466,25 @@ class Projects:
                         # where the values are
                         for new_row in other_value:
                             # where we need the values to be
-                            check_name = \
-                                locking.count(new_row["column_name"])
+                            check_name = locking.count(new_row["column_name"])
                             for this_row in my_value:
                                 if check_name == 1:
-                                    if this_row["column_name"] == \
-                                            new_row["column_name"]:
-                                        this_row["column_data"] \
-                                            = new_row["column_data"]
+                                    if (
+                                        this_row["column_name"]
+                                        == new_row["column_name"]
+                                    ):
+                                        this_row["column_data"] = new_row["column_data"]
                                         break
                                 elif check_name > 1:
-                                    if this_row["column_name"] == \
-                                            new_row["column_name"]:
-                                        if this_row["column_index"] \
-                                                not in keep_track:
-                                            keep_track. \
-                                                add(this_row["column_index"])
-                                            this_row["column_data"] \
-                                                = new_row["column_data"]
+                                    if (
+                                        this_row["column_name"]
+                                        == new_row["column_name"]
+                                    ):
+                                        if this_row["column_index"] not in keep_track:
+                                            keep_track.add(this_row["column_index"])
+                                            this_row["column_data"] = new_row[
+                                                "column_data"
+                                            ]
                                             break
                                         else:
                                             continue
@@ -1906,8 +2516,7 @@ class Projects:
 
                     return my_value
 
-                def data_provision(make_item: list,
-                                   attr: bool = False) -> None:
+                def data_provision(make_item: list, attr: bool = False) -> None:
                     """Add the column data into a list.
                     Here we split the header and the data into
                     columns for [headers] -> vertical view
@@ -1939,15 +2548,13 @@ class Projects:
                     # checks the headers and maps the data
                     # to the headers
                     cook_item = populate_column_data(make_item, attr)
-                    look_up = \
-                        DotNotation(value=cook_item)
+                    look_up = DotNotation(value=cook_item)
                     stop_loop = 0
                     _limit_copy = deepcopy(config["set_headers_main"])
                     _limit = len(_limit_copy)
-                    inner_stop, finish_loop = {"num": 0}, \
-                                              len([row for
-                                                   row in
-                                                   make_item])
+                    inner_stop, finish_loop = {"num": 0}, len(
+                        [row for row in make_item]
+                    )
                     # The below adds the values as they are gotten
                     # From a dictionary object
                     while True:
@@ -1960,11 +2567,11 @@ class Projects:
                             for find_item in look_up.value:
                                 if inner_stop["num"] >= _limit:
                                     break
-                                for _names in [config["set_headers_main"]
-                                               [inner_stop["num"]]]:
+                                for _names in [
+                                    config["set_headers_main"][inner_stop["num"]]
+                                ]:
                                     if find_item.column_name == _names:
-                                        data_brick = find_item. \
-                                            column_data[stop_loop]
+                                        data_brick = find_item.column_data[stop_loop]
                                         config["set_file"].append(data_brick)
                                         inner_stop["num"] += 1
                                         break
@@ -2004,13 +2611,11 @@ class Projects:
         length = max_col_length  # keep track of the column width
 
         def merge_files() -> None:
-            """Merge each files and populate it into one file.
-            """
+            """Merge each files and populate it into one file."""
             iteration, progress = 0, 0
             for files in file_path_directory:
                 current_value = len(file_path_directory)
-                read_original, start_ = file_reader(folder,
-                                                    files), 0
+                read_original, start_ = file_reader(folder, files), 0
                 copy_read = deepcopy(read_original)
                 table_length = len([row for row in copy_read])
                 for column in read_original:
@@ -2023,8 +2628,7 @@ class Projects:
                     # write the headers only
                     write_files(files_=files)
                     # add the content into the temp file and populate the rows
-                    file_writer(folder, temp_file, data=payload,
-                                mark="many", mode="a+")
+                    file_writer(folder, temp_file, data=payload, mark="many", mode="a+")
                 else:
                     # process the next list of files here
                     write_files(files_=files, push=payload)
@@ -2032,8 +2636,9 @@ class Projects:
                 iteration += 1
                 progress += 1
                 current_progress = 100 * progress / current_value
-                print("Processing. "
-                      "Current progress: {}%".format(int(current_progress)))
+                print(
+                    "Processing. " "Current progress: {}%".format(int(current_progress))
+                )
 
         merge_files()  # loop through each file and attempt combination
 
@@ -2052,8 +2657,11 @@ class Projects:
             field_list, config["fields"], config["saves"] = [], [], []
             field_data, cycle, field_column = set(), 0, []
             data_frame(activate=False, poll=read_file)
-            column_headers, max_col_length, headers \
-                = [], 0, DotNotation(value=config["headers"])
+            column_headers, max_col_length, headers = (
+                [],
+                0,
+                DotNotation(value=config["headers"]),
+            )
             for header in headers.value:
                 column_headers.append(header.column_name)
                 max_col_length += 1
@@ -2065,8 +2673,7 @@ class Projects:
 
             def reset_fields() -> None:
                 """Reset field values."""
-                nonlocal read_file, start, copy_total, total_, \
-                    field_list, field_data, cycle, field_column
+                nonlocal read_file, start, copy_total, total_, field_list, field_data, cycle, field_column
 
                 read_file, start = file_reader(folder, temp_file, **kwargs), 0
                 copy_total = deepcopy(read_file)
@@ -2086,8 +2693,7 @@ class Projects:
                 if isinstance(data, list):
                     # used for sprint fields
                     _data = data[0]
-                    _result = {"field_name": _data["name"],
-                               "field_id": _data["id"]}
+                    _result = {"field_name": _data["name"], "field_id": _data["id"]}
                     return _result
                 if isinstance(data, dict):
                     # used to extract watchers' list
@@ -2096,19 +2702,22 @@ class Projects:
                         watchers = data["watchers"]
                         if watchers != 0:
                             for _name_ in watchers:
-                                _result_ = {"field_name":
-                                                _name_["displayName"],
-                                            "field_id": _name_["accountId"]
-                                            if LOGIN.api is
-                                               True else data["name"]}
+                                _result_ = {
+                                    "field_name": _name_["displayName"],
+                                    "field_id": _name_["accountId"]
+                                    if LOGIN.api is True
+                                    else data["name"],
+                                }
                                 my_watch.append(_result_)
                             return my_watch
                     else:
                         # used for any other user field
-                        _result_ = {"field_name": data["displayName"],
-                                    "field_id": data["accountId"]
-                                    if LOGIN.api is True else data["name"]
-                                    }
+                        _result_ = {
+                            "field_name": data["displayName"],
+                            "field_id": data["accountId"]
+                            if LOGIN.api is True
+                            else data["name"],
+                        }
                         return _result_
 
             def get_watchers(name, key):
@@ -2122,54 +2731,69 @@ class Projects:
                 for columns_ in read_file:
 
                     def check_field():
-                        print("Converting {} name to {} id on outfile from {}".
-                              format(names, names, LOGIN.base_url))
+                        print(
+                            "Converting {} name to {} id on outfile from {}".format(
+                                names, names, LOGIN.base_url
+                            )
+                        )
                         for _field_item in field_list:
-                            _fields_ = \
-                                LOGIN.get(endpoint.
-                                    search_issues_jql(
-                                    field_search.format
-                                    (field_name=_field_item)))
+                            _fields_ = LOGIN.get(
+                                endpoint.search_issues_jql(
+                                    field_search.format(field_name=_field_item)
+                                )
+                            )
                             if _fields_.status_code < 300:
                                 issues_ = _fields_.json()["issues"]
                                 for keys in issues_:
                                     if "key" in keys:
                                         key = keys["key"]
-                                        get_id = field. \
-                                            get_field_value(names, key) \
-                                            if names != "Watchers" \
+                                        get_id = (
+                                            field.get_field_value(names, key)
+                                            if names != "Watchers"
                                             else get_watchers(names, key)
+                                        )
                                         value_ = check_payload(get_id)
                                         config["fields"].append(value_)
                                         break
                             else:
-                                print("It seems like the {} name: {} "
-                                      "doesn't exist here"
-                                      .format(names, _field_item))
+                                print(
+                                    "It seems like the {} name: {} "
+                                    "doesn't exist here".format(names, _field_item)
+                                )
 
                     def check_columns(_max_length):
                         for rows_ in columns_:
                             if _max_length == length:
                                 break
                             if start > 0:
-                                if check_id(_max_length, field_column) \
-                                        and rows_ != "" \
-                                        and cycle == 0:
+                                if (
+                                    check_id(_max_length, field_column)
+                                    and rows_ != ""
+                                    and cycle == 0
+                                ):
                                     values = columns_[_max_length]
                                     field_data.add(values)
-                                if check_id(_max_length, field_column) \
-                                        and rows_ != "" \
-                                        and cycle == 1:
-                                    get_value = [name.get("field_id")
-                                                 for name in config["fields"]
-                                                 if name.get("field_name")
-                                                 == columns_[_max_length]] if \
-                                        names != "Watchers" else \
-                                        [name.get("field_id")
-                                         for data_field in config["fields"]
-                                         for name in data_field
-                                         if name.get("field_name")
-                                         == columns_[_max_length]]
+                                if (
+                                    check_id(_max_length, field_column)
+                                    and rows_ != ""
+                                    and cycle == 1
+                                ):
+                                    get_value = (
+                                        [
+                                            name.get("field_id")
+                                            for name in config["fields"]
+                                            if name.get("field_name")
+                                            == columns_[_max_length]
+                                        ]
+                                        if names != "Watchers"
+                                        else [
+                                            name.get("field_id")
+                                            for data_field in config["fields"]
+                                            for name in data_field
+                                            if name.get("field_name")
+                                            == columns_[_max_length]
+                                        ]
+                                    )
                                     if len(get_value) != 0:
                                         columns_[_max_length] = get_value[0]
                             _max_length += 1
@@ -2187,31 +2811,32 @@ class Projects:
                             start = 0
                             field_change()
                         break
-                file_writer(folder, temp_file, data=config["saves"],
-                            mark="many", mode="w+")
+                file_writer(
+                    folder, temp_file, data=config["saves"], mark="many", mode="w+"
+                )
 
             for names in field_name:
                 try:
-                    field_search = "{} = \"{}\"".format(names.lower()
-                                                        if names != "Watchers"
-                                                        else "watcher",
-                                                        "{field_name}")
+                    field_search = '{} = "{}"'.format(
+                        names.lower() if names != "Watchers" else "watcher",
+                        "{field_name}",
+                    )
                     populate(names)
                     field_change()
                     reset_fields()
                 except AttributeError as error:
                     sys.stderr.write(f"{error}")
 
-        shutil.copy(
-            path_builder(folder, temp_file),
-            path_builder(folder, final_file)
-        )
+        shutil.copy(path_builder(folder, temp_file), path_builder(folder, final_file))
         os.remove(path_builder(folder, temp_file))
         for file in config["exports"]:
             path = path_builder(folder, file)
             os.remove(path)
-        print("Export Completed.File located at {}"
-              .format(path_builder(folder, final_file)))
+        print(
+            "Export Completed.File located at {}".format(
+                path_builder(folder, final_file)
+            )
+        )
 
     @staticmethod
     def issue_count(jql: str) -> dict:
@@ -2234,29 +2859,34 @@ class Projects:
         """
         from jiraone.utils import DotNotation
         from jiraone.exceptions import JiraOneErrors
+
         if jql is None:
             raise JiraOneErrors("value")
         elif jql is not None:
             if not isinstance(jql, str):
-                raise JiraOneErrors("wrong", "Invalid data structure "
-                                             "received. Expected a string.")
-        total, validate_query = 0, LOGIN.get(endpoint.
-                                             search_issues_jql(jql))
+                raise JiraOneErrors(
+                    "wrong", "Invalid data structure " "received. Expected a string."
+                )
+        total, validate_query = 0, LOGIN.get(endpoint.search_issues_jql(jql))
         if validate_query.status_code < 300:
             total = validate_query.json()["total"]
         else:
-            add_log("Invalid JQL query received. Reason {} with status code: "
-                    "{} and addition info: {}"
-                    .format(validate_query.reason, validate_query.status_code,
-                            validate_query.json()), "debug")
-            raise JiraOneErrors("value", "Your JQL query seems to be invalid"
-                                         " as no issues were returned.")
+            add_log(
+                "Invalid JQL query received. Reason {} with status code: "
+                "{} and addition info: {}".format(
+                    validate_query.reason,
+                    validate_query.status_code,
+                    validate_query.json(),
+                ),
+                "debug",
+            )
+            raise JiraOneErrors(
+                "value",
+                "Your JQL query seems to be invalid" " as no issues were returned.",
+            )
 
         calc = int(total / 1000)
-        value = {
-            "count": total,
-            "max_page": calc if total > 1000 else 0
-        }
+        value = {"count": total, "max_page": calc if total > 1000 else 0}
         return DotNotation(value)
 
 
@@ -2270,68 +2900,85 @@ class Users:
        so you'll be getting all users
 
     """
+
     user_list = deque()
 
-    def get_all_users(self, pull: str = "both", user_type: str = "atlassian",
-                      file: str = None, folder: str = Any, **kwargs) -> None:
+    def get_all_users(
+        self,
+        pull: str = "both",
+        user_type: str = "atlassian",
+        file: str = None,
+        folder: str = Any,
+        **kwargs,
+    ) -> None:
         """Generates a list of users.
 
-        :param pull: (options) for the argument
+         :param pull: (options) for the argument
 
-            * both: pulls out inactive and active users
+             * both: pulls out inactive and active users
 
-            * active: pulls out only active users
+             * active: pulls out only active users
 
-            * inactive: pulls out inactive users
+             * inactive: pulls out inactive users
 
-       :param user_type: (options) for the argument
+        :param user_type: (options) for the argument
 
-            * atlassian: a normal Jira Cloud user
+             * atlassian: a normal Jira Cloud user
 
-            * customer: this will be your JSM customers
+             * customer: this will be your JSM customers
 
-            * app: this will be the bot users for any Cloud App
+             * app: this will be the bot users for any Cloud App
 
-            * unknown: as the name suggest unknown user type probably from oAuth
+             * unknown: as the name suggest unknown user type probably from oAuth
 
-       :param file: String of the filename
+        :param file: String of the filename
 
-       :param folder: String of the folder name
+        :param folder: String of the folder name
 
-       :param kwargs: Additional keyword argument for the method.
+        :param kwargs: Additional keyword argument for the method.
 
-        :return: Any
+         :return: Any
         """
         count_start_at = 0
         validate = LOGIN.get(endpoint.myself())
 
         while validate.status_code == 200:
-            extract = LOGIN.get(endpoint.search_users(count_start_at))
+            extract = LOGIN.get(endpoint.search_users(count_start_at, 1000))
             results = json.loads(extract.content)
             self.user_activity(pull, user_type, results)
-            count_start_at += 50
+            count_start_at += 1000
             print("Current Record - At Row", count_start_at)
             add_log(f"Current Record - At Row {count_start_at}", "info")
 
             if str(results) == "[]":
                 break
         else:
-            sys.stderr.write("Unable to connect to {} - Login Failed...".format(LOGIN.base_url))
-            add_log(f"Login Failure on {LOGIN.base_url}, due to {validate.reason}", "error")
+            sys.stderr.write(
+                "Unable to connect to {} - Login Failed...".format(LOGIN.base_url)
+            )
+            add_log(
+                f"Login Failure on {LOGIN.base_url}, due to {validate.reason}", "error"
+            )
             sys.exit(1)
 
         if file is not None:
             self.report(category=folder, filename=file, **kwargs)
 
-    def report(self, category: str = Any, filename: str = "users_report.csv", **kwargs) -> None:
+    def report(
+        self, category: str = Any, filename: str = "users_report.csv", **kwargs
+    ) -> None:
         """Creates a user report file in CSV format.
         :return: None
         """
         read = [d for d in self.user_list]
-        file_writer(folder=category, file_name=filename, data=read, mark="many", **kwargs)
+        file_writer(
+            folder=category, file_name=filename, data=read, mark="many", **kwargs
+        )
         add_log(f"Generating report file on {filename}", "info")
 
-    def user_activity(self, status: str = Any, account_type: str = Any, results: List = Any) -> None:
+    def user_activity(
+        self, status: str = Any, account_type: str = Any, results: List = Any
+    ) -> None:
         """Determines users activity.
 
         :return: None
@@ -2350,17 +2997,28 @@ class Users:
                     return c.user_list.append(f)
 
         for each_user in results:
-            list_user = [each_user["accountId"], each_user["accountType"], each_user["displayName"],
-                         each_user["active"]]
+            list_user = [
+                each_user["accountId"],
+                each_user["accountType"],
+                each_user["displayName"],
+                each_user["active"],
+            ]
             stack(self, list_user, each_user)
 
-    def get_all_users_group(self, group_folder: str = "Groups", group_file_name: str = "group_file.csv",
-                            user_extraction_file: str = "group_extraction.csv", **kwargs) -> None:
+    def get_all_users_group(
+        self,
+        group_folder: str = "Groups",
+        group_file_name: str = "group_file.csv",
+        user_extraction_file: str = "group_extraction.csv",
+        **kwargs,
+    ) -> None:
         """Get all users and the groups associated to them on the Instance.
         :return: None
         """
         headers = ["Name", "AccountId", "Groups", "User status"]
-        file_writer(folder=group_folder, file_name=group_file_name, data=headers, **kwargs)
+        file_writer(
+            folder=group_folder, file_name=group_file_name, data=headers, **kwargs
+        )
         file_name = user_extraction_file
         self.get_all_users(file=file_name, folder=group_folder, **kwargs)
         reader = file_reader(file_name=file_name, folder=group_folder, **kwargs)
@@ -2374,12 +3032,16 @@ class Users:
             raw = [display_name, account_id, get_all, active_status]
             file_writer(folder=group_folder, file_name=group_file_name, data=raw)
 
-        print("File extraction completed. Your file is located at {}"
-              .format(path_builder(path=group_folder, file_name=group_file_name)))
+        print(
+            "File extraction completed. Your file is located at {}".format(
+                path_builder(path=group_folder, file_name=group_file_name)
+            )
+        )
         add_log("Get Users group Completed", "info")
 
-    def search_user(self, find_user: Union[str, list] = None,
-                    folder: str = "Users", **kwargs) -> Union[list, int]:
+    def search_user(
+        self, find_user: Union[str, list] = None, folder: str = "Users", **kwargs
+    ) -> Union[list, int]:
         """Get a list of all cloud users and search for them by using the displayName.
 
         :param find_user: A list of user's displayName or a string of the displayName
@@ -2406,17 +3068,23 @@ class Users:
 
         def get_users():
             if os.stat(build).st_size != 0:
-                print(f"The file \"{file}\" exist...", end="")
+                print(f'The file "{file}" exist...', end="")
                 os.remove(build)
                 print("Updating extracted user...\n", end="")
-                self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
+                self.get_all_users(
+                    pull=pull, user_type=user_type, file=file, folder=folder
+                )
             else:
                 print("Extracting users...")
-                self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
+                self.get_all_users(
+                    pull=pull, user_type=user_type, file=file, folder=folder
+                )
 
-        if len(self.user_list) == 0:
+        if not self.user_list:
             get_users()
-        CheckUser = namedtuple("CheckUser", ["accountId", "account_type", "display_name", "active"])
+        CheckUser = namedtuple(
+            "CheckUser", ["accountId", "account_type", "display_name", "active"]
+        )
         list_user = file_reader(file_name=file, folder=folder, **kwargs)
         checker = []
         for _ in list_user:
@@ -2426,18 +3094,32 @@ class Users:
                     get_user = f.accountId
                     display_name = f.display_name
                     status = f.active
-                    checker.append(OrderedDict({"accountId": get_user,
-                                                "displayName": display_name, "active": status}))
+                    checker.append(
+                        OrderedDict(
+                            {
+                                "accountId": get_user,
+                                "displayName": display_name,
+                                "active": status,
+                            }
+                        )
+                    )
             if isinstance(find_user, list):
                 for i in find_user:
                     if i in f._asdict().values():
                         get_user = f.accountId
                         display_name = f.display_name
                         status = f.active
-                        checker.append(OrderedDict({"accountId": get_user,
-                                                    "displayName": display_name, "active": status}))
+                        checker.append(
+                            OrderedDict(
+                                {
+                                    "accountId": get_user,
+                                    "displayName": display_name,
+                                    "active": status,
+                                }
+                            )
+                        )
 
-        return checker if len(checker) != 0 else 0
+        return checker if checker else 0
 
     def mention_user(self, name) -> List[str]:
         """Return a format that you can use to mention users on cloud.
@@ -2473,8 +3155,15 @@ def path_builder(path: str = "Report", file_name: str = Any, **kwargs) -> str:
     return base_file
 
 
-def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable = object,
-                mark: str = "single", mode: str = "a+", content: str = None, **kwargs) -> Any:
+def file_writer(
+    folder: str = WORK_PATH,
+    file_name: str = None,
+    data: Iterable = object,
+    mark: str = "single",
+    mode: str = "a+",
+    content: str = None,
+    **kwargs,
+) -> Any:
     """Reads and writes to a file, single or multiple rows or write as byte files.
 
     :param folder: A path to the name of the folder
@@ -2483,7 +3172,7 @@ def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable =
 
     :param data: Iterable - an iterable data, usually in form of a list.
 
-    :param mark:  Helps evaluates how data is created, available options [“single”, “many”, “file”],
+    :param mark:  Helps evaluate how data is created, available options [“single”, “many”, “file”],
               by default mark is set to “single”
 
     :param mode: File mode, available options [“a”, “w”, “a+”, “w+”, “wb”],
@@ -2501,7 +3190,7 @@ def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable =
 
     .. versionchanged:: 0.7.3
 
-    errors - added keyword argument which helps determine how encoding and decording
+    errors - added keyword argument which helps determine how encoding and decoding
              errors are handled
 
     .. versionchanged:: 0.6.3
@@ -2512,14 +3201,17 @@ def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable =
     :return: Any
     """
     from platform import system
+
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
     file = path_builder(path=folder, file_name=file_name)
     encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
     errors = kwargs["errors"] if "errors" in kwargs else "replace"
     # Bug:fix:JIR-8 on https://github.com/princenyeche/jiraone/issues/89
-    windows = open(file, mode, encoding=encoding, newline="",
-                   errors=errors) \
-        if system() == "Windows" and mark != "file" else open(file, mode)
+    windows = (
+        open(file, mode, encoding=encoding, newline="", errors=errors)
+        if system() == "Windows" and mark != "file"
+        else open(file, mode)
+    )
     if mode:
         with windows as f:
             write = csv.writer(f, delimiter=delimiter)
@@ -2532,8 +3224,14 @@ def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable =
             add_log(f"Writing to file {file_name}", "info")
 
 
-def file_reader(folder: str = WORK_PATH, file_name: str = None, mode: str = "r",
-                skip: bool = False, content: bool = False, **kwargs) -> Union[List[List[str]], str]:
+def file_reader(
+    folder: str = WORK_PATH,
+    file_name: str = None,
+    mode: str = "r",
+    skip: bool = False,
+    content: bool = False,
+    **kwargs,
+) -> Union[List[List[str]], str]:
     """Reads a CSV file and returns a list comprehension of the data or reads a byte into strings.
 
     :param folder: string - a path to the name of the folder
@@ -2557,35 +3255,40 @@ def file_reader(folder: str = WORK_PATH, file_name: str = None, mode: str = "r",
 
     .. versionchanged:: 0.7.3
 
-    errors - added keyword argument which helps determine how encoding and decording
+    errors - added keyword argument which helps determine how encoding and decoding
              errors are handled
 
 
     :return: A list comprehension data or binary data
     """
     from platform import system
+
     file = path_builder(path=folder, file_name=file_name)
     encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
     errors = kwargs["errors"] if "errors" in kwargs else "replace"
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
-    windows = open(file, mode, encoding=encoding, newline="",
-                   errors=errors) \
-        if system() == "Windows" and content is False else open(file, mode)
+    windows = (
+        open(file, mode, encoding=encoding, newline="", errors=errors)
+        if system() == "Windows" and content is False
+        else open(file, mode)
+    )
     if mode:
         with windows as f:
             read = csv.reader(f, delimiter=delimiter)
             if skip is True:
                 next(read, None)
             if content is True:
-                feed = f.read() if "encoding" not in kwargs else f.read().encode(encoding)
+                feed = (
+                    f.read() if "encoding" not in kwargs else f.read().encode(encoding)
+                )
             load = [d for d in read]
             add_log(f"Read file {file_name}", "info")
             return load if content is False else feed
 
 
-def replacement_placeholder(string: str = None, data: List = None,
-                            iterable: List = None,
-                            row: int = 2) -> Any:
+def replacement_placeholder(
+    string: str = None, data: List = None, iterable: List = None, row: int = 2
+) -> Any:
     """Return multiple string replacement.
 
     :param string:  A string that needs to be checked
@@ -2622,14 +3325,14 @@ def replacement_placeholder(string: str = None, data: List = None,
 
 
 def delete_attachments(
-        file: Optional[str] = None,
-        search: Union[str, Dict, List, int] = None,
-        delete: bool = True,
-        extension: Union[str, List] = None,
-        by_user: Optional[List] = None,
-        by_size: Optional[str] = None,
-        by_date: Optional[str] = None,
-        **kwargs: Union[str, bool]
+    file: Optional[str] = None,
+    search: Union[str, Dict, List, int] = None,
+    delete: bool = True,
+    extension: Union[str, List] = None,
+    by_user: Optional[List] = None,
+    by_size: Optional[str] = None,
+    by_date: Optional[str] = None,
+    **kwargs: Union[str, bool],
 ) -> None:
     """
     A function that helps to delete attachments on Jira issues.
@@ -2696,13 +3399,21 @@ def delete_attachments(
     """
     from jiraone.exceptions import JiraOneErrors
     from datetime import datetime, timedelta
+
     if LOGIN.get(endpoint.myself()).status_code > 300:
-        add_log("Authentication failed. Please check your credential data to determine what went wrong.", "error")
-        raise JiraOneErrors("login", "Authentication failed. Please check your credentials.")
+        add_log(
+            "Authentication failed. Please check your credential data to determine what went wrong.",
+            "error",
+        )
+        raise JiraOneErrors(
+            "login", "Authentication failed. Please check your credentials."
+        )
     search_path = None
     folder: str = "DATA"
     allow_cp: bool = True if "allow_cp" not in kwargs else False
-    saved_file: str = "data_block.json" if "saved_file" not in kwargs else kwargs["saved_file"]
+    saved_file: str = (
+        "data_block.json" if "saved_file" not in kwargs else kwargs["saved_file"]
+    )
     back_up: bool = False
     attach_load = []
     data_file = path_builder(folder, file_name=saved_file)
@@ -2726,11 +3437,23 @@ def delete_attachments(
         years = 365
         selection = None
         time_factor = {}
-        time_hold_one = {"minute": minutes, "hour": hours, "day": days,
-                         "week": weeks, "month": months, "year": years}
+        time_hold_one = {
+            "minute": minutes,
+            "hour": hours,
+            "day": days,
+            "week": weeks,
+            "month": months,
+            "year": years,
+        }
         time_factors = {}
-        time_hold_two = {"minutes": minutes, "hours": hours, "days": days,
-                         "weeks": weeks, "months": months, "years": years}
+        time_hold_two = {
+            "minutes": minutes,
+            "hours": hours,
+            "days": days,
+            "weeks": weeks,
+            "months": months,
+            "years": years,
+        }
 
         times = []
         if isinstance(_time, str):
@@ -2741,9 +3464,18 @@ def delete_attachments(
             if string_one.search(_time) is not None:
                 times.append(string_one.search(_time).group())
         else:
-            add_log("Invalid time parameter received. Expected a string but got \"{}\"".format(type(_time)), "debug")
-            raise JiraOneErrors("wrong", "Invalid time parameter received. Expected a string but got \"{}\""
-                                .format(type(_time)))
+            add_log(
+                'Invalid time parameter received. Expected a string but got "{}"'.format(
+                    type(_time)
+                ),
+                "debug",
+            )
+            raise JiraOneErrors(
+                "wrong",
+                'Invalid time parameter received. Expected a string but got "{}"'.format(
+                    type(_time)
+                ),
+            )
 
         if times[1]:
             if times[1] in time_hold_one:
@@ -2753,10 +3485,18 @@ def delete_attachments(
                 time_factors = time_hold_two
                 selection = "time_factors"
             else:
-                add_log("Invalid option \"{}\" detected as `time_info` for \"by_date\" argument".format(by_date),
-                        "error")
-                raise JiraOneErrors("value", "We're unable to determine your precise date range with \"{}\""
-                                    .format(by_date))
+                add_log(
+                    'Invalid option "{}" detected as `time_info` for "by_date" argument'.format(
+                        by_date
+                    ),
+                    "error",
+                )
+                raise JiraOneErrors(
+                    "value",
+                    'We\'re unable to determine your precise date range with "{}"'.format(
+                        by_date
+                    ),
+                )
 
         def time_delta(val: int, cet: str) -> tuple:
             """
@@ -2775,21 +3515,33 @@ def delete_attachments(
             return _time_, list(time_check_.keys())[list(time_check_.keys()).index(cet)]
 
         if len(times) > 0:
-            issue_time = datetime.strptime(_items.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z")
-            present = datetime.strftime(datetime.astimezone(datetime.now()), "%Y-%m-%dT%H:%M:%S.%f%z")
+            issue_time = datetime.strptime(
+                _items.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z"
+            )
+            present = datetime.strftime(
+                datetime.astimezone(datetime.now()), "%Y-%m-%dT%H:%M:%S.%f%z"
+            )
             parse_present = datetime.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
             time_check = time_factor if selection == "time_factor" else time_factors
             if times[1] in time_check:
                 ask_time = time_delta(int(times[0]), times[1])
-                d_range = ["days", "months", "years", "weeks"] if selection == "time_factors" else \
-                    ["day", "month", "year", "week"]
+                d_range = (
+                    ["days", "months", "years", "weeks"]
+                    if selection == "time_factors"
+                    else ["day", "month", "year", "week"]
+                )
                 d_min = "minute" if selection == "time_factor" else "minutes"
-                past_time = timedelta(days=ask_time[0]) if ask_time[1] in d_range else \
-                    timedelta(minutes=ask_time[0]) if ask_time[1] == d_min \
-                        else timedelta(hours=ask_time[0])
+                past_time = (
+                    timedelta(days=ask_time[0])
+                    if ask_time[1] in d_range
+                    else timedelta(minutes=ask_time[0])
+                    if ask_time[1] == d_min
+                    else timedelta(hours=ask_time[0])
+                )
                 diff = parse_present - past_time
                 if diff < issue_time:
                     return True
+
         return False
 
     def regulator(size: str, block=None) -> bool:
@@ -2819,17 +3571,33 @@ def delete_attachments(
             else:
                 chars.append("")
         else:
-            add_log("Invalid size parameter received. Expected a string but got \"{}\"".format(type(size)), "debug")
-            raise JiraOneErrors("wrong", "Invalid size parameter received. Expected a string but got \"{}\""
-                                .format(type(size)))
+            add_log(
+                'Invalid size parameter received. Expected a string but got "{}"'.format(
+                    type(size)
+                ),
+                "debug",
+            )
+            raise JiraOneErrors(
+                "wrong",
+                'Invalid size parameter received. Expected a string but got "{}"'.format(
+                    type(size)
+                ),
+            )
 
         if len(chars) > 0:
             symbol = chars[0]
             my_num = int(chars[1])
             this = chars[2].lower()
             if this in ["mb", "kb", "gb"]:
-                byte_size = my_num * mega_byte if this == "mb" else my_num * giga_byte \
-                    if this == "gb" else my_num * kilo_byte if this == "kb" else my_num
+                byte_size = (
+                    my_num * mega_byte
+                    if this == "mb"
+                    else my_num * giga_byte
+                    if this == "gb"
+                    else my_num * kilo_byte
+                    if this == "kb"
+                    else my_num
+                )
                 if symbol == ">":
                     if block.get("size") > byte_size:
                         return True
@@ -2875,16 +3643,34 @@ def delete_attachments(
         :return: True or False for the query
         """
         if isinstance(func, str):
-            _ex_name = (f".{_item.get('filename').split('.')[-1].lower()}" if "." in func else
-                        _item.get('filename').split('.')[-1].lower()) if tp is True else \
-                (f".{_item[-1].split('.')[-1].lower()}" if "." in func else
-                 _item[-1].split('.')[-1].lower())
+            _ex_name = (
+                (
+                    f".{_item.get('filename').split('.')[-1].lower()}"
+                    if "." in func
+                    else _item.get("filename").split(".")[-1].lower()
+                )
+                if tp is True
+                else (
+                    f".{_item[-1].split('.')[-1].lower()}"
+                    if "." in func
+                    else _item[-1].split(".")[-1].lower()
+                )
+            )
             return _ex_name == func
         elif isinstance(func, list):
-            _ex_name = (f".{_item.get('filename').split('.')[-1].lower()}" if [f for f in func if "." in f] else
-                        _item.get('filename').split('.')[-1].lower()) if tp is True else \
-                (f".{_item[-1].split('.')[-1].lower()}" if [f for f in func if "." in f] else
-                 _item[-1].split('.')[-1].lower())
+            _ex_name = (
+                (
+                    f".{_item.get('filename').split('.')[-1].lower()}"
+                    if [f for f in func if "." in f]
+                    else _item.get("filename").split(".")[-1].lower()
+                )
+                if tp is True
+                else (
+                    f".{_item[-1].split('.')[-1].lower()}"
+                    if [f for f in func if "." in f]
+                    else _item[-1].split(".")[-1].lower()
+                )
+            )
             return _ex_name in func
         return False
 
@@ -2898,7 +3684,7 @@ def delete_attachments(
         """
         nonlocal attach_load, count, depth
         infinity_point = data_brick["point"]
-        issues = items["issues"][data_brick["point"]:]
+        issues = items["issues"][data_brick["point"] :]
         attach_load = data_brick["data_block"] if back_up is True else attach_load
         count = set_up["iter"] if back_up is True and depth == 1 else data_brick["iter"]
 
@@ -2910,17 +3696,16 @@ def delete_attachments(
 
             :return: None
             """
-            data_brick.update({
-                "data_block": attach_load,
-                "key": keys,
-                "status": "in_progress",
-                "point": infinity_point
-            }) if atl is False else \
-                data_brick.update({
+            data_brick.update(
+                {
+                    "data_block": attach_load,
                     "key": keys,
                     "status": "in_progress",
-                    "point": infinity_point
-                })
+                    "point": infinity_point,
+                }
+            ) if atl is False else data_brick.update(
+                {"key": keys, "status": "in_progress", "point": infinity_point}
+            )
 
         for each_issue in issues:
             keys = each_issue["key"]
@@ -2938,24 +3723,36 @@ def delete_attachments(
                             "mimetype": attach.get("mimeType"),
                             "created": attach.get("created"),
                             "author": attach.get("author").get("displayName"),
-                            "accountid": attach.get("author").get("accountId")
+                            "accountid": attach.get("author").get("accountId"),
                         }
-                        print("Accessing attachments {} | Key: {}".format(attach.get("filename"), keys))
-                        add_log("Accessing attachments {} | Key: {}".format(attach.get("filename"), keys), "info")
+                        print(
+                            "Accessing attachments {} | Key: {}".format(
+                                attach.get("filename"), keys
+                            )
+                        )
+                        add_log(
+                            "Accessing attachments {} | Key: {}".format(
+                                attach.get("filename"), keys
+                            ),
+                            "info",
+                        )
                         attach_load.append(attach_item)
                         inf_block()
                 else:
                     inf_block(atl=True)
             else:
                 inf_block(atl=True)
-            json.dump(data_brick, open(data_file, mode="w+", encoding="utf-8"),
-                      indent=4) if allow_cp is True else None
+            json.dump(
+                data_brick, open(data_file, mode="w+", encoding="utf-8"), indent=4
+            ) if allow_cp is True else None
             infinity_point += 1
 
     data_brick = {}
     set_up = {}
 
-    def data_wipe(del_, counts_, usr: bool = False, fl: bool = False, _items_=None) -> None:
+    def data_wipe(
+        del_, counts_, usr: bool = False, fl: bool = False, _items_=None
+    ) -> None:
         """
         Trigger the delete mode.
 
@@ -2969,49 +3766,71 @@ def delete_attachments(
         """
         if del_.status_code < 300:
             data_brick.update({"saves" if fl is False else "iter": counts_})
-            print("Deleting attachment \"{}\" | Key: {}".format(_items_.get("filename") if fl is False
-                                                                else _items_[0],
-                                                                _items_.get("key") if fl is False else _items_[1]
-                                                                )) if usr is False \
-                else print("Deleting attachment by user {} \"{}\" | Key: {}"
-                           .format(_items_.get("author"), _items_.get("filename"),
-                                   _items_.get("key")))
-            add_log("The Attachments \"{}\" has been deleted | Key: {}".format(_items_.get("filename")
-                                                                               if fl is False else
-                                                                               _items_[0],
-                                                                               _items_.get("key") if fl is False
-                                                                               else _items_[1]), "info")
+            print(
+                'Deleting attachment "{}" | Key: {}'.format(
+                    _items_.get("filename") if fl is False else _items_[0],
+                    _items_.get("key") if fl is False else _items_[1],
+                )
+            ) if usr is False else print(
+                'Deleting attachment by user {} "{}" | Key: {}'.format(
+                    _items_.get("author"), _items_.get("filename"), _items_.get("key")
+                )
+            )
+            add_log(
+                'The Attachments "{}" has been deleted | Key: {}'.format(
+                    _items_.get("filename") if fl is False else _items_[0],
+                    _items_.get("key") if fl is False else _items_[1],
+                ),
+                "info",
+            )
         else:
             data_brick.update({"saves" if fl is False else "iter": counts_})
-            print("Unable to delete attachment \"{}\" | Key: {}".format(_items_.get("filename") if fl is False else
-                                                                        _items_[0],
-                                                                        _items_.get("key") if fl is False
-                                                                        else _items_[1])) if usr is \
-                                                                                             False \
-                else print("Unable to delete attachment by user {} \"{}\" | Key: {}"
-                           .format(_items_.get("author"), _items_.get("filename"),
-                                   _items_.get("key")))
-            add_log("Attachment deletion of \"{}\" failed with reason \"{}\" | Key: {}"
-                    .format(_items_.get("filename") if fl is False else _items_[0],
-                            del_.reason, _items_.get("key") if fl is False else _items_[1]), "info")
+            print(
+                'Unable to delete attachment "{}" | Key: {}'.format(
+                    _items_.get("filename") if fl is False else _items_[0],
+                    _items_.get("key") if fl is False else _items_[1],
+                )
+            ) if usr is False else print(
+                'Unable to delete attachment by user {} "{}" | Key: {}'.format(
+                    _items_.get("author"), _items_.get("filename"), _items_.get("key")
+                )
+            )
+            add_log(
+                'Attachment deletion of "{}" failed with reason "{}" | Key: {}'.format(
+                    _items_.get("filename") if fl is False else _items_[0],
+                    del_.reason,
+                    _items_.get("key") if fl is False else _items_[1],
+                ),
+                "info",
+            )
 
     if allow_cp is True:
         if os.path.isfile(data_file) and os.stat(data_file).st_size != 0:
-            user_input = input("An existing save point exist from your last search, "
-                               "do you want to use it? (Y/N) \n")
+            user_input = input(
+                "An existing save point exist from your last search, "
+                "do you want to use it? (Y/N) \n"
+            )
             set_up = json.load(open(data_file))
             if user_input.lower() in ["y", "yes"]:
                 back_up = True
             else:
                 print("Starting search from scratch.")
-                add_log("Starting search from scratch, any previous data will be removed", "info")
+                add_log(
+                    "Starting search from scratch, any previous data will be removed",
+                    "info",
+                )
     descriptor = os.open(data_file, flags=os.O_CREAT) if allow_cp is True else None
     os.close(descriptor) if allow_cp is True else None
     count, cycle, step = 0, 0, 0
     if file is None:
         if search is None:
-            add_log("The search parameter can't be None when you have not provided a file input data.", "debug")
-            raise JiraOneErrors("value", "Search parameter can't be None if a file is not provided.")
+            add_log(
+                "The search parameter can't be None when you have not provided a file input data.",
+                "debug",
+            )
+            raise JiraOneErrors(
+                "value", "Search parameter can't be None if a file is not provided."
+            )
         search_path = search
     elif file is not None:
         key_index = 0
@@ -3037,14 +3856,14 @@ def delete_attachments(
         for issue in reader:
             _attach_ = {}
             key = issue[key_index]
-            attach_pattern = re.compile(r"(?:\w{4,5}:\/\/\w*\.+\w+.\w+\/[s]\w*\/.\w.+\.\w+)")
+            attach_pattern = re.compile(
+                r"(?:\w{4,5}:\/\/\w*\.+\w+.\w+\/[s]\w*\/.\w.+\.\w+)"
+            )
             if len(attach_index) > 0:
                 attach_loop = 0
                 for column in attach_index:
                     attach_loop += 1
-                    _attach_.update({
-                        "attach_{}".format(attach_loop): issue[column]
-                    })
+                    _attach_.update({"attach_{}".format(attach_loop): issue[column]})
             # Find every attachment in the attachment column to determine the attachments
             for each_attach, attach_ in _attach_.items():
                 if ";" in attach_:
@@ -3053,8 +3872,13 @@ def delete_attachments(
                     new_data_form.append([key, files_])
             do_once += 1
             if len(_attach_) == 0 and do_once == 1:
-                print("Attachment not processed, file structure could be empty or not properly formatted.")
-                add_log(f"It seems that the attachments URL could not be determined from the {file}", "debug")
+                print(
+                    "Attachment not processed, file structure could be empty or not properly formatted."
+                )
+                add_log(
+                    f"It seems that the attachments URL could not be determined from the {file}",
+                    "debug",
+                )
             # Use regex to find other attachments links that are in other fields.
             # The below would likely find one or more links or none if it can't.
             for data in issue:
@@ -3067,12 +3891,16 @@ def delete_attachments(
             if arrange_attach[1] is not None:
                 new_list.append([arrange_attach[0], arrange_attach[1]])
         new_data_form.clear()
-        split_file = file.split('.')[-2]
+        split_file = file.split(".")[-2]
         new_file = f"{split_file}_temp.csv"
         file_writer(folder, file_name=new_file, data=new_list, mark="many", mode="w+")
         read_file = file_reader(folder, file_name=new_file)
 
-        step = 0 if back_up is False and os.stat(data_file).st_size == 0 else set_up["iter"]
+        step = (
+            0
+            if back_up is False and os.stat(data_file).st_size == 0
+            else set_up["iter"]
+        )
         count = step
         for item in read_file[step:]:
             attach_ = item[1].split("/")
@@ -3080,32 +3908,67 @@ def delete_attachments(
             if delete is True:
                 if extension is not None:
                     if ex_validator(get_ext(extension), attach_, tp=False):
-                        delete_ = LOGIN.delete(endpoint.issue_attachments(attach_id=attach_id))
-                        data_wipe(delete_, count, fl=True, _items_=[attach_[-1], item[0]])
+                        delete_ = LOGIN.delete(
+                            endpoint.issue_attachments(attach_id=attach_id)
+                        )
+                        data_wipe(
+                            delete_, count, fl=True, _items_=[attach_[-1], item[0]]
+                        )
                 else:
-                    delete_ = LOGIN.delete(endpoint.issue_attachments(attach_id=attach_id))
+                    delete_ = LOGIN.delete(
+                        endpoint.issue_attachments(attach_id=attach_id)
+                    )
                     data_wipe(delete_, count, fl=True, _items_=[attach_[-1], item[0]])
             else:
                 data_brick.update({"iter": count})
-                print("Safe mode on: Attachment will not be deleted \"{}\" | Key: {}".format(attach_[-1], item[0]))
-                add_log("Safe mode on: Attachment will not be deleted \"{}\" | Key: {}".format(attach_[-1], item[0]),
-                        "info")
+                print(
+                    'Safe mode on: Attachment will not be deleted "{}" | Key: {}'.format(
+                        attach_[-1], item[0]
+                    )
+                )
+                add_log(
+                    'Safe mode on: Attachment will not be deleted "{}" | Key: {}'.format(
+                        attach_[-1], item[0]
+                    ),
+                    "info",
+                )
             count += 1
-            json.dump(data_brick, open(data_file, mode="w+", encoding="utf-8"),
-                      indent=4) if allow_cp is True else None
+            json.dump(
+                data_brick, open(data_file, mode="w+", encoding="utf-8"), indent=4
+            ) if allow_cp is True else None
         os.remove(path_builder(folder, file_name=new_file))
     if search_path is not None:
-        query = f"key in ({search_path})" if isinstance(search_path, (str, int)) \
-            else "key in {}".format(tuple(search_path)) \
-            if isinstance(search_path, list) else search_path["jql"] if isinstance(search_path, dict) else \
-            sys.stderr.write("Unexpected datatype received. Example on https://jiraone.readthedocs.io ")
-        data_brick["status"] = set_up["status"] if "status" in set_up and back_up is True else "in_progress"
+        query = (
+            f"key in ({search_path})"
+            if isinstance(search_path, (str, int))
+            else "key in {}".format(tuple(search_path))
+            if isinstance(search_path, list)
+            else search_path["jql"]
+            if isinstance(search_path, dict)
+            else sys.stderr.write(
+                "Unexpected datatype received. Example on https://jiraone.readthedocs.io "
+            )
+        )
+        data_brick["status"] = (
+            set_up["status"]
+            if "status" in set_up and back_up is True
+            else "in_progress"
+        )
         depth: int = 1
         while True:
-            load = LOGIN.get(endpoint.search_issues_jql(query=set_up["query"], start_at=set_up["iter"],
-                                                        max_results=100)) if back_up is True and depth == 1 else \
-                LOGIN.get(endpoint.search_issues_jql(query=query, start_at=count,
-                                                     max_results=100))
+            load = (
+                LOGIN.get(
+                    endpoint.search_issues_jql(
+                        query=set_up["query"], start_at=set_up["iter"], max_results=100
+                    )
+                )
+                if back_up is True and depth == 1
+                else LOGIN.get(
+                    endpoint.search_issues_jql(
+                        query=query, start_at=count, max_results=100
+                    )
+                )
+            )
             if data_brick["status"] == "complete":
                 open_ = json.load(open(data_file)) if allow_cp is True else {}
                 attach_load = open_["data_block"] if "data_block" in open_ else []
@@ -3113,24 +3976,45 @@ def delete_attachments(
             if load.status_code < 300:
                 data_ = load.json()
                 cycle = 0
-                print("Extracting attachment details on row {}".
-                      format(set_up["iter"] if back_up is True and depth == 1 else count))
+                print(
+                    "Extracting attachment details on row {}".format(
+                        set_up["iter"] if back_up is True and depth == 1 else count
+                    )
+                )
                 print("*" * 100)
-                add_log("Extracting attachment details on row {}".
-                        format(set_up["iter"] if back_up is True and depth == 1 else count), "info")
+                add_log(
+                    "Extracting attachment details on row {}".format(
+                        set_up["iter"] if back_up is True and depth == 1 else count
+                    ),
+                    "info",
+                )
                 data_brick.update(
                     {
-                        "iter": set_up["iter"] if back_up is True and depth == 1 else count,
-                        "query": set_up["query"] if back_up is True and depth == 1 else query,
-                        "data_block": set_up["data_block"] if back_up is True and depth == 1 else attach_load,
-                        "point": set_up["point"] + 1 if back_up is True and depth == 1 else 0
+                        "iter": set_up["iter"]
+                        if back_up is True and depth == 1
+                        else count,
+                        "query": set_up["query"]
+                        if back_up is True and depth == 1
+                        else query,
+                        "data_block": set_up["data_block"]
+                        if back_up is True and depth == 1
+                        else attach_load,
+                        "point": set_up["point"] + 1
+                        if back_up is True and depth == 1
+                        else 0,
                     }
                 )
                 if count > data_["total"]:
                     data_brick.update({"status": "complete"})
-                    json.dump(data_brick, open(data_file, mode="w+", encoding="utf-8"),
-                              indent=4) if allow_cp is True else None
-                    add_log("Extraction is completed, deletion of attachments on the next step", "info")
+                    json.dump(
+                        data_brick,
+                        open(data_file, mode="w+", encoding="utf-8"),
+                        indent=4,
+                    ) if allow_cp is True else None
+                    add_log(
+                        "Extraction is completed, deletion of attachments on the next step",
+                        "info",
+                    )
                     break
                 get_attachments(data_)
             count += 100
@@ -3141,10 +4025,18 @@ def delete_attachments(
             if load.status_code > 300:
                 cycle += 1
                 if cycle > 99:
-                    add_log("Trying to search for the issues with query \"{}\" returned a \"{}\" "
-                            "error with reason \"{}\".".format(query, load.status_code, load.reason), "error")
-                    raise JiraOneErrors("value", "It seems that the search \"{}\" cannot be "
-                                                 "retrieved as we've attempted it {} times".format(query, cycle))
+                    add_log(
+                        'Trying to search for the issues with query "{}" returned a "{}" '
+                        'error with reason "{}".'.format(
+                            query, load.status_code, load.reason
+                        ),
+                        "error",
+                    )
+                    raise JiraOneErrors(
+                        "value",
+                        'It seems that the search "{}" cannot be '
+                        "retrieved as we've attempted it {} times".format(query, cycle),
+                    )
 
         length = len(attach_load)
         if length > 0:
@@ -3165,44 +4057,92 @@ def delete_attachments(
                                         if regulator(by_size, each_item):
                                             if by_date is not None:
                                                 if time_share(by_date, each_item):
-                                                    delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                           (attach_id=each_item.get("id")))
-                                                    data_wipe(delete_, count, usr=True, _items_=each_item)
+                                                    delete_ = LOGIN.delete(
+                                                        endpoint.issue_attachments(
+                                                            attach_id=each_item.get(
+                                                                "id"
+                                                            )
+                                                        )
+                                                    )
+                                                    data_wipe(
+                                                        delete_,
+                                                        count,
+                                                        usr=True,
+                                                        _items_=each_item,
+                                                    )
                                             else:
-                                                delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                       (attach_id=each_item.get("id")))
-                                                data_wipe(delete_, count, usr=True, _items_=each_item)
+                                                delete_ = LOGIN.delete(
+                                                    endpoint.issue_attachments(
+                                                        attach_id=each_item.get("id")
+                                                    )
+                                                )
+                                                data_wipe(
+                                                    delete_,
+                                                    count,
+                                                    usr=True,
+                                                    _items_=each_item,
+                                                )
                                     else:
                                         if by_date is not None:
                                             if time_share(by_date, each_item):
-                                                delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                       (attach_id=each_item.get("id")))
-                                                data_wipe(delete_, count, usr=True, _items_=each_item)
+                                                delete_ = LOGIN.delete(
+                                                    endpoint.issue_attachments(
+                                                        attach_id=each_item.get("id")
+                                                    )
+                                                )
+                                                data_wipe(
+                                                    delete_,
+                                                    count,
+                                                    usr=True,
+                                                    _items_=each_item,
+                                                )
                                         else:
-                                            delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                   (attach_id=each_item.get("id")))
-                                            data_wipe(delete_, count, usr=True, _items_=each_item)
+                                            delete_ = LOGIN.delete(
+                                                endpoint.issue_attachments(
+                                                    attach_id=each_item.get("id")
+                                                )
+                                            )
+                                            data_wipe(
+                                                delete_,
+                                                count,
+                                                usr=True,
+                                                _items_=each_item,
+                                            )
                             else:
                                 if by_size is not None:
                                     if regulator(by_size, each_item):
                                         if by_date is not None:
                                             if time_share(by_date, each_item):
-                                                delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                       (attach_id=each_item.get("id")))
-                                                data_wipe(delete_, count, _items_=each_item)
+                                                delete_ = LOGIN.delete(
+                                                    endpoint.issue_attachments(
+                                                        attach_id=each_item.get("id")
+                                                    )
+                                                )
+                                                data_wipe(
+                                                    delete_, count, _items_=each_item
+                                                )
                                         else:
-                                            delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                   (attach_id=each_item.get("id")))
+                                            delete_ = LOGIN.delete(
+                                                endpoint.issue_attachments(
+                                                    attach_id=each_item.get("id")
+                                                )
+                                            )
                                             data_wipe(delete_, count, _items_=each_item)
                                 else:
                                     if by_date is not None:
                                         if time_share(by_date, each_item):
-                                            delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                   (attach_id=each_item.get("id")))
+                                            delete_ = LOGIN.delete(
+                                                endpoint.issue_attachments(
+                                                    attach_id=each_item.get("id")
+                                                )
+                                            )
                                             data_wipe(delete_, count, _items_=each_item)
                                     else:
                                         delete_ = LOGIN.delete(
-                                            endpoint.issue_attachments(attach_id=each_item.get("id")))
+                                            endpoint.issue_attachments(
+                                                attach_id=each_item.get("id")
+                                            )
+                                        )
                                         data_wipe(delete_, count, _items_=each_item)
                     else:
                         if by_user is not None:
@@ -3211,57 +4151,107 @@ def delete_attachments(
                                     if regulator(by_size, each_item):
                                         if by_date is not None:
                                             if time_share(by_date, each_item):
-                                                delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                       (attach_id=each_item.get("id")))
-                                                data_wipe(delete_, count, usr=True, _items_=each_item)
+                                                delete_ = LOGIN.delete(
+                                                    endpoint.issue_attachments(
+                                                        attach_id=each_item.get("id")
+                                                    )
+                                                )
+                                                data_wipe(
+                                                    delete_,
+                                                    count,
+                                                    usr=True,
+                                                    _items_=each_item,
+                                                )
                                         else:
-                                            delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                   (attach_id=each_item.get("id")))
-                                            data_wipe(delete_, count, usr=True, _items_=each_item)
+                                            delete_ = LOGIN.delete(
+                                                endpoint.issue_attachments(
+                                                    attach_id=each_item.get("id")
+                                                )
+                                            )
+                                            data_wipe(
+                                                delete_,
+                                                count,
+                                                usr=True,
+                                                _items_=each_item,
+                                            )
                                 else:
                                     if by_date is not None:
                                         if time_share(by_date, each_item):
-                                            delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                   (attach_id=each_item.get("id")))
-                                            data_wipe(delete_, count, usr=True, _items_=each_item)
+                                            delete_ = LOGIN.delete(
+                                                endpoint.issue_attachments(
+                                                    attach_id=each_item.get("id")
+                                                )
+                                            )
+                                            data_wipe(
+                                                delete_,
+                                                count,
+                                                usr=True,
+                                                _items_=each_item,
+                                            )
                                     else:
-                                        delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                               (attach_id=each_item.get("id")))
-                                        data_wipe(delete_, count, usr=True, _items_=each_item)
+                                        delete_ = LOGIN.delete(
+                                            endpoint.issue_attachments(
+                                                attach_id=each_item.get("id")
+                                            )
+                                        )
+                                        data_wipe(
+                                            delete_, count, usr=True, _items_=each_item
+                                        )
                         else:
                             if by_size is not None:
                                 if regulator(by_size, each_item):
                                     if by_date is not None:
                                         if time_share(by_date, each_item):
-                                            delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                                   (attach_id=each_item.get("id")))
+                                            delete_ = LOGIN.delete(
+                                                endpoint.issue_attachments(
+                                                    attach_id=each_item.get("id")
+                                                )
+                                            )
                                             data_wipe(delete_, count, _items_=each_item)
                                     else:
-                                        delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                               (attach_id=each_item.get("id")))
+                                        delete_ = LOGIN.delete(
+                                            endpoint.issue_attachments(
+                                                attach_id=each_item.get("id")
+                                            )
+                                        )
                                         data_wipe(delete_, count, _items_=each_item)
                             elif by_date is not None:
                                 if time_share(by_date, each_item):
-                                    delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                           (attach_id=each_item.get("id")))
+                                    delete_ = LOGIN.delete(
+                                        endpoint.issue_attachments(
+                                            attach_id=each_item.get("id")
+                                        )
+                                    )
                                     data_wipe(delete_, count, _items_=each_item)
                             else:
-                                delete_ = LOGIN.delete(endpoint.issue_attachments
-                                                       (attach_id=each_item.get("id")))
+                                delete_ = LOGIN.delete(
+                                    endpoint.issue_attachments(
+                                        attach_id=each_item.get("id")
+                                    )
+                                )
                                 data_wipe(delete_, count, _items_=each_item)
                 else:
                     data_brick.update({"saves": count})
-                    print("Safe mode on: Attachment will not be deleted \"{}\" | Key: {}".
-                          format(each_item.get("filename"), each_item.get("key")))
+                    print(
+                        'Safe mode on: Attachment will not be deleted "{}" | Key: {}'.format(
+                            each_item.get("filename"), each_item.get("key")
+                        )
+                    )
 
                 count += 1
-                json.dump(data_brick, open(data_file, mode="w+", encoding="utf-8"),
-                          indent=4) if allow_cp is True else None
+                json.dump(
+                    data_brick, open(data_file, mode="w+", encoding="utf-8"), indent=4
+                ) if allow_cp is True else None
 
         else:
-            print("The data search seems to be empty. Please recheck your search criteria.")
-            add_log("Searching for attachment did not yield any result. It seems the search criteria"
-                    " does not have attachments.", "debug")
+            print(
+                "The data search seems to be empty. Please recheck your search criteria."
+            )
+            add_log(
+                "Searching for attachment did not yield any result. It seems the search criteria"
+                " does not have attachments.",
+                "debug",
+            )
 
     os.remove(data_file) if allow_cp is True else None
 

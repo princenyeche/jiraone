@@ -5,6 +5,7 @@
 ![Build Doc](https://readthedocs.org/projects/jiraone/badge/?version=latest)
 [![jiraone](https://snyk.io/advisor/python/jiraone/badge.svg)](https://snyk.io/advisor/python/jiraone)
 [![Build Status](https://app.travis-ci.com/princenyeche/jiraone.svg?branch=main)](https://app.travis-ci.com/princenyeche/jiraone)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 
 # Jira one

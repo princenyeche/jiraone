@@ -1,5 +1,13 @@
 # Jira one change log
 
+**Release 0.7.4** - 2023-03-13
+### Update #107
+* Reformatting entire module to use **black**
+* Patch to `PROJECT.export_issues` method, added two new arguments `encoding` and `errors` which should help in character encoding formatting
+* Added new methods to `endpoint` which are `server_info`, and `project_avatar`
+* Added new info to documentation
+
+
 **Release 0.7.3** - 2022-10-28
 ### Update #98
 * Patch to file descriptor error in windows machine. Thanks to [@NomadSU](https://github.com/NomadSU)

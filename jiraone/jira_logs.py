@@ -12,13 +12,17 @@ now = datetime.now()
 LOGGER = ""
 
 logger = logging.getLogger(__name__)
-formatting = logging.Formatter("%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]")
+formatting = logging.Formatter(
+    "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
+)
 
 if system() == "Linux" or system() == "Darwin":
     LOGGER += WORK_PATH + "{}".format("/logs")
     if not os.path.exists(LOGGER):
         os.mkdir(LOGGER)
-    handler = RotatingFileHandler("{}/{}".format(LOGGER, "app.log"), maxBytes=1000000, backupCount=20)
+    handler = RotatingFileHandler(
+        "{}/{}".format(LOGGER, "app.log"), maxBytes=1000000, backupCount=20
+    )
     handler.setFormatter(formatting)
     logger.addHandler(handler)
 
@@ -26,7 +30,9 @@ if system() == "Windows":
     LOGGER += WORK_PATH + "{}".format("\\logs")
     if not os.path.exists(LOGGER):
         os.mkdir(LOGGER)
-    handler = RotatingFileHandler("{}\\{}".format(LOGGER, "app.log"), maxBytes=1000000, backupCount=20)
+    handler = RotatingFileHandler(
+        "{}\\{}".format(LOGGER, "app.log"), maxBytes=1000000, backupCount=20
+    )
     handler.setFormatter(formatting)
     logger.addHandler(handler)
 

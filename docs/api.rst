@@ -75,7 +75,33 @@ Example usage:
    os.environ["REQUESTS_CA_BUNDLE"] = your_cert_path
    # before calling jiraone statements
  
+**Creating a Bearer authentication**
+
+ Besides using the basic authentication method, you can generate or create header authentication using any prefix type.
   
+   For example::
+   
+     from jiraone import LOGIN, endpoint
+
+     # previous statement
+     url = "https://nexusfive.atlassian.net"
+     token = "GHxxxxxPPPxx"
+     # First assign a base_url to the attribute below
+     LOGIN.base_url = url
+     # You need to pass the token variable to a keyword argument called `sess`
+     LOGIN.token_session(sess=token)
+      
+ If you want to change the prefix of the authorization type e.g. `Bearer`, use the keyword argument in the `token_session` called `_type`
+ which should alter the authorization prefix
+ 
+   For example::
+   
+     from jiraone import LOGIN
+      
+     # previous expression
+     LOGIN.token_session(sess=token, _type="JWT")
+      
+ 
   
 **Attributes**, available to the LOGIN alias
 
@@ -113,6 +139,22 @@ such as ``files``, ``data`` etc.
 * ``LOGIN.put(url, *args, payload=None, **kwargs)``
 
 * ``LOGIN.custom_method(*args, **kwargs)``
+
+* ``LOGIN.from_jira(obj)`` - which takes an instance of the jira object from the python jira package.
+    This allows the ability to access jira's object methods, classes and properties. Making it possible to combine both
+    jiraone's and jira's packages as one. Please note this will only work with basic authentication as of now!
+    
+.. code-block:: python
+       
+       from jira import JIRA
+       from jiraone import LOGIN, endpoint
+       my_jira = JIRA(server="https://nexusfive.atlassian.net",
+                 basic_auth=("prince@example.com",
+                 "MXKSlsXXXXX"))
+       LOGIN.from_jira(my_jira)
+       print(LOGIN.get(endpoint.myself()))
+       # response
+       # <Response [200]>
 
 
 .. note::
