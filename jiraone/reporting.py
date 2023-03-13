@@ -1619,7 +1619,7 @@ class Projects:
                                          f"{int(init / 1000)}", "of {}"
                   .format(int((limiter - 1) / 1000)))
             file_writer(folder, file_name,
-                        content=issues.content.decode('utf-8', errors="replace"),
+                        content=issues.content.decode(encoding, errors=errors),
                         mark="file", mode="w+")
             # create a direct link to the new file
             # ensure that there's a unique list as the names are different.
