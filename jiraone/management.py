@@ -223,7 +223,7 @@ class UserManagement:
         :param action:  Additional positional argument for events. True sets events-actions
 
                        * action - Sets the event actions, true to enable by default set to true.
-                                  e.g action=True
+                                  e.g. action=True
 
         :param policy_id: An id of the policy
 
@@ -233,7 +233,7 @@ class UserManagement:
 
                      Any response argument
 
-                     e.g json=payload
+                     e.g. json=payload
                          data=payload
 
 
@@ -569,7 +569,7 @@ class UserManagement:
         search = None
         pattern_name = r"[\s]"  # This could be the name of a person
         pattern_email = r"[\@]"  # This could be an email address
-        pattern_aaid = r"[{5|6|7|8}[a-z]+"  # This could be the account_id
+        pattern_aaid = r"[a-zA-Z0-9_|:-]{1,128}"  # This could be the account_id
         for term in source:
             if len(re.findall(pattern_aaid, query)) > 3:
                 if 'account_id' in term:
