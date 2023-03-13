@@ -846,7 +846,7 @@ class Projects:
 
             :param sums: A summary of an issue
 
-            :param item_val: An dictionary of values
+            :param item_val: A dictionary of values
 
             :param name_: displayName of the user
 
@@ -1390,6 +1390,20 @@ class Projects:
                   This argument requires the ``target`` argument to be set
                   first before it can become useful.
 
+                  * encoding: Datatype (str) Ability to alter the encoding
+                  of the exported data to file_writer function.
+
+                  * errors: Datatype (str) Ability to alter the error type used
+                  in encoding argument if the encoded character fails to decode.
+
+        .. versionchanged:: 0.7.4
+
+        encoding: added keyword argument which helps determine how encoding
+             are handled
+
+        errors: added keyword argument which helps determine decoding
+             errors are handled
+
         :return: None
 
         """
@@ -1402,7 +1416,8 @@ class Projects:
         if reason.status_code > 300:
             add_log("Authentication failed.Please check your credential "
                     "data to determine "
-                    "what went wrong with reason: {}".format(reason.json()),
+                    "what went wrong with reason: {} & code {}".format(reason.reason,
+                                                                       reason.status_code),
                     "error")
             raise JiraOneErrors("login", "Authentication failed. "
                                          "Please check your credentials."
@@ -1418,6 +1433,9 @@ class Projects:
             else "temp_file.csv"
         final_file: str = kwargs["final_file"] if "final_file" in kwargs \
             else "final_file.csv"
+        encoding: str = kwargs["encoding"] if "encoding" in kwargs \
+            else "utf-8"
+        errors: str = kwargs["errors"] if "errors" in kwargs else "replace"
         # stores most configuration data using a dictionary
         config = {}
         # Checking that the arguments are passing correct data structure.
@@ -1464,6 +1482,24 @@ class Projects:
                                          "string of a valid Jira query."
                                          "Detected {} instead.".
                                 format(type(jql)))
+        if not isinstance(encoding, str):
+            add_log("The `encoding` argument seems to be using the wrong data "
+                    "structure {}"
+                    "expecting a string.".format(encoding), "error")
+            raise JiraOneErrors("wrong", "The `encoding` argument should be a "
+                                         "string of a character encoding "
+                                         "e.g utf-8."
+                                         "Detected {} instead.".
+                                format(type(encoding)))
+        if not isinstance(errors, str):
+            add_log("The `errors` argument seems to be using the wrong data "
+                    "structure {}"
+                    "expecting a string.".format(errors), "error")
+            raise JiraOneErrors("wrong", "The `errors` argument should be a "
+                                         "string of a character encoding "
+                                         "exception e.g. replace."
+                                         "Detected {} instead.".
+                                format(type(errors)))
 
         if page is None:
             pass
@@ -1583,7 +1619,7 @@ class Projects:
                                          f"{int(init / 1000)}", "of {}"
                   .format(int((limiter - 1) / 1000)))
             file_writer(folder, file_name,
-                        content=issues.content.decode('utf-8'),
+                        content=issues.content.decode('utf-8', errors="replace"),
                         mark="file", mode="w+")
             # create a direct link to the new file
             # ensure that there's a unique list as the names are different.
@@ -2306,10 +2342,10 @@ class Users:
         validate = LOGIN.get(endpoint.myself())
 
         while validate.status_code == 200:
-            extract = LOGIN.get(endpoint.search_users(count_start_at))
+            extract = LOGIN.get(endpoint.search_users(count_start_at, 1000))
             results = json.loads(extract.content)
             self.user_activity(pull, user_type, results)
-            count_start_at += 50
+            count_start_at += 1000
             print("Current Record - At Row", count_start_at)
             add_log(f"Current Record - At Row {count_start_at}", "info")
 
@@ -2414,7 +2450,7 @@ class Users:
                 print("Extracting users...")
                 self.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
 
-        if len(self.user_list) == 0:
+        if not self.user_list:
             get_users()
         CheckUser = namedtuple("CheckUser", ["accountId", "account_type", "display_name", "active"])
         list_user = file_reader(file_name=file, folder=folder, **kwargs)
@@ -2437,7 +2473,7 @@ class Users:
                         checker.append(OrderedDict({"accountId": get_user,
                                                     "displayName": display_name, "active": status}))
 
-        return checker if len(checker) != 0 else 0
+        return checker if checker else 0
 
     def mention_user(self, name) -> List[str]:
         """Return a format that you can use to mention users on cloud.
@@ -2483,7 +2519,7 @@ def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable =
 
     :param data: Iterable - an iterable data, usually in form of a list.
 
-    :param mark:  Helps evaluates how data is created, available options [“single”, “many”, “file”],
+    :param mark:  Helps evaluate how data is created, available options [“single”, “many”, “file”],
               by default mark is set to “single”
 
     :param mode: File mode, available options [“a”, “w”, “a+”, “w+”, “wb”],
@@ -2501,7 +2537,7 @@ def file_writer(folder: str = WORK_PATH, file_name: str = None, data: Iterable =
 
     .. versionchanged:: 0.7.3
 
-    errors - added keyword argument which helps determine how encoding and decording
+    errors - added keyword argument which helps determine how encoding and decoding
              errors are handled
 
     .. versionchanged:: 0.6.3
@@ -2557,7 +2593,7 @@ def file_reader(folder: str = WORK_PATH, file_name: str = None, mode: str = "r",
 
     .. versionchanged:: 0.7.3
 
-    errors - added keyword argument which helps determine how encoding and decording
+    errors - added keyword argument which helps determine how encoding and decoding
              errors are handled
 
 
@@ -2790,6 +2826,7 @@ def delete_attachments(
                 diff = parse_present - past_time
                 if diff < issue_time:
                     return True
+
         return False
 
     def regulator(size: str, block=None) -> bool:
