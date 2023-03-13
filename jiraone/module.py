@@ -74,12 +74,15 @@ def field_update(field,
 
                   * remove - remove an option value from a list or dict
 
+                  * get_key - key value to get_field dictionary data
+
     :return: Any object
     """
+    get_key = kwargs["get_key"] if "get_key" in kwargs else "custom"
     if name is None:
         raise JiraOneErrors("name")
     try:
-        field_type = field.get_field(name).get("custom")
+        field_type = field.get_field(name).get(get_key)
         if field_type is True:
             determine_field = "custom"
         else:
@@ -351,7 +354,7 @@ def bulk_change_email(data: str, token: str) -> None:
 
     :param token: A string of the API token to authenticate the request
 
-    Additionally, the output of failed attempts it written back to your data file.
+    Additionally, the output of failed attempts is written back to your data file.
 
     :return: None
     """
