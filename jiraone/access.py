@@ -11,7 +11,6 @@ import string
 import random
 import requests
 import sys
-import os
 import json
 from requests.auth import HTTPBasicAuth
 from typing import Any, Optional, Union, Dict, List
@@ -346,7 +345,7 @@ class Credentials(object):
 
         :param kwargs: Additional keyword arguments to ``requests`` module
 
-        :return: A HTTP response
+        :return: An HTTP response
         """
         response = requests.get(url, *args, auth=self.auth_request,
                                 json=payload, headers=self.headers, **kwargs)
@@ -368,7 +367,7 @@ class Credentials(object):
         :param kwargs: Additional keyword arguments to ``requests`` module
 
 
-        :return: A HTTP response
+        :return: An HTTP response
         """
         response = requests.post(url, *args, auth=self.auth_request,
                                  json=payload, headers=self.headers, **kwargs)
@@ -386,7 +385,7 @@ class Credentials(object):
 
         :param kwargs: Additional keyword arguments to ``requests`` module
 
-        :return: A HTTP response
+        :return: An HTTP response
         """
         response = requests.put(url, *args, auth=self.auth_request,
                                 json=payload, headers=self.headers, **kwargs)
@@ -400,7 +399,7 @@ class Credentials(object):
 
         :param kwargs: Additional keyword arguments to ``requests`` module
 
-        :return: A HTTP response
+        :return: An HTTP response
         """
         response = requests.delete(url, auth=self.auth_request,
                                    headers=self.headers, **kwargs)
@@ -424,11 +423,12 @@ class Credentials(object):
 
         :param kwargs: Additional keyword arguments to ``requests`` module
 
-                     For example:
-                     json={"file": content}
-                     data={"file": content}
+                     For example::
 
-        :return: A HTTP response
+                       json={"file": content}
+                       data={"file": content}
+
+        :return: An HTTP response
         """
         response = requests.request(*args, auth=self.auth_request,
                                     headers=self.headers, **kwargs)
@@ -469,7 +469,7 @@ class Credentials(object):
          jiras = JIRA(server="https://nexusfive.atlassian.net",
                  basic_auth=("prince@example.com",
                  "MXKSlsXXXXX"))
-         my_jira = LOGIN.from_jira(my_jira)
+         my_jira = LOGIN.from_jira(jiras)
          # Making a request to JIRA's methods
          print(my_jira.myself())
          # response
@@ -498,18 +498,15 @@ class Credentials(object):
                     return obj
                 else:
                     exit("Unable to read other values within the ``JIRA``"
-                          " object. Authentication cannot proceed further.")
+                         " object. Authentication cannot proceed further.")
             else:
                 exit("Could not detect a `JIRA` object from the command."
                      " Please check that you have the `jira` python package "
                      "installed.")
-        except ImportError as err:
+        except Exception as err:
             raise JiraOneErrors("wrong",
-                                "You do not seem to have the Jira python "
-                                "package installed."
-                                " Please run pip install jira or python3 -m "
-                                "pip install jira "
-                                " to begin. Other errors: "
+                                "An unknown exception has occurred "
+                                "Other errors: "
                                 " {}".format(err))
 
 
@@ -745,7 +742,7 @@ class EndPoints:
 
         If the user has the Administer Jira global permission, all issue types are returned.
 
-        If the user has the Browse projects project permission for one or more projects,
+        If the user has the "Browse projects" project permission for one or more projects,
         the issue types associated with the projects the user has permission to browse are returned.
 
         :return: A string of the url
@@ -848,7 +845,7 @@ class EndPoints:
                                                                                  start_at, max_results)
 
     @classmethod
-    def get_attachment_meta_data(cls, query: str, warning: Any = None) -> str:
+    def get_attachment_meta_data(cls, query: str, warning: bool = True) -> str:
         """Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
          :param query: of the attachment
@@ -861,7 +858,7 @@ class EndPoints:
          """
         import warnings
         message = "We will be removing this endpoint soon\n use endpoint.issue_attachments() instead."
-        if warning is None:
+        if warning is True:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
         else:
             pass
@@ -879,7 +876,7 @@ class EndPoints:
         Returns the attachment settings, that is, whether attachments are enabled and the
         maximum attachment size allowed.
 
-        :request GET: - Get attachment Meta data
+        :request GET: - Get attachment metadata
         Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
         :param attach_id: required (id of the attachment), datatype -> string
@@ -1086,7 +1083,7 @@ class EndPoints:
         """Returns all components in a project. See the Get project components paginated
 
         resource if you want to get a full list of components with pagination.
-        The project ID or project key (case sensitive).
+        The project ID or project key (case-sensitive).
 
         :param id_or_key: An issue key or id
 
@@ -1178,7 +1175,7 @@ class EndPoints:
                 .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                         link_id)
         else:
-            return "{}/rest/api/{}/issueLink"\
+            return "{}/rest/api/{}/issueLink" \
                 .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
@@ -1290,7 +1287,7 @@ class EndPoints:
                            "&maxResults={}" \
                            "&startedAfter={}" \
                         .format(LOGIN.base_url, "3" if LOGIN.api is True
-                               else "latest",
+                    else "latest",
                                 key_or_id, start_at, max_results,
                                 started_after)
                 else:
@@ -1298,7 +1295,7 @@ class EndPoints:
                            "&maxResults={}&expand={}" \
                            "&startedAfter={}" \
                         .format(LOGIN.base_url, "3" if LOGIN.api is True
-                                else "latest",
+                    else "latest",
                                 key_or_id, start_at, max_results, expand,
                                 started_after)
             elif started_after is None and started_before is not None:
@@ -1340,14 +1337,14 @@ class EndPoints:
                     return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
                            "&maxResults={}&expand={}" \
                         .format(LOGIN.base_url, "3" if LOGIN.api is True
-                                else "latest",
+                    else "latest",
                                 key_or_id, start_at, max_results, expand)
                 elif expand is None:
                     return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
-                               "&maxResults={}" \
-                            .format(LOGIN.base_url, "3" if LOGIN.api is True
-                                    else "latest",
-                                    key_or_id, start_at, max_results)
+                           "&maxResults={}" \
+                        .format(LOGIN.base_url, "3" if LOGIN.api is True
+                    else "latest",
+                                key_or_id, start_at, max_results)
                 else:
                     if adjust_estimate is not None:
                         if adjust_estimate == "new":
@@ -1380,7 +1377,7 @@ class EndPoints:
                                    "&notifyUsers={}" \
                                    "&overrideEditableFlag={}" \
                                 .format(LOGIN.base_url, "3"
-                                      if LOGIN.api is True else "latest",
+                            if LOGIN.api is True else "latest",
                                         key_or_id,
                                         adjust_estimate,
                                         notify_users,
@@ -1472,12 +1469,12 @@ class EndPoints:
         if uri:
             return "{}/rest/api/{}/webhook/{}". \
                 format(LOGIN.base_url, "3" if LOGIN.api is True
-                       else "latest",
+            else "latest",
                        uri)
         else:
-            return "{}/rest/api/{}/webhook".\
+            return "{}/rest/api/{}/webhook". \
                 format(LOGIN.base_url, "3" if LOGIN.api is True
-                else "latest")
+            else "latest")
 
     @classmethod
     def task(cls, task_id: Optional[str] = None,
@@ -1497,15 +1494,15 @@ class EndPoints:
         :return: str
         """
         if method.lower() == "get":
-            return "{}/rest/api/3/task/{}"\
-            .format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                    task_id)
+            return "{}/rest/api/3/task/{}" \
+                .format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
+            else "latest",
+                        task_id)
         else:
             return "{}/rest/api/3/task/{}/cancel" \
                 .format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-                      else "latest",
-                      task_id)
+            else "latest",
+                        task_id)
 
     @classmethod
     def issue_watchers(cls,
@@ -1537,17 +1534,15 @@ class EndPoints:
             if account_id:
                 return "{}/rest/api/{}/issue/{}/watchers?accountId={}". \
                     format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-                           else "latest",
-                           key_or_id, account_id)
+                else "latest", key_or_id, account_id)
             else:
                 return "{}/rest/api/{}/issue/{}/watchers". \
                     format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-                           else "latest",
-                           key_or_id)
+                else "latest", key_or_id)
         else:
-            return "{}/rest/api/{}/issue/watching".\
+            return "{}/rest/api/{}/issue/watching". \
                 format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-                      else "latest")
+            else "latest")
 
     @classmethod
     def issue_votes(cls,
@@ -1564,16 +1559,16 @@ class EndPoints:
 
         :return: str
         """
-        return "{}/rest/api/{}/issue/{}/votes".\
+        return "{}/rest/api/{}/issue/{}/votes". \
             format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-                   else "latest",
+        else "latest",
                    key_or_id)
 
     @classmethod
     def instance_info(cls):
         """Returns licensing information about the Jira instance.
         """
-        return "{}/rest/api/{}/instance/license"\
+        return "{}/rest/api/{}/instance/license" \
             .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
 
     @classmethod
@@ -1607,9 +1602,106 @@ class EndPoints:
                 .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                         key_or_id, worklog_id)
         else:
-            return "{}/rest/api/{}/issue/{}/worklog/{}/properties/{}"\
+            return "{}/rest/api/{}/issue/{}/worklog/{}/properties/{}" \
                 .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
                         key_or_id, worklog_id, property_key)
+
+    @classmethod
+    def server_info(cls) -> str:
+        """
+        Returns information about the Jira instance.
+        This operation can be accessed anonymously.
+
+        :return: strings
+        """
+        return "{}/rest/api/{}/serverInfo".format(LOGIN.base_url,
+                                                  "3" if LOGIN.api is True else "latest")
+
+    @classmethod
+    def project_avatar(cls,
+                       key_or_id: Optional = None,
+                       avatar_id: Optional = None,
+                       method: Optional = "get",
+                       **kwargs) -> str:
+        """
+        Performs multiple operations to the avatar displayed for a project.
+
+        :Request PUT: Set the avatar to a project, the project key or id
+            is required and the avatar_id needs to be passed in the body
+
+        Example 1::
+
+          payload = {"id": "10010"}
+
+        :Request DELETE: Deletes a custom avatar from a project.
+             Note that system avatars cannot be deleted.
+
+        :Request POST: Loads an avatar for a project.
+        Specify the avatar's local file location in the body of the request
+
+        Example 2::
+
+          X-Atlassian-Token: no-check
+          Content-Type: image/image type Valid image types are JPEG, GIF, or PNG.
+
+        :Request GET: Returns all project avatars, grouped by
+         system and custom avatars.
+
+        :param key_or_id: Required project key or id
+
+        :param avatar_id: Required Avatar id if method argument is a DELETE or PUT request
+
+        :param method: Define a HTTP method of operation
+                     options: get, put, post, delete
+
+        :param kwargs: Additional query parameters. The below variables all are in integers
+
+            cord_x: The X coordinate of the top-left corner of the crop region.
+
+            cord_y: The Y coordinate of the top-left corner of the crop region.
+
+            size: The length of each side of the crop region.
+            e.g. 16, 24, 32, and 48
+
+            The cropped image is then used to create avatars of 16x16,
+            24x24, 32x32, and 48x48 in size.
+
+        :return: string
+        """
+        if method.lower() == "get":
+            return "{}/rest/api/{}/project/{}/avatars" \
+                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                        key_or_id)
+        elif method.lower() == "post":
+            if "size" not in kwargs:
+                raise JiraOneErrors("value", "size keyword argument is required but missing.")
+            for key, value in kwargs.items():
+                if not isinstance(value, int):
+                    raise JiraOneErrors("value", f"{key} keyword argument is not a number.")
+            if "cord_x" in kwargs and "size" in kwargs and "cord_y" not in kwargs:
+                return "{}/rest/api/{}/project/{}/avatar2?x={}&size={}" \
+                    .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                            key_or_id, kwargs.get("cord_x"), kwargs.get("size"))
+            elif "cord_y" in kwargs and "size" in kwargs and "cord_x" not in kwargs:
+                return "{}/rest/api/{}/project/{}/avatar2?y={}&size={}" \
+                    .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                            key_or_id, kwargs.get("cord_y"), kwargs.get("size"))
+            elif "cord_x" in kwargs and "cord_y" in kwargs and "size" in kwargs:
+                return "{}/rest/api/{}/project/{}/avatar2?x={}&y={}&size={}" \
+                    .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                            key_or_id, kwargs.get("cord_x"), kwargs.get("cord_y"),
+                            kwargs.get("size"))
+            else:
+                raise JiraOneErrors("value", "Either cord_x or cord_y argument must be provided")
+        elif method.lower() == "delete":
+            return "{}/rest/api/{}/project/{}/avatar/{}" \
+                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
+                        key_or_id, avatar_id)
+        elif method.lower() == "put":
+            return "{}/rest/api/{}/project/{}/avatar" \
+                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", key_or_id)
+        else:
+            raise JiraOneErrors("wrong", "No such method exist within this operation")
 
     ################################################
     # Jira Software Specifics API endpoints
@@ -2152,9 +2244,6 @@ class EndPoints:
         """
         return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(LOGIN.base_url, service_desk_id)
 
-    ############################################
-    # SERVICEDESK -> API specific to servicedesk
-    ############################################
     @classmethod
     def get_customers(cls,
                       service_desk_id,
@@ -2434,14 +2523,14 @@ class EndPoints:
 
         :request POST:  Bulk create issue
 
-        Creates issues and, where the option to create subtasks is enabled in Jira, subtasks.
+        Creates an issues and, where the option to create subtasks is enabled in Jira, subtasks.
 
         :body param: issueUpdates, datatype -> Array<IssueUpdateDetails>
                                  : Additional Properties, datatype -> Any
 
         :request GET: - Create issue metadata
 
-        Returns details of projects, issue types within projects, and, when requested,
+        Returns a details of projects, issue types within projects, and, when requested,
         the create screen fields for each issue type for the user.
 
         :query param: projectIds, projectKeys, issuetypeIds, issuetypeNames, datatype -> Array<string>
@@ -2718,8 +2807,8 @@ class Field(object):
         count_start_at = 0
         while True:
             load = LOGIN.get(endpoint.get_field(query="type=custom", start_at=count_start_at))
-            data = load.json()
             if load.status_code < 300:
+                data = load.json()
                 for a in data["values"]:
                     if a["name"] == fields:
                         return {
@@ -2742,8 +2831,8 @@ class Field(object):
         """
         fields = find_field if find_field is not None else sys.exit("You must enter a field name")
         load = LOGIN.get(endpoint.get_field(system="type=system"))
-        data = load.json()
         if load.status_code < 300:
+            data = load.json()
             for a in list(data):
                 if fields in a["name"]:
                     if fields == a["name"]:
