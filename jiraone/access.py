@@ -3272,6 +3272,7 @@ class Field(object):
             search = self.get_field(find_field)
         echo({"Field data returned": search}) if show is True else ""
         response = None
+        payload = None
 
         def separated(pull: Any = Any) -> Any:
             """Check if the value is a string or list."""
@@ -3289,7 +3290,6 @@ class Field(object):
                 )
 
         if data == "" or data is None:
-            payload = None
             if "customType" in search:
                 if search["customType"] in [
                     self.field_type["multicheckboxes"],
