@@ -27,12 +27,14 @@ class Credentials(object):
     api = True
     auth2_0 = None
 
-    def __init__(self,
-                 user: str,
-                 password: str,
-                 url: str = None,
-                 oauth: dict = None,
-                 session: Any = None) -> None:
+    def __init__(
+        self,
+        user: str,
+        password: str,
+        url: str = None,
+        oauth: dict = None,
+        session: Any = None,
+    ) -> None:
         """
         Instantiate the login.
 
@@ -132,20 +134,30 @@ class Credentials(object):
         """
         if not isinstance(oauth, dict):
             add_log("Wrong data type received for the oauth argument.", "error")
-            raise JiraOneErrors("wrong", "Excepting a dictionary object got {} instead."
-                                .format(type(oauth)))
-        if "client_id" not in oauth or "client_secret" not in oauth or \
-                "callback_url" not in oauth:
-            add_log("You seem to be missing a key or keys in your oauth argument.", "debug")
-            raise JiraOneErrors("value", "You seem to be missing some vital "
-                                         "keys in your request."
-                                         "Please check your oauth supplied "
-                                         "data that all keys are present.")
+            raise JiraOneErrors(
+                "wrong",
+                "Excepting a dictionary object got {} instead.".format(type(oauth)),
+            )
+        if (
+            "client_id" not in oauth
+            or "client_secret" not in oauth
+            or "callback_url" not in oauth
+        ):
+            add_log(
+                "You seem to be missing a key or keys in your oauth argument.", "debug"
+            )
+            raise JiraOneErrors(
+                "value",
+                "You seem to be missing some vital "
+                "keys in your request."
+                "Please check your oauth supplied "
+                "data that all keys are present.",
+            )
         tokens = {}
         oauth_data = {
             "token_url": "https://auth.atlassian.com/oauth/token",
             "cloud_url": "https://api.atlassian.com/oauth/token/accessible-resources",
-            "base_url": "https://api.atlassian.com/ex/jira/{cloud}"
+            "base_url": "https://api.atlassian.com/ex/jira/{cloud}",
         }
 
         def token_update(token) -> None:
@@ -155,14 +167,18 @@ class Credentials(object):
 
         def get_cloud_id():
             """Retrieve the cloud id of connected instance."""
-            cloud_id = requests.get(oauth_data["cloud_url"], headers=self.headers).json()
+            cloud_id = requests.get(
+                oauth_data["cloud_url"], headers=self.headers
+            ).json()
             for ids in cloud_id:
                 if ids["name"] == oauth.get("name"):
                     self.instance_name = ids["name"]
                     LOGIN.base_url = oauth_data.get("base_url").format(cloud=ids["id"])
                 else:
                     self.instance_name = cloud_id[0]["name"]
-                    LOGIN.base_url = oauth_data.get("base_url").format(cloud=cloud_id[0]["id"])
+                    LOGIN.base_url = oauth_data.get("base_url").format(
+                        cloud=cloud_id[0]["id"]
+                    )
             tokens.update({"base_url": LOGIN.base_url, "ins_name": self.instance_name})
 
         if self.auth2_0:
@@ -174,32 +190,41 @@ class Credentials(object):
                 "grant_type": "refresh_token",
                 "client_id": oauth.get("client_id"),
                 "client_secret": oauth.get("client_secret"),
-                "refresh_token": tokens.get("refresh_token")
+                "refresh_token": tokens.get("refresh_token"),
             }
-            get_token = requests.post(oauth_data["token_url"], json=body, headers=self.headers)
+            get_token = requests.post(
+                oauth_data["token_url"], json=body, headers=self.headers
+            )
             if get_token.status_code < 300:
                 access_token = get_token.json()["access_token"]
                 refresh = get_token.json()["refresh_token"]
                 expires = get_token.json()["expires_in"]
                 scope = get_token.json()["scope"]
                 token_type = get_token.json()["token_type"]
-                extra = {
-                    "type": token_type,
-                    "token": access_token
-                }
-                tokens.update({
-                    "access_token": access_token,
-                    "expires_in": expires,
-                    "scope": scope,
-                    "refresh_token": refresh
-                })
+                extra = {"type": token_type, "token": access_token}
+                tokens.update(
+                    {
+                        "access_token": access_token,
+                        "expires_in": expires,
+                        "scope": scope,
+                        "refresh_token": refresh,
+                    }
+                )
                 self.__token_only_session__(extra)
                 get_cloud_id()
             else:
-                add_log("Token refresh has failed to revalidate. Reason [{} - {}]"
-                        .format(get_token.reason, json.loads(get_token.content)), "debug")
-                raise JiraOneErrors("login", "Refreshing token failed with code {}"
-                                    .format(get_token.status_code))
+                add_log(
+                    "Token refresh has failed to revalidate. Reason [{} - {}]".format(
+                        get_token.reason, json.loads(get_token.content)
+                    ),
+                    "debug",
+                )
+                raise JiraOneErrors(
+                    "login",
+                    "Refreshing token failed with code {}".format(
+                        get_token.status_code
+                    ),
+                )
 
         def generate_state(i):
             """Generates a random key for state variable."""
@@ -209,6 +234,7 @@ class Credentials(object):
         def validate_uri(uri) -> bool:
             """Return sanitize version of the input url"""
             import urllib.parse
+
             check_url = oauth.get("callback_url").split("&")
             hostname = None
             for url in check_url:
@@ -221,7 +247,9 @@ class Credentials(object):
             LOGIN.base_url = oauth_data.get("base_url")
         if not tokens:
             # add an offline_access to the scope, so we can get a refresh token
-            call_back = oauth.get("callback_url").replace("scope=", "scope=offline_access%20", 1)
+            call_back = oauth.get("callback_url").replace(
+                "scope=", "scope=offline_access%20", 1
+            )
             oauth.update({"callback_url": call_back})
             callback = oauth.get("callback_url").format(YOUR_USER_BOUND_VALUE=state)
             print("Please click or copy the link into your browser and hit Enter!")
@@ -229,41 +257,49 @@ class Credentials(object):
             redirect_url = input("Enter the redirect url: \n")
             # Check if the supplied url is true to the one which exist in callback_url
             validate_url = validate_uri(redirect_url.split("?")[0].rstrip("/"))
-            assert validate_url is True, "Your URL seems invalid as it cannot be validated."
+            assert (
+                validate_url is True
+            ), "Your URL seems invalid as it cannot be validated."
             code = redirect_url.split("?")[1].split("&")[1].split("=")[-1]
             body = {
                 "grant_type": "authorization_code",
                 "client_id": oauth.get("client_id"),
                 "client_secret": oauth.get("client_secret"),
                 "code": code,
-                "redirect_uri": redirect_url
+                "redirect_uri": redirect_url,
             }
-            get_token = requests.post(oauth_data["token_url"], json=body,
-                                      headers=self.headers)
+            get_token = requests.post(
+                oauth_data["token_url"], json=body, headers=self.headers
+            )
             if get_token.status_code < 300:
                 access_token = get_token.json()["access_token"]
                 refresh = get_token.json()["refresh_token"]
                 expires = get_token.json()["expires_in"]
                 scope = get_token.json()["scope"]
                 token_type = get_token.json()["token_type"]
-                extra = {
-                    "type": token_type,
-                    "token": access_token
-                }
-                tokens.update({
-                    "access_token": access_token,
-                    "expires_in": expires,
-                    "scope": scope,
-                    "token_type": token_type,
-                    "refresh_token": refresh
-                })
+                extra = {"type": token_type, "token": access_token}
+                tokens.update(
+                    {
+                        "access_token": access_token,
+                        "expires_in": expires,
+                        "scope": scope,
+                        "token_type": token_type,
+                        "refresh_token": refresh,
+                    }
+                )
                 self.__token_only_session__(extra)
                 get_cloud_id()
             else:
-                add_log("The connection using OAuth was unable to connect, please "
-                        "check your client key or client secret. Reason [{} - {}]"
-                        .format(get_token.reason, json.loads(get_token.content)), "debug")
-                raise JiraOneErrors("login", "Could not establish the OAuth connection.")
+                add_log(
+                    "The connection using OAuth was unable to connect, please "
+                    "check your client key or client secret. Reason [{} - {}]".format(
+                        get_token.reason, json.loads(get_token.content)
+                    ),
+                    "debug",
+                )
+                raise JiraOneErrors(
+                    "login", "Could not establish the OAuth connection."
+                )
 
         print("Connected to instance:", self.instance_name)
         token_update(tokens)
@@ -286,15 +322,18 @@ class Credentials(object):
         :return: None
         """
         self.headers = {"Content-Type": "application/json"}
-        self.headers.update({"Authorization": "{} {}"
-                            .format(token["type"],
-                                    token["token"])})
+        self.headers.update(
+            {"Authorization": "{} {}".format(token["type"], token["token"])}
+        )
 
     # produce a session for the script and save the session
-    def token_session(self, email: str = None,
-                      token: str = None,
-                      sess: str = None,
-                      _type: str = "Bearer") -> None:
+    def token_session(
+        self,
+        email: str = None,
+        token: str = None,
+        sess: str = None,
+        _type: str = "Bearer",
+    ) -> None:
         """
         A session initializer to HTTP request.
 
@@ -323,17 +362,17 @@ class Credentials(object):
             self.headers = {"Content-Type": "application/json"}
         else:
             if LOGIN.base_url is None:
-                raise JiraOneErrors("value",
-                                    "Please include a connecting "
-                                    "base URL by declaring "
-                                    " LOGIN.base_url "
-                                    "= \"https://yourinstance.atlassian.net\"")
+                raise JiraOneErrors(
+                    "value",
+                    "Please include a connecting "
+                    "base URL by declaring "
+                    " LOGIN.base_url "
+                    '= "https://yourinstance.atlassian.net"',
+                )
             extra = {"type": _type, "token": sess}
             self.__token_only_session__(extra)
 
-    def get(self, url, *args,
-            payload=None,
-            **kwargs) -> requests.Response:
+    def get(self, url, *args, payload=None, **kwargs) -> requests.Response:
         """
         A get request to HTTP request.
 
@@ -347,14 +386,17 @@ class Credentials(object):
 
         :return: An HTTP response
         """
-        response = requests.get(url, *args, auth=self.auth_request,
-                                json=payload, headers=self.headers, **kwargs)
+        response = requests.get(
+            url,
+            *args,
+            auth=self.auth_request,
+            json=payload,
+            headers=self.headers,
+            **kwargs,
+        )
         return response
 
-    def post(self, url,
-             *args,
-             payload=None,
-             **kwargs) -> requests.Response:
+    def post(self, url, *args, payload=None, **kwargs) -> requests.Response:
         """
         A post  request to HTTP request.
 
@@ -369,8 +411,14 @@ class Credentials(object):
 
         :return: An HTTP response
         """
-        response = requests.post(url, *args, auth=self.auth_request,
-                                 json=payload, headers=self.headers, **kwargs)
+        response = requests.post(
+            url,
+            *args,
+            auth=self.auth_request,
+            json=payload,
+            headers=self.headers,
+            **kwargs,
+        )
         return response
 
     def put(self, url, *args, payload=None, **kwargs) -> requests.Response:
@@ -387,8 +435,14 @@ class Credentials(object):
 
         :return: An HTTP response
         """
-        response = requests.put(url, *args, auth=self.auth_request,
-                                json=payload, headers=self.headers, **kwargs)
+        response = requests.put(
+            url,
+            *args,
+            auth=self.auth_request,
+            json=payload,
+            headers=self.headers,
+            **kwargs,
+        )
         return response
 
     def delete(self, url, **kwargs) -> requests.Response:
@@ -401,8 +455,9 @@ class Credentials(object):
 
         :return: An HTTP response
         """
-        response = requests.delete(url, auth=self.auth_request,
-                                   headers=self.headers, **kwargs)
+        response = requests.delete(
+            url, auth=self.auth_request, headers=self.headers, **kwargs
+        )
         return response
 
     def custom_method(self, *args, **kwargs) -> requests.Response:
@@ -430,8 +485,9 @@ class Credentials(object):
 
         :return: An HTTP response
         """
-        response = requests.request(*args, auth=self.auth_request,
-                                    headers=self.headers, **kwargs)
+        response = requests.request(
+            *args, auth=self.auth_request, headers=self.headers, **kwargs
+        )
         return response
 
     @staticmethod
@@ -497,17 +553,21 @@ class Credentials(object):
                     LOGIN(**auth)
                     return obj
                 else:
-                    exit("Unable to read other values within the ``JIRA``"
-                         " object. Authentication cannot proceed further.")
+                    exit(
+                        "Unable to read other values within the ``JIRA``"
+                        " object. Authentication cannot proceed further."
+                    )
             else:
-                exit("Could not detect a `JIRA` object from the command."
-                     " Please check that you have the `jira` python package "
-                     "installed.")
+                exit(
+                    "Could not detect a `JIRA` object from the command."
+                    " Please check that you have the `jira` python package "
+                    "installed."
+                )
         except Exception as err:
-            raise JiraOneErrors("wrong",
-                                "An unknown exception has occurred "
-                                "Other errors: "
-                                " {}".format(err))
+            raise JiraOneErrors(
+                "wrong",
+                "An unknown exception has occurred " "Other errors: " " {}".format(err),
+            )
 
 
 class Echo(PrettyPrinter):
@@ -546,11 +606,9 @@ class InitProcess(Credentials):
     Object values are entered directly when called because of the __call__
     dunder method."""
 
-    def __init__(self, user=None,
-                 password=None,
-                 url=None,
-                 oauth=None,
-                 session=None) -> None:
+    def __init__(
+        self, user=None, password=None, url=None, oauth=None, session=None
+    ) -> None:
         """
         A Call to the Credential Class.
 
@@ -572,9 +630,9 @@ class InitProcess(Credentials):
 
         :return: None
         """
-        super(InitProcess, self).__init__(user=user, password=password,
-                                          url=url, oauth=oauth,
-                                          session=session)
+        super(InitProcess, self).__init__(
+            user=user, password=password, url=url, oauth=oauth, session=session
+        )
 
     def __call__(self, *args, **kwargs):
         """Help to make our class callable."""
@@ -593,7 +651,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/myself".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+        return "{}/rest/api/{}/myself".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+        )
 
     @classmethod
     def search_users(cls, query: int = 0, max_result: int = 50) -> str:
@@ -605,9 +665,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/users/search?startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                             "3" if LOGIN.api is True else "latest",
-                                                                             query, max_result)
+        return "{}/rest/api/{}/users/search?startAt={}&maxResults={}".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", query, max_result
+        )
 
     @classmethod
     def get_user_group(cls, account_id: Any) -> str:
@@ -623,47 +683,58 @@ class EndPoints:
     def get_projects(cls, *args: Any, start_at=0, max_results=50) -> str:
         """Return a list of Projects available on an Instance
 
-        How to use this endpoint ``/rest/api/3/project/search``  is mentioned
-`here
-<https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get>`_
+                How to use this endpoint ``/rest/api/3/project/search``  is mentioned
+        `here
+        <https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get>`_
 
 
-        :param args: Query Parameters that are useful mostly.
+                :param args: Query Parameters that are useful mostly.
 
-           a) query, example: query=key,name {caseInsensitive}
+                   a) query, example: query=key,name {caseInsensitive}
 
-           b) searchBy, example: searchBy=key,name
+                   b) searchBy, example: searchBy=key,name
 
-           c) action, example: action=browse
+                   c) action, example: action=browse
 
-               i. available options [view, browse, edit]
+                       i. available options [view, browse, edit]
 
-           d) status example: status=live
+                   d) status example: status=live
 
-               i. available options [live, archived, deleted]
+                       i. available options [live, archived, deleted]
 
-           e). expand, example: expand=insight
+                   e). expand, example: expand=insight
 
-                i. available options [insight, description, projectKeys, url, issueTypes, lead]
+                        i. available options [insight, description, projectKeys, url, issueTypes, lead]
 
-        :param start_at:  defaults as keyword args,example startAt=0
+                :param start_at:  defaults as keyword args,example startAt=0
 
-        :param max_results: defaults as keyword args, example maxResults=50
+                :param max_results: defaults as keyword args, example maxResults=50
 
-.. _here:
+        .. _here:
 
-        :return: A string of the url
+                :return: A string of the url
         """
         if args:
             nos = len(args)
             if nos > 0:
                 param = "&".join(args)
                 print("Project Search Query Parameter:", param)
-                return "{}/rest/api/{}/project/search?{}&startAt={}&maxResults={}" \
-                    .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", param, start_at, max_results)
+                return (
+                    "{}/rest/api/{}/project/search?{}&startAt={}&maxResults={}".format(
+                        LOGIN.base_url,
+                        "3" if LOGIN.api is True else "latest",
+                        param,
+                        start_at,
+                        max_results,
+                    )
+                )
         else:
-            return "{}/rest/api/{}/project/search?startAt={}&maxResults={}" \
-                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", start_at, max_results)
+            return "{}/rest/api/{}/project/search?startAt={}&maxResults={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                start_at,
+                max_results,
+            )
 
     @classmethod
     def find_users_with_permission(cls, *args) -> str:
@@ -674,8 +745,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/user/permission/search?accountId={}&projectKey={}&permissions={}" \
-            .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", *args)
+        return "{}/rest/api/{}/user/permission/search?accountId={}&projectKey={}&permissions={}".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", *args
+        )
 
     @classmethod
     def get_roles_for_project(cls, id_or_key: Any) -> str:
@@ -685,8 +757,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/project/{}/role".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                       id_or_key)
+        return "{}/rest/api/{}/project/{}/role".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key
+        )
 
     @classmethod
     def get_project_role(cls, *args) -> str:
@@ -696,7 +769,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/project/{}/role/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", *args)
+        return "{}/rest/api/{}/project/{}/role/{}".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", *args
+        )
 
     @classmethod
     def get_all_permission_scheme(cls, query: str = None) -> str:
@@ -707,13 +782,18 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/api/{}/permissionscheme?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                               query)
+            return "{}/rest/api/{}/permissionscheme?{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
+            )
         else:
-            return "{}/rest/api/{}/permissionscheme".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+            return "{}/rest/api/{}/permissionscheme".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
 
     @classmethod
-    def get_all_issue_type_schemes(cls, query: Optional[str] = None, start_at=0, max_results=50) -> str:
+    def get_all_issue_type_schemes(
+        cls, query: Optional[str] = None, start_at=0, max_results=50
+    ) -> str:
         """Returns a paginated list of issue type schemes.
            Only issue type schemes used in classic projects are returned
 
@@ -726,15 +806,20 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/api/{}/issuetypescheme?{}&startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                                       "3" if LOGIN.api is True
-                                                                                       else "latest",
-                                                                                       query, start_at, max_results)
+            return "{}/rest/api/{}/issuetypescheme?{}&startAt={}&maxResults={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                query,
+                start_at,
+                max_results,
+            )
         else:
-            return "{}/rest/api/{}/issuetypescheme?startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                                    "3" if LOGIN.api is True
-                                                                                    else "latest",
-                                                                                    start_at, max_results)
+            return "{}/rest/api/{}/issuetypescheme?startAt={}&maxResults={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                start_at,
+                max_results,
+            )
 
     @classmethod
     def get_all_issue_types(cls) -> str:
@@ -747,7 +832,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/issuetype".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+        return "{}/rest/api/{}/issuetype".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+        )
 
     @classmethod
     def get_all_issue_security_scheme(cls) -> str:
@@ -755,7 +842,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/issuesecurityschemes".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+        return "{}/rest/api/{}/issuesecurityschemes".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+        )
 
     @classmethod
     def get_all_priorities(cls) -> str:
@@ -763,13 +852,14 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/priority".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+        return "{}/rest/api/{}/priority".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+        )
 
     @classmethod
-    def search_all_notification_schemes(cls,
-                                        query: Optional[str] = None,
-                                        start_at=0,
-                                        max_results=50) -> str:
+    def search_all_notification_schemes(
+        cls, query: Optional[str] = None, start_at=0, max_results=50
+    ) -> str:
         """Returns a paginated list of notification schemes ordered by display name.
 
         :param query:  1st String value for expand= {all, field, group, user, projectRole, notificationSchemeEvents}
@@ -781,22 +871,31 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/api/{}/notificationscheme?{}&startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                                          "3" if LOGIN.api is True
-                                                                                          else "latest", query,
-                                                                                          start_at, max_results)
+            return (
+                "{}/rest/api/{}/notificationscheme?{}&startAt={}&maxResults={}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    query,
+                    start_at,
+                    max_results,
+                )
+            )
         else:
-            return "{}/rest/api/{}/notificationscheme?startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                                       "3" if LOGIN.api is True
-                                                                                       else "latest",
-                                                                                       start_at, max_results)
+            return "{}/rest/api/{}/notificationscheme?startAt={}&maxResults={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                start_at,
+                max_results,
+            )
 
     @classmethod
-    def get_field(cls,
-                  query: Optional[str] = None,
-                  start_at: int = 0,
-                  max_results: int = 50,
-                  system: str = None) -> str:
+    def get_field(
+        cls,
+        query: Optional[str] = None,
+        start_at: int = 0,
+        max_results: int = 50,
+        system: str = None,
+    ) -> str:
         """Returns a paginated list of fields for Classic Jira projects. The list can include:
 
         *  all fields.
@@ -830,99 +929,121 @@ class EndPoints:
         :param system: string accepts any string e.g. field (use any string to denote as system)
 
          :return: A string of the url
-         """
+        """
         if query is not None and system is None:
-            return "{}/rest/api/{}/field/search?{}&startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                                    "3" if LOGIN.api is True
-                                                                                    else "latest", query,
-                                                                                    start_at, max_results)
+            return "{}/rest/api/{}/field/search?{}&startAt={}&maxResults={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                query,
+                start_at,
+                max_results,
+            )
         elif query is None and system is not None:
-            return "{}/rest/api/{}/field".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+            return "{}/rest/api/{}/field".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
         else:
-            return "{}/rest/api/{}/field/search?startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                                 "3" if LOGIN.api is True
-                                                                                 else "latest",
-                                                                                 start_at, max_results)
+            return "{}/rest/api/{}/field/search?startAt={}&maxResults={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                start_at,
+                max_results,
+            )
 
     @classmethod
     def get_attachment_meta_data(cls, query: str, warning: bool = True) -> str:
         """Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
-         :param query: of the attachment
+        :param query: of the attachment
 
-         :param warning: deprecation notice
+        :param warning: deprecation notice
 
-         Use issue search endpoint in conjunction to grab the attachment id
+        Use issue search endpoint in conjunction to grab the attachment id
 
-         :return: A string of the url
-         """
+        :return: A string of the url
+        """
         import warnings
+
         message = "We will be removing this endpoint soon\n use endpoint.issue_attachments() instead."
         if warning is True:
             warnings.warn(message, DeprecationWarning, stacklevel=2)
         else:
             pass
-        return "{}/rest/api/{}/attachment/{}".format(LOGIN.base_url, query, "3" if LOGIN.api is True else "latest")
+        return "{}/rest/api/{}/attachment/{}".format(
+            LOGIN.base_url, query, "3" if LOGIN.api is True else "latest"
+        )
 
     @classmethod
-    def issue_attachments(cls,
-                          id_or_key: str = None,
-                          attach_id: str = None,
-                          uri: Optional[str] = None,
-                          query: Optional[str] = None) -> str:
+    def issue_attachments(
+        cls,
+        id_or_key: str = None,
+        attach_id: str = None,
+        uri: Optional[str] = None,
+        query: Optional[str] = None,
+    ) -> str:
         """Returns the attachment content.
 
-        :request GET: - Get Jira attachment settings
-        Returns the attachment settings, that is, whether attachments are enabled and the
-        maximum attachment size allowed.
+         :request GET: - Get Jira attachment settings
+         Returns the attachment settings, that is, whether attachments are enabled and the
+         maximum attachment size allowed.
 
-        :request GET: - Get attachment metadata
-        Returns the metadata for an attachment. Note that the attachment itself is not returned.
+         :request GET: - Get attachment metadata
+         Returns the metadata for an attachment. Note that the attachment itself is not returned.
 
-        :param attach_id: required (id of the attachment), datatype -> string
+         :param attach_id: required (id of the attachment), datatype -> string
 
-        :request DELETE: - Deletes an attachment from an issue.
+         :request DELETE: - Deletes an attachment from an issue.
 
-                attach_id required (id of the attachment), datatype -> string
+                 attach_id required (id of the attachment), datatype -> string
 
-       :request GET:  - Get all metadata for an expanded attachment
+        :request GET:  - Get all metadata for an expanded attachment
 
-       :param query: datatype -> string
+        :param query: datatype -> string
 
-           *available options*
+            *available options*
 
-           * expand/human -Returns the metadata for the contents of an attachment, if it is an archive,
-                     and metadata for the attachment itself. For example, if the attachment is a ZIP archive,
-                     then information about the files in the archive is returned and metadata for the ZIP archive.
+            * expand/human -Returns the metadata for the contents of an attachment, if it is an archive,
+                      and metadata for the attachment itself. For example, if the attachment is a ZIP archive,
+                      then information about the files in the archive is returned and metadata for the ZIP archive.
 
-           * expand/raw - Returns the metadata for the contents of an attachment, if it is an archive.
-                     For example, if the attachment is a ZIP archive, then information about the files in the
-                     archive is returned. Currently, only the ZIP archive format is supported.
-
-       :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
+            * expand/raw - Returns the metadata for the contents of an attachment, if it is an archive.
+                      For example, if the attachment is a ZIP archive, then information about the files in the
+                      archive is returned. Currently, only the ZIP archive format is supported.
 
         :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
 
-        :param id_or_key: required, datatype -> string. The ID or key of the issue that attachments are added to.
+         :request POST: - Adds one or more attachments to an issue. Attachments are posted as multipart/form-data
 
-        :param uri: various endpoint to attachment
+         :param id_or_key: required, datatype -> string. The ID or key of the issue that attachments are added to.
+
+         :param uri: various endpoint to attachment
 
 
-        :return: A string of the url
+         :return: A string of the url
         """
         if uri is not None:
-            return "{}/rest/api/{}/attachment/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri)
+            return "{}/rest/api/{}/attachment/{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri
+            )
         else:
             if query is not None and attach_id is not None and id_or_key is None:
-                return "{}/rest/api/{}/attachment/{}/{}".format(LOGIN.base_url,
-                                                                "3" if LOGIN.api is True else "latest",
-                                                                attach_id, query)
+                return "{}/rest/api/{}/attachment/{}/{}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    attach_id,
+                    query,
+                )
             elif query is not None and attach_id is None and id_or_key is not None:
-                return "{}/rest/api/{}/issue/{}/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                           id_or_key, query)
+                return "{}/rest/api/{}/issue/{}/{}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    id_or_key,
+                    query,
+                )
             else:
-                return "{}/rest/api/{}/attachment/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                             attach_id)
+                return "{}/rest/api/{}/attachment/{}".format(
+                    LOGIN.base_url, "3" if LOGIN.api is True else "latest", attach_id
+                )
 
     @classmethod
     def search_issues_jql(cls, query, start_at: int = 0, max_results: int = 50) -> str:
@@ -936,10 +1057,13 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/search?jql={}&startAt={}&maxResults={}".format(LOGIN.base_url,
-                                                                              "3" if LOGIN.api is True
-                                                                              else "latest", query,
-                                                                              start_at, max_results)
+        return "{}/rest/api/{}/search?jql={}&startAt={}&maxResults={}".format(
+            LOGIN.base_url,
+            "3" if LOGIN.api is True else "latest",
+            query,
+            start_at,
+            max_results,
+        )
 
     @classmethod
     def search_for_filters(cls, query: Optional[str] = None, start_at: int = 0) -> str:
@@ -947,7 +1071,7 @@ class EndPoints:
 
         *  specific filters, by defining id only.
 
-        *  filters that match all of the specified attributes. For example, all filters
+        *  filters that match all the specified attributes. For example, all filters
 
            for a user with a particular word in their name. When multiple attributes are
            specified only filters matching all attributes are returned.
@@ -959,18 +1083,20 @@ class EndPoints:
         :param: filled: - maxResults=50 (default)
 
         :return: A string of the url
-         """
+        """
         if query is not None:
-            return "{}/rest/api/{}/filter/search?{}&startAt={}&maxResults=50".format(LOGIN.base_url,
-                                                                                     "3" if LOGIN.api is True
-                                                                                     else "latest", query, start_at)
+            return "{}/rest/api/{}/filter/search?{}&startAt={}&maxResults=50".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", query, start_at
+            )
         else:
-            return "{}/rest/api/{}/filter/search?startAt={}&maxResults=50".format(LOGIN.base_url,
-                                                                                  "3" if LOGIN.api is True
-                                                                                  else "latest", start_at)
+            return "{}/rest/api/{}/filter/search?startAt={}&maxResults=50".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", start_at
+            )
 
     @classmethod
-    def search_for_dashboard(cls, query: Optional[str] = None, start_at: int = 0) -> str:
+    def search_for_dashboard(
+        cls, query: Optional[str] = None, start_at: int = 0
+    ) -> str:
         """Returns a paginated list of dashboards. This operation is similar to
 
         Get dashboards except that the results can be refined to include dashboards that
@@ -987,13 +1113,13 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/api/{}/dashboard/search?{}&startAt={}&maxResults=20".format(LOGIN.base_url,
-                                                                                        "3" if LOGIN.api is True
-                                                                                        else "latest", query, start_at)
+            return "{}/rest/api/{}/dashboard/search?{}&startAt={}&maxResults=20".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", query, start_at
+            )
         else:
-            return "{}/rest/api/{}/dashboard/search?startAt={}&maxResults=20".format(LOGIN.base_url,
-                                                                                     "3" if LOGIN.api is True
-                                                                                     else "latest", start_at)
+            return "{}/rest/api/{}/dashboard/search?startAt={}&maxResults=20".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", start_at
+            )
 
     @classmethod
     def get_dashboard(cls, dashboard_id: int) -> str:
@@ -1003,8 +1129,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/dashboard/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                    dashboard_id)
+        return "{}/rest/api/{}/dashboard/{}".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", dashboard_id
+        )
 
     @classmethod
     def get_all_application_role(cls) -> str:
@@ -1015,7 +1142,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/applicationrole".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+        return "{}/rest/api/{}/applicationrole".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+        )
 
     @classmethod
     def search_all_workflows(cls, query: int = 0) -> str:
@@ -1031,9 +1160,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/workflow/search?startAt={}&maxResults=50".format(LOGIN.base_url,
-                                                                                "3" if LOGIN.api is True
-                                                                                else "latest", query)
+        return "{}/rest/api/{}/workflow/search?startAt={}&maxResults=50".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
+        )
 
     @classmethod
     def search_all_workflow_schemes(cls, query: int = 0) -> str:
@@ -1045,9 +1174,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/workflowscheme?startAt={}&maxResults=50".format(LOGIN.base_url,
-                                                                               "3" if LOGIN.api is True
-                                                                               else "latest", query)
+        return "{}/rest/api/{}/workflowscheme?startAt={}&maxResults=50".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
+        )
 
     @classmethod
     def search_all_screens(cls, query: int = 0) -> str:
@@ -1059,8 +1188,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/screens?startAt={}&maxResults=100".format(LOGIN.base_url,
-                                                                         "3" if LOGIN.api is True else "latest", query)
+        return "{}/rest/api/{}/screens?startAt={}&maxResults=100".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
+        )
 
     @classmethod
     def search_for_screen_schemes(cls, query: int = 0) -> str:
@@ -1074,9 +1204,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/screenscheme?startAt={}&maxResults=25".format(LOGIN.base_url,
-                                                                             "3" if LOGIN.api is True
-                                                                             else "latest", query)
+        return "{}/rest/api/{}/screenscheme?startAt={}&maxResults=25".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
+        )
 
     @classmethod
     def get_project_component(cls, id_or_key) -> str:
@@ -1089,20 +1219,23 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/project/{}/components".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                             id_or_key)
+        return "{}/rest/api/{}/project/{}/components".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key
+        )
 
     @classmethod
     def get_resolutions(cls) -> str:
         """Returns a list of all issue resolution values.
         :return: A string of the url
         """
-        return "{}/rest/api/{}/resolution".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+        return "{}/rest/api/{}/resolution".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+        )
 
     @classmethod
-    def remote_links(cls,
-                     key_or_id: Optional[str] = None,
-                     link_id: Optional[str] = None) -> str:
+    def remote_links(
+        cls, key_or_id: Optional[str] = None, link_id: Optional[str] = None
+    ) -> str:
         """Returns the remote issue links for an issue.
         When a remote issue link global ID is provided
         the record with that global ID is returned.
@@ -1143,17 +1276,19 @@ class EndPoints:
         :return: A string construct of the url
         """
         if link_id is None:
-            return "{}/rest/api/{}/issue/{}/remotelink". \
-                format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                       key_or_id)
+            return "{}/rest/api/{}/issue/{}/remotelink".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", key_or_id
+            )
         else:
-            return "{}/rest/api/{}/issue/{}/remotelink/{}". \
-                format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                       key_or_id, link_id)
+            return "{}/rest/api/{}/issue/{}/remotelink/{}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                key_or_id,
+                link_id,
+            )
 
     @classmethod
-    def issue_link(cls,
-                   link_id: Optional[str] = None) -> str:
+    def issue_link(cls, link_id: Optional[str] = None) -> str:
         """
         Use this operation to indicate a relationship between two
         issues and optionally add a comment to the
@@ -1171,29 +1306,32 @@ class EndPoints:
         :return: str
         """
         if link_id:
-            return "{}/rest/api/{}/issueLink/{}" \
-                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                        link_id)
+            return "{}/rest/api/{}/issueLink/{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", link_id
+            )
         else:
-            return "{}/rest/api/{}/issueLink" \
-                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+            return "{}/rest/api/{}/issueLink".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
 
     @classmethod
-    def work_logs(cls,
-                  key_or_id: Optional[str] = None,
-                  start_at: int = 0,
-                  max_results: int = 1048576,
-                  started_after: int = None,
-                  started_before: int = None,
-                  worklog_id: Optional[str] = None,
-                  expand: Optional[str] = None,
-                  notify_users: Optional[bool] = True,
-                  adjust_estimate: Optional[str] = "auto",
-                  new_estimate: Optional[str] = None,
-                  increase_by: Optional[str] = None,
-                  override_editable_flag: Optional[bool] = False,
-                  reduce_by: Optional[str] = None,
-                  since: Optional[int] = None) -> str:
+    def work_logs(
+        cls,
+        key_or_id: Optional[str] = None,
+        start_at: int = 0,
+        max_results: int = 1048576,
+        started_after: int = None,
+        started_before: int = None,
+        worklog_id: Optional[str] = None,
+        expand: Optional[str] = None,
+        notify_users: Optional[bool] = True,
+        adjust_estimate: Optional[str] = "auto",
+        new_estimate: Optional[str] = None,
+        increase_by: Optional[str] = None,
+        override_editable_flag: Optional[bool] = False,
+        reduce_by: Optional[str] = None,
+        since: Optional[int] = None,
+    ) -> str:
         """Returns worklogs for an issue, starting from
         the oldest worklog or from the worklog started on or
         after a date and time.
@@ -1283,163 +1421,235 @@ class EndPoints:
         if key_or_id is not None and worklog_id is None:
             if started_after is not None and started_before is None:
                 if expand is None:
-                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
-                           "&maxResults={}" \
-                           "&startedAfter={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, start_at, max_results,
-                                started_after)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog?startAt={}"
+                        "&maxResults={}"
+                        "&startedAfter={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            start_at,
+                            max_results,
+                            started_after,
+                        )
+                    )
                 else:
-                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
-                           "&maxResults={}&expand={}" \
-                           "&startedAfter={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, start_at, max_results, expand,
-                                started_after)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog?startAt={}"
+                        "&maxResults={}&expand={}"
+                        "&startedAfter={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            start_at,
+                            max_results,
+                            expand,
+                            started_after,
+                        )
+                    )
             elif started_after is None and started_before is not None:
                 if expand is None:
-                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
-                           "&maxResults={}" \
-                           "&startedBefore={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, start_at, max_results,
-                                started_before)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog?startAt={}"
+                        "&maxResults={}"
+                        "&startedBefore={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            start_at,
+                            max_results,
+                            started_before,
+                        )
+                    )
                 else:
-                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
-                           "&maxResults={}&expand={}" \
-                           "&startedBefore={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, start_at, max_results, expand,
-                                started_before)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog?startAt={}"
+                        "&maxResults={}&expand={}"
+                        "&startedBefore={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            start_at,
+                            max_results,
+                            expand,
+                            started_before,
+                        )
+                    )
             elif started_after is not None and started_before is not None:
                 if expand is None:
-                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
-                           "&maxResults={}" \
-                           "&startedBefore={}&startedAfter={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, start_at, max_results,
-                                started_before, started_after)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog?startAt={}"
+                        "&maxResults={}"
+                        "&startedBefore={}&startedAfter={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            start_at,
+                            max_results,
+                            started_before,
+                            started_after,
+                        )
+                    )
                 else:
-                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
-                           "&maxResults={}&expand={}" \
-                           "&startedBefore={}&startedAfter={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, start_at, max_results, expand,
-                                started_before, started_after)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog?startAt={}"
+                        "&maxResults={}&expand={}"
+                        "&startedBefore={}&startedAfter={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            start_at,
+                            max_results,
+                            expand,
+                            started_before,
+                            started_after,
+                        )
+                    )
             else:
                 if expand is not None:
-                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
-                           "&maxResults={}&expand={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, start_at, max_results, expand)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog?startAt={}"
+                        "&maxResults={}&expand={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            start_at,
+                            max_results,
+                            expand,
+                        )
+                    )
                 elif expand is None:
-                    return "{}/rest/api/{}/issue/{}/worklog?startAt={}" \
-                           "&maxResults={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, start_at, max_results)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog?startAt={}"
+                        "&maxResults={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            start_at,
+                            max_results,
+                        )
+                    )
                 else:
                     if adjust_estimate is not None:
                         if adjust_estimate == "new":
-                            return "{}/rest/api/{}/issue/{}/worklog?" \
-                                   "&adjustEstimate={}" \
-                                   "&newEstimate={}" \
-                                   "&notifyUsers={}" \
-                                   "&overrideEditableFlag={}" \
-                                .format(LOGIN.base_url, "3"
-                            if LOGIN.api is True else "latest",
-                                        key_or_id,
-                                        adjust_estimate, new_estimate,
-                                        notify_users,
-                                        override_editable_flag)
+                            return (
+                                "{}/rest/api/{}/issue/{}/worklog?"
+                                "&adjustEstimate={}"
+                                "&newEstimate={}"
+                                "&notifyUsers={}"
+                                "&overrideEditableFlag={}".format(
+                                    LOGIN.base_url,
+                                    "3" if LOGIN.api is True else "latest",
+                                    key_or_id,
+                                    adjust_estimate,
+                                    new_estimate,
+                                    notify_users,
+                                    override_editable_flag,
+                                )
+                            )
                         elif adjust_estimate == "manual":
-                            return "{}/rest/api/{}/issue/{}/worklog?" \
-                                   "&adjustEstimate={}" \
-                                   "&reduceBy={}" \
-                                   "&notifyUsers={}" \
-                                   "&overrideEditableFlag={}" \
-                                .format(LOGIN.base_url, "3"
-                            if LOGIN.api is True else "latest",
-                                        key_or_id,
-                                        adjust_estimate, reduce_by,
-                                        notify_users,
-                                        override_editable_flag)
+                            return (
+                                "{}/rest/api/{}/issue/{}/worklog?"
+                                "&adjustEstimate={}"
+                                "&reduceBy={}"
+                                "&notifyUsers={}"
+                                "&overrideEditableFlag={}".format(
+                                    LOGIN.base_url,
+                                    "3" if LOGIN.api is True else "latest",
+                                    key_or_id,
+                                    adjust_estimate,
+                                    reduce_by,
+                                    notify_users,
+                                    override_editable_flag,
+                                )
+                            )
                         else:
-                            return "{}/rest/api/{}/issue/{}/worklog?" \
-                                   "&adjustEstimate={}" \
-                                   "&notifyUsers={}" \
-                                   "&overrideEditableFlag={}" \
-                                .format(LOGIN.base_url, "3"
-                            if LOGIN.api is True else "latest",
-                                        key_or_id,
-                                        adjust_estimate,
-                                        notify_users,
-                                        override_editable_flag)
+                            return (
+                                "{}/rest/api/{}/issue/{}/worklog?"
+                                "&adjustEstimate={}"
+                                "&notifyUsers={}"
+                                "&overrideEditableFlag={}".format(
+                                    LOGIN.base_url,
+                                    "3" if LOGIN.api is True else "latest",
+                                    key_or_id,
+                                    adjust_estimate,
+                                    notify_users,
+                                    override_editable_flag,
+                                )
+                            )
 
         elif key_or_id is not None and worklog_id is not None:
             if expand is None:
-                return "{}/rest/api/{}/issue/{}/worklog/{}" \
-                    .format(LOGIN.base_url, "3" if LOGIN.api is True
-                else "latest",
-                            key_or_id, worklog_id)
+                return "{}/rest/api/{}/issue/{}/worklog/{}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    key_or_id,
+                    worklog_id,
+                )
             elif expand is not None:
-                return "{}/rest/api/{}/issue/{}/worklog/{}?expand={}" \
-                    .format(LOGIN.base_url, "3" if LOGIN.api is True
-                else "latest",
-                            key_or_id, worklog_id,
-                            expand)
+                return "{}/rest/api/{}/issue/{}/worklog/{}?expand={}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    key_or_id,
+                    worklog_id,
+                    expand,
+                )
             elif adjust_estimate is not None:
                 if adjust_estimate == "new":
-                    return "{}/rest/api/{}/issue/{}/worklog/{}?" \
-                           "adjustEstimate={}&newEstimate={}" \
-                           "&notifyUsers={}&overrideEditableFlag={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, worklog_id,
-                                adjust_estimate, new_estimate, notify_users,
-                                override_editable_flag)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog/{}?"
+                        "adjustEstimate={}&newEstimate={}"
+                        "&notifyUsers={}&overrideEditableFlag={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            worklog_id,
+                            adjust_estimate,
+                            new_estimate,
+                            notify_users,
+                            override_editable_flag,
+                        )
+                    )
                 elif adjust_estimate == "manual":
-                    return "{}/rest/api/{}/issue/{}/worklog/{}?" \
-                           "adjustEstimate={}&increaseBy={}" \
-                           "&notifyUsers={}&overrideEditableFlag={}" \
-                        .format(LOGIN.base_url, "3" if LOGIN.api is True
-                    else "latest",
-                                key_or_id, worklog_id,
-                                adjust_estimate, increase_by, notify_users,
-                                override_editable_flag)
+                    return (
+                        "{}/rest/api/{}/issue/{}/worklog/{}?"
+                        "adjustEstimate={}&increaseBy={}"
+                        "&notifyUsers={}&overrideEditableFlag={}".format(
+                            LOGIN.base_url,
+                            "3" if LOGIN.api is True else "latest",
+                            key_or_id,
+                            worklog_id,
+                            adjust_estimate,
+                            increase_by,
+                            notify_users,
+                            override_editable_flag,
+                        )
+                    )
 
         else:
             if since is not None and expand is not None:
-                return "{}/rest/api/{}/worklog/updated?" \
-                       "expand={}&since={}" \
-                    .format(LOGIN.base_url, "3" if LOGIN.api is True
-                else "latest",
-                            expand, since)
+                return "{}/rest/api/{}/worklog/updated?" "expand={}&since={}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    expand,
+                    since,
+                )
             elif since is not None and expand is None:
-                return "{}/rest/api/{}/worklog/deleted?since={}". \
-                    format(LOGIN.base_url, "3" if LOGIN.api is True
-                else "latest",
-                           since)
+                return "{}/rest/api/{}/worklog/deleted?since={}".format(
+                    LOGIN.base_url, "3" if LOGIN.api is True else "latest", since
+                )
             elif since is None and expand is not None:
-                return "{}/rest/api/{}/worklog/list?expand={}" \
-                    .format(LOGIN.base_url, "3" if LOGIN.api is True
-                else "latest",
-                            expand)
+                return "{}/rest/api/{}/worklog/list?expand={}".format(
+                    LOGIN.base_url, "3" if LOGIN.api is True else "latest", expand
+                )
             else:
-                raise JiraOneErrors("value", "At least one argument "
-                                             "should be passed"
-                                             " with this method.")
+                raise JiraOneErrors(
+                    "value",
+                    "At least one argument " "should be passed" " with this method.",
+                )
 
     @classmethod
-    def webhooks(cls,
-                 uri: Optional[str] = None) -> str:
+    def webhooks(cls, uri: Optional[str] = None) -> str:
         """Makes a call to the webhook API.
         Only connect app or OAuth 2.0 can use this connection.
 
@@ -1467,18 +1677,16 @@ class EndPoints:
         :return: str
         """
         if uri:
-            return "{}/rest/api/{}/webhook/{}". \
-                format(LOGIN.base_url, "3" if LOGIN.api is True
-            else "latest",
-                       uri)
+            return "{}/rest/api/{}/webhook/{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri
+            )
         else:
-            return "{}/rest/api/{}/webhook". \
-                format(LOGIN.base_url, "3" if LOGIN.api is True
-            else "latest")
+            return "{}/rest/api/{}/webhook".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
 
     @classmethod
-    def task(cls, task_id: Optional[str] = None,
-             method: Optional[str] = "GET") -> str:
+    def task(cls, task_id: Optional[str] = None, method: Optional[str] = "GET") -> str:
         """When a task has finished, this operation
         returns the JSON blob applicable to the task
 
@@ -1494,20 +1702,24 @@ class EndPoints:
         :return: str
         """
         if method.lower() == "get":
-            return "{}/rest/api/3/task/{}" \
-                .format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-            else "latest",
-                        task_id)
+            return "{}/rest/api/3/task/{}".format(
+                LOGIN.base_url,
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                task_id,
+            )
         else:
-            return "{}/rest/api/3/task/{}/cancel" \
-                .format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-            else "latest",
-                        task_id)
+            return "{}/rest/api/3/task/{}/cancel".format(
+                LOGIN.base_url,
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                task_id,
+            )
 
     @classmethod
-    def issue_watchers(cls,
-                       key_or_id: Optional[str] = None,
-                       account_id: Optional[str] = None) -> str:
+    def issue_watchers(
+        cls, key_or_id: Optional[str] = None, account_id: Optional[str] = None
+    ) -> str:
         """This operation requires the Allow users
         to watch issues option to be ON.
 
@@ -1532,21 +1744,27 @@ class EndPoints:
         """
         if key_or_id:
             if account_id:
-                return "{}/rest/api/{}/issue/{}/watchers?accountId={}". \
-                    format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-                else "latest", key_or_id, account_id)
+                return "{}/rest/api/{}/issue/{}/watchers?accountId={}".format(
+                    LOGIN.base_url,
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    key_or_id,
+                    account_id,
+                )
             else:
-                return "{}/rest/api/{}/issue/{}/watchers". \
-                    format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-                else "latest", key_or_id)
+                return "{}/rest/api/{}/issue/{}/watchers".format(
+                    LOGIN.base_url,
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    key_or_id,
+                )
         else:
-            return "{}/rest/api/{}/issue/watching". \
-                format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-            else "latest")
+            return "{}/rest/api/{}/issue/watching".format(
+                LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
 
     @classmethod
-    def issue_votes(cls,
-                    key_or_id: Optional[str] = None) -> str:
+    def issue_votes(cls, key_or_id: Optional[str] = None) -> str:
         """Return the  number of votes on an issue
 
         :request GET: Returns details about the votes on an issue.
@@ -1559,23 +1777,27 @@ class EndPoints:
 
         :return: str
         """
-        return "{}/rest/api/{}/issue/{}/votes". \
-            format(LOGIN.base_url, LOGIN.base_url, "3" if LOGIN.api is True
-        else "latest",
-                   key_or_id)
+        return "{}/rest/api/{}/issue/{}/votes".format(
+            LOGIN.base_url,
+            LOGIN.base_url,
+            "3" if LOGIN.api is True else "latest",
+            key_or_id,
+        )
 
     @classmethod
     def instance_info(cls):
-        """Returns licensing information about the Jira instance.
-        """
-        return "{}/rest/api/{}/instance/license" \
-            .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+        """Returns licensing information about the Jira instance."""
+        return "{}/rest/api/{}/instance/license".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+        )
 
     @classmethod
-    def worklog_properties(cls,
-                           key_or_id: Optional[str] = None,
-                           worklog_id: Optional[str] = None,
-                           property_key: Optional[str] = None) -> str:
+    def worklog_properties(
+        cls,
+        key_or_id: Optional[str] = None,
+        worklog_id: Optional[str] = None,
+        property_key: Optional[str] = None,
+    ) -> str:
         """
         Returns the worklog properties of an issue
 
@@ -1598,13 +1820,20 @@ class EndPoints:
         :return: str
         """
         if property_key is None:
-            return "{}/rest/api/{}/issue/{}/worklog/{}/properties" \
-                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                        key_or_id, worklog_id)
+            return "{}/rest/api/{}/issue/{}/worklog/{}/properties".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                key_or_id,
+                worklog_id,
+            )
         else:
-            return "{}/rest/api/{}/issue/{}/worklog/{}/properties/{}" \
-                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                        key_or_id, worklog_id, property_key)
+            return "{}/rest/api/{}/issue/{}/worklog/{}/properties/{}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                key_or_id,
+                worklog_id,
+                property_key,
+            )
 
     @classmethod
     def server_info(cls) -> str:
@@ -1614,15 +1843,18 @@ class EndPoints:
 
         :return: strings
         """
-        return "{}/rest/api/{}/serverInfo".format(LOGIN.base_url,
-                                                  "3" if LOGIN.api is True else "latest")
+        return "{}/rest/api/{}/serverInfo".format(
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+        )
 
     @classmethod
-    def project_avatar(cls,
-                       key_or_id: Optional = None,
-                       avatar_id: Optional = None,
-                       method: Optional = "get",
-                       **kwargs) -> str:
+    def project_avatar(
+        cls,
+        key_or_id: Optional = None,
+        avatar_id: Optional = None,
+        method: Optional = "get",
+        **kwargs,
+    ) -> str:
         """
         Performs multiple operations to the avatar displayed for a project.
 
@@ -1669,37 +1901,59 @@ class EndPoints:
         :return: string
         """
         if method.lower() == "get":
-            return "{}/rest/api/{}/project/{}/avatars" \
-                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                        key_or_id)
+            return "{}/rest/api/{}/project/{}/avatars".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", key_or_id
+            )
         elif method.lower() == "post":
             if "size" not in kwargs:
-                raise JiraOneErrors("value", "size keyword argument is required but missing.")
+                raise JiraOneErrors(
+                    "value", "size keyword argument is required but missing."
+                )
             for key, value in kwargs.items():
                 if not isinstance(value, int):
-                    raise JiraOneErrors("value", f"{key} keyword argument is not a number.")
+                    raise JiraOneErrors(
+                        "value", f"{key} keyword argument is not a number."
+                    )
             if "cord_x" in kwargs and "size" in kwargs and "cord_y" not in kwargs:
-                return "{}/rest/api/{}/project/{}/avatar2?x={}&size={}" \
-                    .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                            key_or_id, kwargs.get("cord_x"), kwargs.get("size"))
+                return "{}/rest/api/{}/project/{}/avatar2?x={}&size={}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    key_or_id,
+                    kwargs.get("cord_x"),
+                    kwargs.get("size"),
+                )
             elif "cord_y" in kwargs and "size" in kwargs and "cord_x" not in kwargs:
-                return "{}/rest/api/{}/project/{}/avatar2?y={}&size={}" \
-                    .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                            key_or_id, kwargs.get("cord_y"), kwargs.get("size"))
+                return "{}/rest/api/{}/project/{}/avatar2?y={}&size={}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    key_or_id,
+                    kwargs.get("cord_y"),
+                    kwargs.get("size"),
+                )
             elif "cord_x" in kwargs and "cord_y" in kwargs and "size" in kwargs:
-                return "{}/rest/api/{}/project/{}/avatar2?x={}&y={}&size={}" \
-                    .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                            key_or_id, kwargs.get("cord_x"), kwargs.get("cord_y"),
-                            kwargs.get("size"))
+                return "{}/rest/api/{}/project/{}/avatar2?x={}&y={}&size={}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    key_or_id,
+                    kwargs.get("cord_x"),
+                    kwargs.get("cord_y"),
+                    kwargs.get("size"),
+                )
             else:
-                raise JiraOneErrors("value", "Either cord_x or cord_y argument must be provided")
+                raise JiraOneErrors(
+                    "value", "Either cord_x or cord_y argument must be provided"
+                )
         elif method.lower() == "delete":
-            return "{}/rest/api/{}/project/{}/avatar/{}" \
-                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                        key_or_id, avatar_id)
+            return "{}/rest/api/{}/project/{}/avatar/{}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                key_or_id,
+                avatar_id,
+            )
         elif method.lower() == "put":
-            return "{}/rest/api/{}/project/{}/avatar" \
-                .format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", key_or_id)
+            return "{}/rest/api/{}/project/{}/avatar".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", key_or_id
+            )
         else:
             raise JiraOneErrors("wrong", "No such method exist within this operation")
 
@@ -1767,9 +2021,9 @@ class EndPoints:
         return "{}/rest/agile/1.0/board".format(LOGIN.base_url)
 
     @classmethod
-    def get_board_by_filter_id(cls, filter_id,
-                               start_at: int = 0,
-                               max_results: int = 50) -> str:
+    def get_board_by_filter_id(
+        cls, filter_id, start_at: int = 0, max_results: int = 50
+    ) -> str:
         """Returns any boards which use the provided filter id.
 
         This method can be executed by users without a valid software license
@@ -1784,8 +2038,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/agile/1.0/board/filter/{}?startAt={}&maxResults={}" \
-            .format(LOGIN.base_url, filter_id, start_at, max_results)
+        return "{}/rest/agile/1.0/board/filter/{}?startAt={}&maxResults={}".format(
+            LOGIN.base_url, filter_id, start_at, max_results
+        )
 
     @classmethod
     def get_board(cls, board_id) -> str:
@@ -1802,11 +2057,9 @@ class EndPoints:
         return "{}/rest/agile/1.0/board/{}".format(LOGIN.base_url, board_id)
 
     @classmethod
-    def get_issues_on_backlog(cls,
-                              board_id,
-                              query: str = None,
-                              start_at: int = 0,
-                              max_results: int = 50) -> str:
+    def get_issues_on_backlog(
+        cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50
+    ) -> str:
         """Returns all issues from the board's backlog, for the given board ID.
 
         This only includes issues that the user has permission to view.
@@ -1831,18 +2084,20 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/agile/1.0/board/{}/backlog?{}&startAt={}&maxResults={}" \
-                .format(LOGIN.base_url, board_id, query, start_at, max_results)
+            return (
+                "{}/rest/agile/1.0/board/{}/backlog?{}&startAt={}&maxResults={}".format(
+                    LOGIN.base_url, board_id, query, start_at, max_results
+                )
+            )
         else:
-            return "{}/rest/agile/1.0/board/{}/backlog?startAt={}&maxResults={}" \
-                .format(LOGIN.base_url, board_id, start_at, max_results)
+            return "{}/rest/agile/1.0/board/{}/backlog?startAt={}&maxResults={}".format(
+                LOGIN.base_url, board_id, start_at, max_results
+            )
 
     @classmethod
-    def get_issues_on_board(cls,
-                            board_id,
-                            query: str = None,
-                            start_at: int = 0,
-                            max_results: int = 50) -> str:
+    def get_issues_on_board(
+        cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50
+    ) -> str:
         """Returns all issues from a board, for a given board ID.
 
         This only includes issues that the user has permission to view.
@@ -1866,11 +2121,15 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/agile/1.0/board/{}/issue?{}&startAt={}&maxResults={}" \
-                .format(LOGIN.base_url, board_id, query, start_at, max_results)
+            return (
+                "{}/rest/agile/1.0/board/{}/issue?{}&startAt={}&maxResults={}".format(
+                    LOGIN.base_url, board_id, query, start_at, max_results
+                )
+            )
         else:
-            return "{}/rest/agile/1.0/board/{}/issue?startAt={}&maxResults={}" \
-                .format(LOGIN.base_url, board_id, start_at, max_results)
+            return "{}/rest/agile/1.0/board/{}/issue?startAt={}&maxResults={}".format(
+                LOGIN.base_url, board_id, start_at, max_results
+            )
 
     @classmethod
     def move_issues_to_board(cls, board_id) -> str:
@@ -1892,25 +2151,30 @@ class EndPoints:
         return "{}/rest/agile/1.0/board/{}/issue".format(LOGIN.base_url, board_id)
 
     @classmethod
-    def get_projects_on_board(cls, board_id, start_at: int = 0, max_results: int = 50) -> str:
+    def get_projects_on_board(
+        cls, board_id, start_at: int = 0, max_results: int = 50
+    ) -> str:
         """Returns all projects that are associated with the board, for the given board ID.
 
-         If the user does not have permission to view the board, no projects will be returned at all.
-         Returned projects are ordered by the name.
+        If the user does not have permission to view the board, no projects will be returned at all.
+        Returned projects are ordered by the name.
 
-         :param board_id: required
+        :param board_id: required
 
-         :param start_at: defaults 0
+        :param start_at: defaults 0
 
-         :param max_results: defaults 50
+        :param max_results: defaults 50
 
-         :return: A string of the url
+        :return: A string of the url
         """
-        return "{}/rest/agile/1.0/board/{}/project?startAt={}&maxResults={}" \
-            .format(LOGIN.base_url, board_id, start_at, max_results)
+        return "{}/rest/agile/1.0/board/{}/project?startAt={}&maxResults={}".format(
+            LOGIN.base_url, board_id, start_at, max_results
+        )
 
     @classmethod
-    def get_all_quick_filters(cls, board_id, start_at: int = 0, max_results: int = 50) -> str:
+    def get_all_quick_filters(
+        cls, board_id, start_at: int = 0, max_results: int = 50
+    ) -> str:
         """Returns all quick filters from a board, for a given board ID.
 
         :param board_id: required
@@ -1921,8 +2185,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/agile/1.0/board/{}/quickfilter?startAt={}&maxResults={}" \
-            .format(LOGIN.base_url, board_id, start_at, max_results)
+        return "{}/rest/agile/1.0/board/{}/quickfilter?startAt={}&maxResults={}".format(
+            LOGIN.base_url, board_id, start_at, max_results
+        )
 
     @classmethod
     def get_quick_filter(cls, board_id, quick_filter_id) -> str:
@@ -1937,14 +2202,14 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/agile/1.0/board/{}/quickfilter/{}".format(LOGIN.base_url, board_id, quick_filter_id)
+        return "{}/rest/agile/1.0/board/{}/quickfilter/{}".format(
+            LOGIN.base_url, board_id, quick_filter_id
+        )
 
     @classmethod
-    def get_all_sprints(cls,
-                        board_id,
-                        query: str = None,
-                        start_at: int = 0,
-                        max_results: int = 50) -> str:
+    def get_all_sprints(
+        cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50
+    ) -> str:
         """Get all Sprint on a Board.
 
         :param board_id: A board id
@@ -1958,11 +2223,13 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}" \
-                .format(LOGIN.base_url, board_id, query, start_at, max_results)
+            return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}".format(
+                LOGIN.base_url, board_id, query, start_at, max_results
+            )
         else:
-            return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}" \
-                .format(LOGIN.base_url, board_id, start_at, max_results)
+            return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}".format(
+                LOGIN.base_url, board_id, start_at, max_results
+            )
 
     # SPRINT -> API for Sprints
     @classmethod
@@ -2053,7 +2320,9 @@ class EndPoints:
         return "{}/rest/servicedeskapi/info".format(LOGIN.base_url)
 
     @classmethod
-    def get_organizations(cls, start: int = 0, limit: int = 50, account_id: str = None) -> str:
+    def get_organizations(
+        cls, start: int = 0, limit: int = 50, account_id: str = None
+    ) -> str:
         """This method returns a list of organizations in the Jira Service Management instance.
 
         Use this method when you want to present a list of organizations or want to locate an organization by name.
@@ -2067,10 +2336,13 @@ class EndPoints:
         :return: A string of the url
         """
         if account_id is not None:
-            return "{}/rest/servicedeskapi/organization?accountId={}&start={}&limit={}" \
-                .format(LOGIN.base_url, account_id, start, limit)
+            return "{}/rest/servicedeskapi/organization?accountId={}&start={}&limit={}".format(
+                LOGIN.base_url, account_id, start, limit
+            )
         else:
-            return "{}/rest/servicedeskapi/organization?start={}&limit={}".format(LOGIN.base_url, start, limit)
+            return "{}/rest/servicedeskapi/organization?start={}&limit={}".format(
+                LOGIN.base_url, start, limit
+            )
 
     @classmethod
     def create_organization(cls) -> str:
@@ -2110,7 +2382,9 @@ class EndPoints:
 
         :return: string
         """
-        return "{}/rest/servicedeskapi/servicedesk?start={}&limit={}".format(LOGIN.base_url, start, limit)
+        return "{}/rest/servicedeskapi/servicedesk?start={}&limit={}".format(
+            LOGIN.base_url, start, limit
+        )
 
     @classmethod
     def get_sd_by_id(cls, service_desk_id) -> str:
@@ -2122,7 +2396,9 @@ class EndPoints:
 
         :return: string
         """
-        return "{}/rest/servicedeskapi/servicedesk/{}".format(LOGIN.base_url, service_desk_id)
+        return "{}/rest/servicedeskapi/servicedesk/{}".format(
+            LOGIN.base_url, service_desk_id
+        )
 
     @classmethod
     def delete_organization(cls, org_id) -> str:
@@ -2154,8 +2430,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/servicedeskapi/organization/{}/user?start={}&limit={}".format(LOGIN.base_url, org_id,
-                                                                                      start, limit)
+        return "{}/rest/servicedeskapi/organization/{}/user?start={}&limit={}".format(
+            LOGIN.base_url, org_id, start, limit
+        )
 
     @classmethod
     def add_users_to_organization(cls, org_id) -> str:
@@ -2169,7 +2446,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/servicedeskapi/organization/{}/user".format(LOGIN.base_url, org_id)
+        return "{}/rest/servicedeskapi/organization/{}/user".format(
+            LOGIN.base_url, org_id
+        )
 
     @classmethod
     def remove_users_from_organization(cls, org_id) -> str:
@@ -2183,14 +2462,14 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/servicedeskapi/organization/{}/user".format(LOGIN.base_url, org_id)
+        return "{}/rest/servicedeskapi/organization/{}/user".format(
+            LOGIN.base_url, org_id
+        )
 
     @classmethod
-    def get_sd_organizations(cls,
-                             service_desk_id,
-                             start: int = 0,
-                             limit: int = 50,
-                             account_id: str = None) -> str:
+    def get_sd_organizations(
+        cls, service_desk_id, start: int = 0, limit: int = 50, account_id: str = None
+    ) -> str:
         """This method returns a list of all organizations associated with a service desk.
 
         :param service_desk_id: required
@@ -2204,11 +2483,13 @@ class EndPoints:
         :return: A string of the url
         """
         if account_id is not None:
-            return "{}/rest/servicedeskapi/servicedesk/{}/organization?accountId={}&start={}&limit={}" \
-                .format(LOGIN.base_url, service_desk_id, account_id, start, limit)
+            return "{}/rest/servicedeskapi/servicedesk/{}/organization?accountId={}&start={}&limit={}".format(
+                LOGIN.base_url, service_desk_id, account_id, start, limit
+            )
         else:
-            return "{}/rest/servicedeskapi/servicedesk/{}/organization?start={}&limit={}" \
-                .format(LOGIN.base_url, service_desk_id, start, limit)
+            return "{}/rest/servicedeskapi/servicedesk/{}/organization?start={}&limit={}".format(
+                LOGIN.base_url, service_desk_id, start, limit
+            )
 
     @classmethod
     def add_sd_organization(cls, service_desk_id) -> str:
@@ -2225,7 +2506,9 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(LOGIN.base_url, service_desk_id)
+        return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(
+            LOGIN.base_url, service_desk_id
+        )
 
     @classmethod
     def remove_sd_organization(cls, service_desk_id) -> str:
@@ -2242,14 +2525,14 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(LOGIN.base_url, service_desk_id)
+        return "{}/rest/servicedeskapi/servicedesk/{}/organization".format(
+            LOGIN.base_url, service_desk_id
+        )
 
     @classmethod
-    def get_customers(cls,
-                      service_desk_id,
-                      start: int = 0,
-                      limit: int = 50,
-                      query: str = None) -> str:
+    def get_customers(
+        cls, service_desk_id, start: int = 0, limit: int = 50, query: str = None
+    ) -> str:
         """This method returns a list of the customers on a service desk.
 
         The returned list of customers can be filtered using the query parameter.
@@ -2267,11 +2550,13 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/servicedeskapi/servicedesk/{}/customer?{}&start={}&limit={}" \
-                .format(LOGIN.base_url, query, service_desk_id, start, limit)
+            return "{}/rest/servicedeskapi/servicedesk/{}/customer?{}&start={}&limit={}".format(
+                LOGIN.base_url, query, service_desk_id, start, limit
+            )
         else:
-            return "{}/rest/servicedeskapi/servicedesk/{}/customer?start={}&limit={}" \
-                .format(LOGIN.base_url, service_desk_id, start, limit)
+            return "{}/rest/servicedeskapi/servicedesk/{}/customer?start={}&limit={}".format(
+                LOGIN.base_url, service_desk_id, start, limit
+            )
 
     @classmethod
     def add_customers(cls, service_desk_id) -> str:
@@ -2288,8 +2573,10 @@ class EndPoints:
 
 
         :return: A string of the url
-                """
-        return "{}/rest/servicedeskapi/servicedesk/{}/customer".format(LOGIN.base_url, service_desk_id)
+        """
+        return "{}/rest/servicedeskapi/servicedesk/{}/customer".format(
+            LOGIN.base_url, service_desk_id
+        )
 
     @classmethod
     def remove_customers(cls, service_desk_id) -> str:
@@ -2305,8 +2592,10 @@ class EndPoints:
         :body param: usernames, accountIds,  datatype -> Array<string>
 
         :return: A string of the url
-                """
-        return "{}/rest/servicedeskapi/servicedesk/{}/customer".format(LOGIN.base_url, service_desk_id)
+        """
+        return "{}/rest/servicedeskapi/servicedesk/{}/customer".format(
+            LOGIN.base_url, service_desk_id
+        )
 
     ################################################
     # Jira Specific API endpoints
@@ -2337,10 +2626,13 @@ class EndPoints:
         :return: A string of the url
         """
         if account_id is not None:
-            return "{}/rest/api/{}/user?accountId={}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                             account_id)
+            return "{}/rest/api/{}/user?accountId={}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", account_id
+            )
         else:
-            return "{}/rest/api/{}/user".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+            return "{}/rest/api/{}/user".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
 
     @classmethod
     def jira_group(cls, group_name: str = None, swap_group: str = None) -> str:
@@ -2366,120 +2658,148 @@ class EndPoints:
         :return: A string of the url
         """
         if group_name is not None and swap_group is None:
-            return "{}/rest/api/{}/group?groupname={}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                              group_name)
+            return "{}/rest/api/{}/group?groupname={}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", group_name
+            )
         elif group_name is not None and swap_group is not None:
-            return "{}/rest/api/{}/group?groupname={}&swapGroup={}".format(LOGIN.base_url,
-                                                                           "3" if LOGIN.api is True else "latest",
-                                                                           group_name, swap_group)
+            return "{}/rest/api/{}/group?groupname={}&swapGroup={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                group_name,
+                swap_group,
+            )
         else:
-            return "{}/rest/api/{}/group".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+            return "{}/rest/api/{}/group".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
 
     @classmethod
     def group_jira_users(cls, group_name: str, account_id: str = None) -> str:
         """Used for addition and removal of users to and from groups.
 
-        :request POST: - Adds a user to a group.
+         :request POST: - Adds a user to a group.
 
-        :query param: groupname required, datatype -> string
+         :query param: groupname required, datatype -> string
 
-        :body param: name, accountId, datatype -> string
-                     returns 201 if successful
+         :body param: name, accountId, datatype -> string
+                      returns 201 if successful
 
-        :request DELETE: - Removes a user from a group.
+         :request DELETE: - Removes a user from a group.
 
-        :query param: group_name required, account_id required,  datatype -> string
-                     returns 200 if successful
+         :query param: group_name required, account_id required,  datatype -> string
+                      returns 200 if successful
 
-       :param group_name: name of group
+        :param group_name: name of group
 
-       :param account_id: string of a user account
+        :param account_id: string of a user account
 
-        :return: A string of the url
+         :return: A string of the url
         """
         if account_id is not None:
-            return "{}/rest/api/{}/group/user?groupname={}&accountId={}".format(LOGIN.base_url,
-                                                                                "3" if LOGIN.api is True
-                                                                                else "latest", group_name, account_id)
+            return "{}/rest/api/{}/group/user?groupname={}&accountId={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                group_name,
+                account_id,
+            )
         else:
-            return "{}/rest/api/{}/group/user?groupname={}".format(LOGIN.base_url,
-                                                                   "3" if LOGIN.api is True else "latest", group_name)
+            return "{}/rest/api/{}/group/user?groupname={}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", group_name
+            )
 
     @classmethod
-    def projects(cls, id_or_key, query: Optional[str] = None, uri: Optional[str] = None,
-                 enable_undo: Optional[bool] = None) -> str:
+    def projects(
+        cls,
+        id_or_key,
+        query: Optional[str] = None,
+        uri: Optional[str] = None,
+        enable_undo: Optional[bool] = None,
+    ) -> str:
         """Create, delete, update, archive, get status.
 
-        :request POST: - for project creations.
-        The project types are available according to the installed Jira features as `follows
-        <https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post>`_
+               :request POST: - for project creations.
+               The project types are available according to the installed Jira features as `follows
+               <https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-post>`_
 
-        :param id_or_key: required
+               :param id_or_key: required
 
-        :param uri: optional for accessing other project endpoints -> string
+               :param uri: optional for accessing other project endpoints -> string
 
-                   endpoint: /rest/api/3/project/{projectIdOrKey}/{archive}
-                   available options [archive, delete, restore, statuses]
+                          endpoint: /rest/api/3/project/{projectIdOrKey}/{archive}
+                          available options [archive, delete, restore, statuses]
 
-                         * archive - Archives a project. Archived projects cannot be deleted.
+                                * archive - Archives a project. Archived projects cannot be deleted.
 
-                         * delete - Deletes a project asynchronously.
+                                * delete - Deletes a project asynchronously.
 
-                         * restore - Restores a project from the Jira recycle bin.
+                                * restore - Restores a project from the Jira recycle bin.
 
-                         * statuses - Returns the valid statuses for a project.
+                                * statuses - Returns the valid statuses for a project.
 
- .. _follows:
+        .. _follows:
 
-      :body param: projectTypeKey and projectTemplateKey required, datatype -> string
-            : name, key, description, leadAccountId, url, assigneeType, datatype -> string
-            : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
-             datatype -> integer
+             :body param: projectTypeKey and projectTemplateKey required, datatype -> string
+                   : name, key, description, leadAccountId, url, assigneeType, datatype -> string
+                   : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
+                    datatype -> integer
 
-      :request GET: - Returns the project details for a project.
-        This operation can be accessed anonymously.
+             :request GET: - Returns the project details for a project.
+               This operation can be accessed anonymously.
 
-      :query param: expand, datatype -> string
+             :query param: expand, datatype -> string
 
-       properties, datatype -> Array<string>
+              properties, datatype -> Array<string>
 
-       :request PUT: - Updates the project details for a project.
+              :request PUT: - Updates the project details for a project.
 
-        :param query:  expand, datatype -> string
+               :param query:  expand, datatype -> string
 
-        :body param: projectTypeKey and projectTemplateKey required, datatype -> string
-           : name, key, description, leadAccountId, url, assigneeType, datatype -> string
-           : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
-            datatype -> integer
+               :body param: projectTypeKey and projectTemplateKey required, datatype -> string
+                  : name, key, description, leadAccountId, url, assigneeType, datatype -> string
+                  : avatarId, issueSecurityScheme, permissionScheme, notificationScheme, categoryId,
+                   datatype -> integer
 
-        :request DELETE: - Deletes a project.
+               :request DELETE: - Deletes a project.
 
-        :param enable_undo:  datatype -> boolean
+               :param enable_undo:  datatype -> boolean
 
-        :return: A string of the url
+               :return: A string of the url
         """
         if uri is not None:
-            return "{}/rest/api/{}/project/{}/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                         id_or_key, uri)
+            return "{}/rest/api/{}/project/{}/{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key, uri
+            )
         else:
             if query is not None:
-                return "{}/rest/api/{}/project/{}?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                             id_or_key, query)
+                return "{}/rest/api/{}/project/{}?{}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    id_or_key,
+                    query,
+                )
             else:
                 if enable_undo is not None:
-                    return "{}/rest/api/{}/project/{}?enableUndo={}".format(LOGIN.base_url,
-                                                                            "3" if LOGIN.api is True
-                                                                            else "latest", id_or_key, enable_undo)
+                    return "{}/rest/api/{}/project/{}?enableUndo={}".format(
+                        LOGIN.base_url,
+                        "3" if LOGIN.api is True else "latest",
+                        id_or_key,
+                        enable_undo,
+                    )
                 else:
-                    return "{}/rest/api/{}/project/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                              id_or_key)
+                    return "{}/rest/api/{}/project/{}".format(
+                        LOGIN.base_url,
+                        "3" if LOGIN.api is True else "latest",
+                        id_or_key,
+                    )
 
     @classmethod
-    def issues(cls,
-               issue_key_or_id: Optional[Any] = None,
-               query: Optional[Any] = None,
-               uri: Optional[str] = None,
-               event: bool = False) -> str:
+    def issues(
+        cls,
+        issue_key_or_id: Optional[Any] = None,
+        query: Optional[Any] = None,
+        uri: Optional[str] = None,
+        event: bool = False,
+    ) -> str:
         """Creates issues, delete issues,  bulk create issue, transitions.
 
         A transition may be applied, to move the issue or subtask to a workflow step other than
@@ -2562,31 +2882,52 @@ class EndPoints:
         :return: A string of the url
         """
         if uri is not None and query is None:
-            return "{}/rest/api/{}/issue/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri)
+            return "{}/rest/api/{}/issue/{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri
+            )
         elif uri is not None and query is not None:
-            return "{}/rest/api/{}/issue/{}?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                       uri, query)
+            return "{}/rest/api/{}/issue/{}?{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri, query
+            )
         else:
             if issue_key_or_id is not None and query is None:
-                return "{}/rest/api/{}/issue/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                        issue_key_or_id)
+                return "{}/rest/api/{}/issue/{}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    issue_key_or_id,
+                )
 
             elif issue_key_or_id is not None and query is not None:
-                return "{}/rest/api/{}/issue/{}?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                           issue_key_or_id, query) if event is False else \
-                    "{}/rest/api/{}/issue/{}/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                        issue_key_or_id, query)
+                return (
+                    "{}/rest/api/{}/issue/{}?{}".format(
+                        LOGIN.base_url,
+                        "3" if LOGIN.api is True else "latest",
+                        issue_key_or_id,
+                        query,
+                    )
+                    if event is False
+                    else "{}/rest/api/{}/issue/{}/{}".format(
+                        LOGIN.base_url,
+                        "3" if LOGIN.api is True else "latest",
+                        issue_key_or_id,
+                        query,
+                    )
+                )
             else:
-                return "{}/rest/api/{}/issue".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest")
+                return "{}/rest/api/{}/issue".format(
+                    LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+                )
 
     @classmethod
-    def comment(cls,
-                query: str = None,
-                key_or_id: str = None,
-                start_at: int = 0,
-                max_results: int = 50,
-                ids: int = None,
-                event: bool = False) -> str:
+    def comment(
+        cls,
+        query: str = None,
+        key_or_id: str = None,
+        start_at: int = 0,
+        max_results: int = 50,
+        ids: int = None,
+        event: bool = False,
+    ) -> str:
         """Create, update, delete or get a comment.
 
         :request POST: - Returns a paginated list of just the comments for a list
@@ -2600,7 +2941,7 @@ class EndPoints:
 
                renderedBody Returns the comment body rendered in HTML.
 
-               properties Returns the comment's properties.
+               properties, returns the comment's properties.
 
         :body param - ids: datatype -> Array<integer>
 
@@ -2664,23 +3005,26 @@ class EndPoints:
         :return: A string of the url
         """
         if key_or_id is not None and ids is None:
-            return f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment" \
-                if event is False else \
-                f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment?" \
+            return (
+                f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment"
+                if event is False
+                else f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment?"
                 f"startAt={start_at}&maxResults={max_results}&{query}"
+            )
 
         elif key_or_id is not None and ids is not None:
-            return "{}/rest/api/{}/issue/{}/comment/{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                               key_or_id, ids)
+            return "{}/rest/api/{}/issue/{}/comment/{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", key_or_id, ids
+            )
         else:
-            return "{}/rest/api/{}/comment/list?{}".format(LOGIN.base_url, "3" if LOGIN.api is True else "latest",
-                                                           query)
+            return "{}/rest/api/{}/comment/list?{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
+            )
 
     @classmethod
-    def issue_export(cls,
-                     url: Optional[str] = None,
-                     start: int = 0,
-                     limit: int = 1000) -> str:
+    def issue_export(
+        cls, url: Optional[str] = None, start: int = 0, limit: int = 1000
+    ) -> str:
         """
         Generate an export of Jira issues using a JQL.
 
@@ -2689,9 +3033,12 @@ class EndPoints:
         :param limit: Max limit allowed for export
         :return: A string of the export URL
         """
-        return "{}/sr/jira.issueviews:searchrequest-csv-all-fields/temp/" \
-               "SearchRequest.csv?jqlQuery={}&tempMax={}&pager/start={}" \
-            .format(LOGIN.base_url, url, limit, start)
+        return (
+            "{}/sr/jira.issueviews:searchrequest-csv-all-fields/temp/"
+            "SearchRequest.csv?jqlQuery={}&tempMax={}&pager/start={}".format(
+                LOGIN.base_url, url, limit, start
+            )
+        )
 
 
 class For(object):
@@ -2702,7 +3049,9 @@ class For(object):
     Datatype expected are list, dict, tuple, str, set or int.
     """
 
-    def __init__(self, data: Union[list, tuple, dict, set, str, int], limit: int = 0) -> None:
+    def __init__(
+        self, data: Union[list, tuple, dict, set, str, int], limit: int = 0
+    ) -> None:
         self.data = data
         if isinstance(self.data, int):
             self.data = range(1, data + 1)
@@ -2719,8 +3068,11 @@ class For(object):
             raise StopIteration
         marker = self.limit
         self.limit += 1
-        return self.data[marker] if not isinstance(self.data, dict) else \
-            self.__dictionary__(marker)
+        return (
+            self.data[marker]
+            if not isinstance(self.data, dict)
+            else self.__dictionary__(marker)
+        )
 
     def __dictionary__(self, index: int = 0) -> Dict:
         """A method that converts a dictionary into an item list."""
@@ -2741,6 +3093,7 @@ class Field(object):
       * field_search_key
 
     """
+
     # field type listing
     field_type = {
         "cascadingselect": "com.atlassian.jira.plugin.system.customfieldtypes:cascadingselect",
@@ -2775,8 +3128,7 @@ class Field(object):
         "description": "description",
         "Epic Status": "com.pyxis.greenhopper.jira:gh-epic-status",
         "Epic Name": "com.pyxis.greenhopper.jira:gh-epic-label",
-        "versions": "versions"
-
+        "versions": "versions",
     }
     # field search key listing
     field_search_key = {
@@ -2792,7 +3144,7 @@ class Field(object):
         "projectsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:projectsearcher",
         "textsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:textsearcher",
         "userpickergroupsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:userpickergroupsearcher",
-        "versionsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:versionsearcher"
+        "versionsearcher": "com.atlassian.jira.plugin.system.customfieldtypes:versionsearcher",
     }
 
     @staticmethod
@@ -2803,18 +3155,26 @@ class Field(object):
 
         :return: A dictionary if field is found else None
         """
-        fields = find_field if find_field is not None else sys.exit("You must enter a field name")
+        fields = (
+            find_field
+            if find_field is not None
+            else sys.exit("You must enter a field name")
+        )
         count_start_at = 0
         while True:
-            load = LOGIN.get(endpoint.get_field(query="type=custom", start_at=count_start_at))
+            load = LOGIN.get(
+                endpoint.get_field(query="type=custom", start_at=count_start_at)
+            )
             if load.status_code < 300:
                 data = load.json()
                 for a in data["values"]:
                     if a["name"] == fields:
                         return {
-                            "id": a["id"], "name": a["name"], "customType": a["schema"]["custom"],
+                            "id": a["id"],
+                            "name": a["name"],
+                            "customType": a["schema"]["custom"],
                             "customId": a["schema"]["customId"],
-                            "type": a["schema"]["type"]
+                            "type": a["schema"]["type"],
                         }
 
                 count_start_at += 50
@@ -2829,7 +3189,11 @@ class Field(object):
 
         :return: A dictionary if field is found else None
         """
-        fields = find_field if find_field is not None else sys.exit("You must enter a field name")
+        fields = (
+            find_field
+            if find_field is not None
+            else sys.exit("You must enter a field name")
+        )
         load = LOGIN.get(endpoint.get_field(system="type=system"))
         if load.status_code < 300:
             data = load.json()
@@ -2839,24 +3203,41 @@ class Field(object):
                         if "schema" in a:
                             if "customId" not in a["schema"]:
                                 return {
-                                    "name": a["name"], "id": a["id"], "custom": a["custom"], "key": a["key"],
+                                    "name": a["name"],
+                                    "id": a["id"],
+                                    "custom": a["custom"],
+                                    "key": a["key"],
                                     "searchable": a["searchable"],
-                                    "type": a["schema"]["type"]
+                                    "type": a["schema"]["type"],
                                 }
                             return {
-                                "name": a["name"], "id": a["id"], "key": a["key"],
-                                "searchable": a["searchable"], "customType": a["schema"]["custom"],
-                                "customId": a["schema"]["customId"], "type": a["schema"]["type"],
-                                "custom": a["custom"]
+                                "name": a["name"],
+                                "id": a["id"],
+                                "key": a["key"],
+                                "searchable": a["searchable"],
+                                "customType": a["schema"]["custom"],
+                                "customId": a["schema"]["customId"],
+                                "type": a["schema"]["type"],
+                                "custom": a["custom"],
                             }
                         if "schema" not in a["name"]:
                             return {
-                                "name": a["name"], "id": a["id"], "key": a["key"], "searchable": a["searchable"],
-                                "custom": a["custom"]
+                                "name": a["name"],
+                                "id": a["id"],
+                                "key": a["key"],
+                                "searchable": a["searchable"],
+                                "custom": a["custom"],
                             }
 
-    def update_field_data(self, data: Any = None, find_field: str = None, field_type: str = "custom",
-                          key_or_id: Union[str, int] = None, show: bool = True, **kwargs) -> Any:
+    def update_field_data(
+        self,
+        data: Any = None,
+        find_field: str = None,
+        field_type: str = "custom",
+        key_or_id: Union[str, int] = None,
+        show: bool = True,
+        **kwargs,
+    ) -> Any:
         """Field works for.
 
         All field types mentioned on the Field class attributes.
@@ -2903,182 +3284,193 @@ class Field(object):
             elif isinstance(pull, list):
                 return pull
             else:
-                raise JiraOneErrors("wrong", "You are using the wrong data type. Please check again.")
+                raise JiraOneErrors(
+                    "wrong", "You are using the wrong data type. Please check again."
+                )
 
         if data == "" or data is None:
             payload = None
             if "customType" in search:
-                if search["customType"] in [self.field_type["multicheckboxes"], self.field_type["multiselect"],
-                                            self.field_type["labels"], self.field_type["version"]]:
-                    attr = {
-                        search["id"]: []
-                    }
+                if search["customType"] in [
+                    self.field_type["multicheckboxes"],
+                    self.field_type["multiselect"],
+                    self.field_type["labels"],
+                    self.field_type["version"],
+                ]:
+                    attr = {search["id"]: []}
                     payload = self.data_load(attr)
-                elif search["customType"] in [self.field_type["select"], self.field_type["cascadingselect"],
-                                              self.field_type["radiobuttons"]]:
-                    attr = {
-                        search["id"]: None
-                    }
+                elif search["customType"] in [
+                    self.field_type["select"],
+                    self.field_type["cascadingselect"],
+                    self.field_type["radiobuttons"],
+                ]:
+                    attr = {search["id"]: None}
                     payload = self.data_load(attr)
                 else:
-                    attr = {
-                        search["id"]: None
-                    }
+                    attr = {search["id"]: None}
                     payload = self.data_load(attr)
             elif "customType" not in search:
-                if search["key"] in [self.field_type["components"], self.field_type['fixversions']]:
-                    attr = {
-                        search["id"]: []
-                    }
+                if search["key"] in [
+                    self.field_type["components"],
+                    self.field_type["fixversions"],
+                ]:
+                    attr = {search["id"]: []}
                     payload = self.data_load(attr)
-                elif search["key"] in ["assignee", "reporter", self.field_type["userpicker"]]:
-                    attr = {
-                        search["id"]:
-                            {"accountId": None}
-                    }
+                elif search["key"] in [
+                    "assignee",
+                    "reporter",
+                    self.field_type["userpicker"],
+                ]:
+                    attr = {search["id"]: {"accountId": None}}
                     payload = self.data_load(attr)
                 else:
-                    attr = {
-                        search["id"]: None
-
-                    }
+                    attr = {search["id"]: None}
                     payload = self.data_load(attr)
-            response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+            response = LOGIN.put(
+                endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload
+            )
         elif data != "" or data is not None:
             if "customType" in search:
-                if search["customType"] in [self.field_type["multiselect"], self.field_type["multicheckboxes"]]:
+                if search["customType"] in [
+                    self.field_type["multiselect"],
+                    self.field_type["multicheckboxes"],
+                ]:
                     if options is None:
                         if not isinstance(data, str):
-                            raise JiraOneErrors("wrong", "Expecting a string value or a string of values separated by"
-                                                         " comma.")
+                            raise JiraOneErrors(
+                                "wrong",
+                                "Expecting a string value or a string of values separated by"
+                                " comma.",
+                            )
                         else:
-                            attr = {
-                                search["id"]: self.multi_field(data)
-                            }
+                            attr = {search["id"]: self.multi_field(data)}
                             payload = self.data_load(attr)
                     elif options == "add" or options == "remove":
                         for f in separated(data):
-                            get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
-                                                                        amend=options, data=f)
+                            get_data = self.extract_issue_field_options(
+                                key_or_id=key_or_id,
+                                search=search,
+                                amend=options,
+                                data=f,
+                            )
                             if len(get_data) == 0:
-                                attr = {
-                                    search["id"]: None
-                                }
+                                attr = {search["id"]: None}
                                 payload = self.data_load(attr)
                             else:
                                 concat = ",".join(get_data)
-                                attr = {
-                                    search["id"]:
-                                        self.multi_field(concat)
-                                }
+                                attr = {search["id"]: self.multi_field(concat)}
                                 payload = self.data_load(attr)
-                            LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                            LOGIN.put(
+                                endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                                payload=payload,
+                            )
                     else:
-                        raise JiraOneErrors("value",
-                                            "Excepting string value as \"add\" or \"remove\" "
-                                            "from the options keyword argument "
-                                            "got value: \"{}\" instead.".format(options))
-                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                        raise JiraOneErrors(
+                            "value",
+                            'Excepting string value as "add" or "remove" '
+                            "from the options keyword argument "
+                            'got value: "{}" instead.'.format(options),
+                        )
+                    response = LOGIN.put(
+                        endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                        payload=payload,
+                    )
                 elif search["customType"] == self.field_type["cascadingselect"]:
                     cass = self.cascading(data)
                     if len(cass) > 3:
                         attr = {
-                            search["id"]:
-                                {
-                                    "value": cass.__getitem__(1).lstrip(),
-                                    "child": {
-                                        "value": cass.__getitem__(3).lstrip()
-                                    }
-                                }
-
-                        }
-                        payload = self.data_load(attr)
-                        response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-                    elif len(cass) <= 3:
-                        attr = {
-                            search["id"]:
-                                {
-                                    "value": cass.__getitem__(1).lstrip()
-                                }
-
-                        }
-                        payload = self.data_load(attr)
-                        response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-                elif search["customType"] in [self.field_type["radiobuttons"], self.field_type["select"]]:
-                    attr = {
-                        search["id"]:
-                            {
-                                "value": data
+                            search["id"]: {
+                                "value": cass.__getitem__(1).lstrip(),
+                                "child": {"value": cass.__getitem__(3).lstrip()},
                             }
-
-                    }
+                        }
+                        payload = self.data_load(attr)
+                        response = LOGIN.put(
+                            endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                            payload=payload,
+                        )
+                    elif len(cass) <= 3:
+                        attr = {search["id"]: {"value": cass.__getitem__(1).lstrip()}}
+                        payload = self.data_load(attr)
+                        response = LOGIN.put(
+                            endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                            payload=payload,
+                        )
+                elif search["customType"] in [
+                    self.field_type["radiobuttons"],
+                    self.field_type["select"],
+                ]:
+                    attr = {search["id"]: {"value": data}}
                     payload = self.data_load(attr)
-                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-                elif search["customType"] in [self.field_type["labels"], self.field_type["version"]]:
+                    response = LOGIN.put(
+                        endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                        payload=payload,
+                    )
+                elif search["customType"] in [
+                    self.field_type["labels"],
+                    self.field_type["version"],
+                ]:
                     # add a list of values in the form of a list or string for single value
                     if options is None:
                         if not isinstance(data, list):
                             raise JiraOneErrors("wrong", "Expecting a list of values")
                         else:
                             if len(data) > 1:
-                                raise JiraOneErrors("value", "Expecting 1 value got {}. Use the "
-                                                             "update parameter for multiple values".format(len(data)))
+                                raise JiraOneErrors(
+                                    "value",
+                                    "Expecting 1 value got {}. Use the "
+                                    "update parameter for multiple values".format(
+                                        len(data)
+                                    ),
+                                )
                             else:
-                                attr = {
-                                    search["id"]:
-                                        data
-                                }
+                                attr = {search["id"]: data}
                                 payload = self.data_load(attr)
-                    elif options == "add" or options == "remove":  # update the field with the desired value
+                    elif (
+                        options == "add" or options == "remove"
+                    ):  # update the field with the desired value
                         if not isinstance(data, list):
                             raise JiraOneErrors("wrong", "Expecting a list of values")
                         else:
                             if len(data) == 1:
-                                attr = {
-                                    search["id"]:
-                                        [
-                                            {
-                                                options: data[0]
-                                            }
-                                        ]
-
-                                }
+                                attr = {search["id"]: [{options: data[0]}]}
                                 payload = self.data_load(attr, s="update")
                             elif len(data) > 1:
                                 for q in data:
-                                    attr = {
-                                        search["id"]:
-                                            [
-                                                {
-                                                    options: q
-                                                }
-                                            ]
-
-                                    }
+                                    attr = {search["id"]: [{options: q}]}
                                     payload = self.data_load(attr, s="update")
-                                    LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                                    LOGIN.put(
+                                        endpoint.issues(
+                                            issue_key_or_id=key_or_id, query=query
+                                        ),
+                                        payload=payload,
+                                    )
                     else:
-                        raise JiraOneErrors("value",
-                                            "Excepting string value as \"add\" or \"remove\" from "
-                                            "the options keyword argument "
-                                            "got value: \"{}\" instead.".format(options))
-                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
-                elif search["customType"] in [self.field_type["multiuserpicker"], self.field_type['userpicker']]:
+                        raise JiraOneErrors(
+                            "value",
+                            'Excepting string value as "add" or "remove" from '
+                            "the options keyword argument "
+                            'got value: "{}" instead.'.format(options),
+                        )
+                    response = LOGIN.put(
+                        endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                        payload=payload,
+                    )
+                elif search["customType"] in [
+                    self.field_type["multiuserpicker"],
+                    self.field_type["userpicker"],
+                ]:
                     # add a list of values in the form of a list or string for single value
                     if options is None:
                         if not isinstance(data, str):
                             raise JiraOneErrors("wrong")
                         else:
                             if search["type"] == "user":
-                                attr = {
-                                    search["id"]:
-                                        {"accountId": data}
-                                }
+                                attr = {search["id"]: {"accountId": data}}
                                 payload = self.data_load(attr)
                             else:
                                 attr = {
-                                    search["id"]:
-                                        self.multi_field(data, s="accountId")
+                                    search["id"]: self.multi_field(data, s="accountId")
                                 }
                                 payload = self.data_load(attr)
                     elif options == "add" or options == "remove":
@@ -3087,149 +3479,164 @@ class Field(object):
                             raise JiraOneErrors("wrong", "Excepting a list value")
                         else:
                             if search["type"] == "user":
-                                raise JiraOneErrors("wrong", "You cannot post multiple values to this user field.")
+                                raise JiraOneErrors(
+                                    "wrong",
+                                    "You cannot post multiple values to this user field.",
+                                )
                             else:
                                 for f in separated(data):
-                                    get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
-                                                                                amend=options, data=f)
+                                    get_data = self.extract_issue_field_options(
+                                        key_or_id=key_or_id,
+                                        search=search,
+                                        amend=options,
+                                        data=f,
+                                    )
                                     if len(get_data) == 0:
-                                        attr = {
-                                            search["id"]: None
-                                        }
+                                        attr = {search["id"]: None}
                                         payload = self.data_load(attr)
                                     else:
                                         concat = ",".join(get_data)
                                         attr = {
-                                            search["id"]:
-                                                self.multi_field(concat, s="accountId")
+                                            search["id"]: self.multi_field(
+                                                concat, s="accountId"
+                                            )
                                         }
                                         payload = self.data_load(attr)
-                                    LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                                    LOGIN.put(
+                                        endpoint.issues(
+                                            issue_key_or_id=key_or_id, query=query
+                                        ),
+                                        payload=payload,
+                                    )
                     else:
-                        raise JiraOneErrors("value", "Excepting string value as \"add\" or \"remove\" "
-                                                     "from the options keyword argument "
-                                                     "got value: \"{}\" instead.".format(options))
-                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                        raise JiraOneErrors(
+                            "value",
+                            'Excepting string value as "add" or "remove" '
+                            "from the options keyword argument "
+                            'got value: "{}" instead.'.format(options),
+                        )
+                    response = LOGIN.put(
+                        endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                        payload=payload,
+                    )
                 else:
                     if options is None:
-                        attr = {
-                            search["id"]: data
-                        }
+                        attr = {search["id"]: data}
                         payload = self.data_load(attr)
-                    response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                    response = LOGIN.put(
+                        endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                        payload=payload,
+                    )
             elif "customType" not in search:
-                if search["key"] in [self.field_type["components"], self.field_type['fixversions'],
-                                     self.field_type['versions']]:
+                if search["key"] in [
+                    self.field_type["components"],
+                    self.field_type["fixversions"],
+                    self.field_type["versions"],
+                ]:
                     # add a list of values in the form of a list or string for single value
                     if options is None:
                         if not isinstance(data, str):
-                            raise JiraOneErrors("value", "Expecting a string value or a string of values, separated"
-                                                         " by comma.")
+                            raise JiraOneErrors(
+                                "value",
+                                "Expecting a string value or a string of values, separated"
+                                " by comma.",
+                            )
                         else:
-                            attr = {
-                                search["id"]:
-                                    self.multi_field(data, s="name")
-                            }
+                            attr = {search["id"]: self.multi_field(data, s="name")}
                             payload = self.data_load(attr)
                     elif options == "add" or options == "remove":
                         # update the field with the desired value
                         for f in separated(data):
-                            get_data = self.extract_issue_field_options(key_or_id=key_or_id, search=search,
-                                                                        amend=options, data=f)
+                            get_data = self.extract_issue_field_options(
+                                key_or_id=key_or_id,
+                                search=search,
+                                amend=options,
+                                data=f,
+                            )
                             if len(get_data) == 0:
-                                attr = {
-                                    search["id"]:
-                                        []
-                                }
+                                attr = {search["id"]: []}
                                 payload = self.data_load(attr)
                             else:
                                 concat = ",".join(get_data)
                                 attr = {
-                                    search["id"]:
-                                        self.multi_field(concat, s="name")
+                                    search["id"]: self.multi_field(concat, s="name")
                                 }
                                 payload = self.data_load(attr)
-                            LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload)
+                            LOGIN.put(
+                                endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                                payload=payload,
+                            )
 
                     else:
-                        raise JiraOneErrors("value", "Excepting string value as \"add\" or \"remove\" "
-                                                     "from the options keyword argument got "
-                                                     "value: \"{}\" instead.".format(options))
+                        raise JiraOneErrors(
+                            "value",
+                            'Excepting string value as "add" or "remove" '
+                            "from the options keyword argument got "
+                            'value: "{}" instead.'.format(options),
+                        )
                 elif search["key"] in ["labels"]:
                     if options is None:
                         if not isinstance(data, list):
                             raise JiraOneErrors("wrong")
                         else:
-                            attr = {
-                                search["id"]:
-                                    data
-                            }
+                            attr = {search["id"]: data}
                             payload = self.data_load(attr)
-                    elif options == "add" or options == "remove":  # update the field with the desired value
+                    elif (
+                        options == "add" or options == "remove"
+                    ):  # update the field with the desired value
                         if not isinstance(data, list):
                             raise JiraOneErrors("wrong")
                         else:
                             if len(data) == 1:
-                                attr = {
-                                    search["id"]:
-                                        [
-                                            {
-                                                options: data[0]
-                                            }
-                                        ]
-                                }
+                                attr = {search["id"]: [{options: data[0]}]}
                                 payload = self.data_load(attr, s="update")
                             # add multiple values to a labels system field
                             elif len(data) > 1:
                                 for q in data:
-                                    attr = {
-                                        search["id"]:
-                                            [
-                                                {
-                                                    options: q
-                                                }
-                                            ]
-                                    }
+                                    attr = {search["id"]: [{options: q}]}
                                     payload = self.data_load(attr, s="update")
-                                    LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query),
-                                              payload=payload)
+                                    LOGIN.put(
+                                        endpoint.issues(
+                                            issue_key_or_id=key_or_id, query=query
+                                        ),
+                                        payload=payload,
+                                    )
                 else:
                     if options is None:
                         if not isinstance(data, (str, dict)):
                             raise JiraOneErrors("wrong")
                         else:
                             if search["key"] in ["assignee", "reporter"]:
-                                attr = {
-                                    search["id"]:
-                                        {"accountId": data}
-                                }
+                                attr = {search["id"]: {"accountId": data}}
                                 payload = self.data_load(attr)
                             elif search["key"] in ["watches"]:
                                 payload = data
                             elif search["key"] in ["priority"]:
-                                attr = {
-                                    search["id"]: {
-                                        "name": data
-                                    }
-                                }
+                                attr = {search["id"]: {"name": data}}
                                 payload = self.data_load(attr)
                             elif search["key"] in ["parent"]:
-                                attr = {
-                                    search["id"]:
-                                        {"key": data}
-                                }
+                                attr = {search["id"]: {"key": data}}
                                 payload = self.data_load(attr)
                             else:
-                                attr = {
-                                    search["id"]: data
-                                }
+                                attr = {search["id"]: data}
                                 payload = self.data_load(attr)
                     else:
-                        raise JiraOneErrors("wrong" "You cannot post multiple values with these fields.")
-                response = LOGIN.put(endpoint.issues(issue_key_or_id=key_or_id, query=query), payload=payload) \
-                    if search["key"] != "watches" else LOGIN.post(
-                    endpoint.issues(issue_key_or_id=key_or_id, query="watchers", event=True),
-                    payload=payload)
+                        raise JiraOneErrors(
+                            "wrong" "You cannot post multiple values with these fields."
+                        )
+                response = (
+                    LOGIN.put(
+                        endpoint.issues(issue_key_or_id=key_or_id, query=query),
+                        payload=payload,
+                    )
+                    if search["key"] != "watches"
+                    else LOGIN.post(
+                        endpoint.issues(
+                            issue_key_or_id=key_or_id, query="watchers", event=True
+                        ),
+                        payload=payload,
+                    )
+                )
         return response
 
     @staticmethod
@@ -3243,13 +3650,9 @@ class Field(object):
         :return: A dictionary content
         """
         if s is None:
-            payload = {
-                "fields": data
-            }
+            payload = {"fields": data}
         else:
-            payload = {
-                "update": data
-            }
+            payload = {"update": data}
         return payload
 
     @staticmethod
@@ -3292,7 +3695,9 @@ class Field(object):
             elif 1 < len(data) <= 2:
                 m = f"Parent values: {data[0]}(10059)Level 1 values: {data[1]}(10060)"
             elif len(data) > 2:
-                raise JiraOneErrors("value", "Too many values received, expecting 2 only.")
+                raise JiraOneErrors(
+                    "value", "Too many values received, expecting 2 only."
+                )
 
         if m.__len__() > 0:
             k = m.split(")", maxsplit=5)
@@ -3306,10 +3711,12 @@ class Field(object):
             return var
 
     @staticmethod
-    def extract_issue_field_options(key_or_id: Union[str, int] = None,
-                                    search: Dict = None,
-                                    amend: str = None,
-                                    data: Any = Any) -> Any:
+    def extract_issue_field_options(
+        key_or_id: Union[str, int] = None,
+        search: Dict = None,
+        amend: str = None,
+        data: Any = Any,
+    ) -> Any:
         """Get the option from an issue.
 
         Use this method to extract and amend changes to system fields such as
@@ -3362,20 +3769,28 @@ class Field(object):
             determine(value)
         if field_type is True:
             if search["type"] == "option-with-child":
-                raise JiraOneErrors("value", "Use the `field.update_field_data()` method instead to update "
-                                             "values to a cascading select field. Exiting...")
+                raise JiraOneErrors(
+                    "value",
+                    "Use the `field.update_field_data()` method instead to update "
+                    "values to a cascading select field. Exiting...",
+                )
             determine(value)
 
         if amend == "add":
             if data in collect:
-                raise JiraOneErrors("wrong", "Value \"{}\" already exist in list".format(data))
+                raise JiraOneErrors(
+                    "wrong", 'Value "{}" already exist in list'.format(data)
+                )
             else:
                 collect.append(data)
         elif amend == "remove":
             collect.remove(data)
         else:
-            raise JiraOneErrors("value", "The amend option cannot be processed because the value \"{}\" doesn't exist."
-                                         "Please check your input.".format(amend))
+            raise JiraOneErrors(
+                "value",
+                'The amend option cannot be processed because the value "{}" doesn\'t exist.'
+                "Please check your input.".format(amend),
+            )
 
         return collect
 
@@ -3398,8 +3813,10 @@ class Field(object):
             if isinstance(i, AttributeError):
                 return f"<Error: {i} - options: Most probably the field '{name}' cannot be found >"
             if isinstance(i, KeyError):
-                return f"<Error: KeyError on {i} - options: It seems that the field '{name}' " \
-                       f"doesn't exist within {keys}>"
+                return (
+                    f"<Error: KeyError on {i} - options: It seems that the field '{name}' "
+                    f"doesn't exist within {keys}>"
+                )
 
 
 def echo(obj) -> Any:
