@@ -447,7 +447,7 @@ class Projects:
                                     attachment_size = attach[
                                         "size"
                                     ]  # in bytes, need to convert to mb
-                                    mime_type = attach["mimeType"]
+                                    mime_type = attach.get("mimeType")
                                     attachment_url = attach["content"]
 
                                     calc_size = self.byte_converter(attachment_size)
@@ -733,7 +733,7 @@ class Projects:
 
         :param attach: integers to specify the index of the columns
 
-        :param file_folder: a folder or directory where the file
+        :param file_folder: a folder or directory where the file extract exist
 
         :param download_path: a directory where files are stored
 
@@ -2502,7 +2502,7 @@ class Projects:
                     block = get_range
                     # Adding a null value to each empty cell
                     # This way, if we read it, we know we won't
-                    # Get an index error due to invariable length
+                    # Get an index error due to variable length
                     for this_item in my_value:
                         value_ = len(this_item["column_data"])
                         if value_ == 0:
@@ -3178,7 +3178,7 @@ def file_writer(
     :param mode: File mode, available options [“a”, “w”, “a+”, “w+”, “wb”],
                    by default the mode is set to “a+”.
 
-    :param content: string - outputs the file in bytes.
+    :param content: string - outputs the file in bytes if mode is in bytes.
 
     :param kwargs: Additional parameters
 
@@ -3210,7 +3210,8 @@ def file_writer(
     windows = (
         open(file, mode, encoding=encoding, newline="", errors=errors)
         if system() == "Windows" and mark != "file"
-        else open(file, mode)
+        else open(file, mode) if isinstance(content, bytes) else
+        open(file, mode, encoding=encoding, errors=errors)
     )
     if mode:
         with windows as f:
