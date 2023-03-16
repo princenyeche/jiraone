@@ -1,7 +1,7 @@
 # Jira one change log
 
 **Release 0.7.5** - 2023-03-16
-### Update #108
+### Update #109
 * Added a new condition to use encoding argument in `file_writer` in text mode
 * Added examples in documentations
 
