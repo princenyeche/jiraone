@@ -114,8 +114,6 @@ class Credentials(object):
 
         .. code-block:: python
 
-           import os
-
            #  Example for storing the OAuth token
            dumps = LOGIN.save_oauth # this is a property value which contains a dict of tokens in strings
            # As long as a handshake has been allowed with OAuth, the above should exist.
@@ -3047,6 +3045,38 @@ class For(object):
     It calls the __iter__ magic method then the __next__ method
     and raises a StopIteration once it reaches the end of the loop.
     Datatype expected are list, dict, tuple, str, set or int.
+
+    Example 1::
+
+     from jiraone import For
+
+     data = {"work": "home", "house": 2}
+     result = For(data)
+     print(list(result))
+     # [{'work': 'home'}, {'house': 2}]
+
+    accessing dictionary index using private method `__dictionary__`
+
+    Example 2::
+
+      # previous expression
+      print(result.__dictionary__(1))
+      # {'house': 2}
+
+    The above shows how you can call an index of a dictionary object.
+
+    Example 3::
+
+       from jiraone import For
+
+       data = "Summary"
+       result = For(data)
+       print(list(result))
+       # ['S', 'u', 'm', 'm', 'a', 'r', 'y']
+
+    Basically you can get a list of any data structure used. For integers, it
+    creates a range of those numbers
+
     """
 
     def __init__(

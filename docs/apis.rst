@@ -11,7 +11,7 @@ You can access this classmethod by calling ``jiraone.endpoint``.
 
 .. code-block:: python
 
-  from jiraone import LOGIN
+  from jiraone import LOGIN, endpoint
 
   user = "email"
   password = "token"

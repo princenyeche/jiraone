@@ -1,5 +1,11 @@
 # Jira one change log
 
+**Release 0.7.5** - 2023-03-16
+### Update #109
+* Added a new condition to use encoding argument in `file_writer` in text mode
+* Added examples in documentations
+
+
 **Release 0.7.4** - 2023-03-13
 ### Update #107
 * Reformatting entire module to use **black**
