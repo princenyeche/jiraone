@@ -23,6 +23,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    project_urls={"Issues": "https://github.com/princenyeche/jiraone/issues", 
-                  "Github": "https://github.com/princenyeche/jiraone"}
+    project_urls={"Tracker": "https://github.com/princenyeche/jiraone/issues", 
+                  "Source": "https://github.com/princenyeche/jiraone"}
 )
