@@ -99,10 +99,11 @@ def process_executor(func: t.Callable,
     A process executor function
 
     :param func: A function to act upon
-    :param data: A data that the function processes
+    :param data: A data that the function processes (arguments)
     :param workers: Number of threads to use and wait until terminates
     :param timeout: Specifies a timeout to join threads
-    :param kwargs: Additional arguments supplied to Thread class
+    :param kwargs: Additional arguments supplied to Thread class or
+    the keyword arguments to the function
     :return: None
     """
     process = threading.Thread(target=func, args=(data,), kwargs=kwargs)
