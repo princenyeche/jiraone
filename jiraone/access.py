@@ -28,12 +28,12 @@ class Credentials(object):
     auth2_0 = None
 
     def __init__(
-        self,
-        user: str,
-        password: str,
-        url: str = None,
-        oauth: dict = None,
-        session: Any = None,
+            self,
+            user: str,
+            password: str,
+            url: str = None,
+            oauth: dict = None,
+            session: Any = None,
     ) -> None:
         """
         Instantiate the login.
@@ -137,9 +137,9 @@ class Credentials(object):
                 "Excepting a dictionary object got {} instead.".format(type(oauth)),
             )
         if (
-            "client_id" not in oauth
-            or "client_secret" not in oauth
-            or "callback_url" not in oauth
+                "client_id" not in oauth
+                or "client_secret" not in oauth
+                or "callback_url" not in oauth
         ):
             add_log(
                 "You seem to be missing a key or keys in your oauth argument.", "debug"
@@ -256,7 +256,7 @@ class Credentials(object):
             # Check if the supplied url is true to the one which exist in callback_url
             validate_url = validate_uri(redirect_url.split("?")[0].rstrip("/"))
             assert (
-                validate_url is True
+                    validate_url is True
             ), "Your URL seems invalid as it cannot be validated."
             code = redirect_url.split("?")[1].split("&")[1].split("=")[-1]
             body = {
@@ -326,11 +326,11 @@ class Credentials(object):
 
     # produce a session for the script and save the session
     def token_session(
-        self,
-        email: str = None,
-        token: str = None,
-        sess: str = None,
-        _type: str = "Bearer",
+            self,
+            email: str = None,
+            token: str = None,
+            sess: str = None,
+            _type: str = "Bearer",
     ) -> None:
         """
         A session initializer to HTTP request.
@@ -605,7 +605,7 @@ class InitProcess(Credentials):
     dunder method."""
 
     def __init__(
-        self, user=None, password=None, url=None, oauth=None, session=None
+            self, user=None, password=None, url=None, oauth=None, session=None
     ) -> None:
         """
         A Call to the Credential Class.
@@ -790,7 +790,7 @@ class EndPoints:
 
     @classmethod
     def get_all_issue_type_schemes(
-        cls, query: Optional[str] = None, start_at=0, max_results=50
+            cls, query: Optional[str] = None, start_at=0, max_results=50
     ) -> str:
         """Returns a paginated list of issue type schemes.
            Only issue type schemes used in classic projects are returned
@@ -856,7 +856,7 @@ class EndPoints:
 
     @classmethod
     def search_all_notification_schemes(
-        cls, query: Optional[str] = None, start_at=0, max_results=50
+            cls, query: Optional[str] = None, start_at=0, max_results=50
     ) -> str:
         """Returns a paginated list of notification schemes ordered by display name.
 
@@ -888,11 +888,11 @@ class EndPoints:
 
     @classmethod
     def get_field(
-        cls,
-        query: Optional[str] = None,
-        start_at: int = 0,
-        max_results: int = 50,
-        system: str = None,
+            cls,
+            query: Optional[str] = None,
+            start_at: int = 0,
+            max_results: int = 50,
+            system: str = None,
     ) -> str:
         """Returns a paginated list of fields for Classic Jira projects. The list can include:
 
@@ -973,11 +973,11 @@ class EndPoints:
 
     @classmethod
     def issue_attachments(
-        cls,
-        id_or_key: str = None,
-        attach_id: str = None,
-        uri: Optional[str] = None,
-        query: Optional[str] = None,
+            cls,
+            id_or_key: str = None,
+            attach_id: str = None,
+            uri: Optional[str] = None,
+            query: Optional[str] = None,
     ) -> str:
         """Returns the attachment content.
 
@@ -1093,7 +1093,7 @@ class EndPoints:
 
     @classmethod
     def search_for_dashboard(
-        cls, query: Optional[str] = None, start_at: int = 0
+            cls, query: Optional[str] = None, start_at: int = 0
     ) -> str:
         """Returns a paginated list of dashboards. This operation is similar to
 
@@ -1207,19 +1207,291 @@ class EndPoints:
         )
 
     @classmethod
-    def get_project_component(cls, id_or_key) -> str:
+    def get_project_component(cls, ids: str = None,
+                              id_or_key: Union[str, int] = None,
+                              move_to: str = None,
+                              issue_count: bool = False,
+                              pagination: bool = False,
+                              query: str = None
+                              ) -> str:
         """Returns all components in a project. See the Get project components paginated
 
         resource if you want to get a full list of components with pagination.
         The project ID or project key (case-sensitive).
 
+        :param ids: A component id (required for GET, PUT, DEL)
         :param id_or_key: An issue key or id
+        :param move_to: An id of a component to replace
+        :param issue_count: Count issues of a component
+        :param pagination: Allows project component pagination. For pagination
+        argument, you can combine the query argument to get more details.
+        :param query: A query parameter for pagination argument.
+        e.g startAt=0&maxResults=50
+
+        :request POST: Creates a component. Use components to provide containers
+        for issues within a project.
+            :body param:
+               * assignee - Datatype (User) - denoting a user object
+               * assigneeType - Datatype (str)
+               * description - Datatype (str)
+               * id - Datatype(str)
+               * isAssigneeTypeValid - Datatype (bool)
+               * lead - Datatype (User) - denoting a user object
+               * leadAccountId - Datatype (str)
+               * leadUserName - Datatype (str)
+               * name - Datatype (str)
+               * project - Datatype (str)
+               * projectId - Datatype (int)
+               * realAssignee - Datatype (User)
+               * realAssigneeType - Datatype (str)
+               * self - Datatype (str)
+
+            Example::
+                body = {
+                   "assigneeType": "PROJECT_LEAD",
+                   "description": "This is a Jira component",
+                   "isAssigneeTypeValid": false,
+                   "leadAccountId": "5b10a2844cxxxxxx700ede21g",
+                   "name": "Component 1",
+                   "project": "BAC"
+                  }
+
+        :request GET: Returns a component.This operation can be
+        accessed anonymously.
+
+        :request PUT: Updates a component. Any fields included in
+        the request are overwritten
+
+            :body param:
+               * assignee - Datatype (User) - denoting a user object
+               * assigneeType - Datatype (str)
+               * description - Datatype (str)
+               * id - Datatype(str)
+               * isAssigneeTypeValid - Datatype (bool)
+               * lead - Datatype (User) - denoting a user object
+               * leadAccountId - Datatype (str)
+               * leadUserName - Datatype (str)
+               * name - Datatype (str)
+               * project - Datatype (str)
+               * projectId - Datatype (int)
+               * realAssignee - Datatype (User)
+               * realAssigneeType - Datatype (str)
+               * self - Datatype (str)
+
+        :request DELETE: Deletes a component.
+            :query param: moveIssuesTo
+
 
         :return: A string of the url
         """
-        return "{}/rest/api/{}/project/{}/components".format(
-            LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key
-        )
+        if ids is not None:
+            if move_to is not None:
+                return "{}/rest/api/{}/component/{}?moveIssuesTo={}".format(
+                    LOGIN.base_url, "3" if LOGIN.api is True else "latest", ids,
+                    move_to
+                )
+            else:
+                if issue_count is True:
+                    return "{}/rest/api/{}/component/{}/relatedIssueCounts".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", ids
+                    )
+                else:
+                    return "{}/rest/api/{}/component/{}".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", ids
+                    )
+        elif id_or_key is not None:
+            if pagination is True:
+                if query is not None:
+                    return "{}/rest/api/{}/project/{}/component?{}".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key,
+                        query
+                    )
+                else:
+                    return "{}/rest/api/{}/project/{}/component".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key
+                    )
+            else:
+                return "{}/rest/api/{}/project/{}/components".format(
+                    LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key
+                )
+        else:
+            return "{}/rest/api/{}/component".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
+
+    @classmethod
+    def get_project_versions(cls, ids: str = None,
+                             id_or_key: Union[str, int] = None,
+                             move: bool = False,
+                             move_to_issue: str = None,
+                             issue_count: bool = False,
+                             unresolved_count: bool = False,
+                             pagination: bool = False,
+                             swap: bool = False,
+                             query: str = None
+                             ):
+        """Returns all versions in a project. See the Get project version
+        paginated.
+
+        resource if you want to get a full list of versions without pagination.
+
+        :param ids: A version id (required for GET, PUT, POST)
+        :param id_or_key: An issue key or id
+        :param move: Modifies the version's sequence within the project
+        :param move_to_issue: The ID of the version to merge into.
+        :param swap: Deletes a project version. Used with POST method
+        :param issue_count: Count issues of a version. Used with GET method
+        :param unresolved_count: Count of a version's unresolved issues. Used with
+        GET method
+        :param pagination: Allows project version pagination
+        :param query: A query parameter for pagination argument.
+        e.g startAt=0&maxResults=50
+
+        :request POST: Creates a version.
+
+            :body param:
+               * archived - Datatype (bool)
+               * expand - Datatype (str)
+               * description - Datatype (str)
+               * id - Datatype(str)
+               * issueStatusForFixVersion - Datatype (VersionIssueStatus)
+               * moveUnfixIssuesTo - Datatype (str)
+               * name - Datatype (str)
+               * operations - Datatype (list)
+               * overdue - Datatype (bool)
+               * project - Datatype (str)
+               * projectId - Datatype (int)
+               * releaseDate - Datatype (str)
+               * release - Datatype (bool)
+               * startDate - Datatype (str)
+               * userReleaseDate - Datatype (str)
+               * userStateDate - Datatype (str)
+               * self - Datatype (str)
+
+            Example::
+                body = {
+                 "archived": false,
+                 "description": "An excellent version",
+                  "name": "New Version 1",
+                 "projectId": 10000,
+            "releaseDate": "2010-07-06",
+                "released": true
+                }
+
+        :request GET: Returns all versions in a project.This operation can be
+        accessed anonymously. You can either use a return of all version or
+        use the pagination argument for a paginated list of all versions.
+        Project key required
+
+            :query param: Used for query argument in pagination
+             The query argument is a string and can be constructed as
+             below
+             query = "startAt=0&maxResults=50&orderBy=description,name&status=released
+             &expand=issuestatus"
+
+        :request PUT: Updates a version. An id must be supplied
+
+            :body param:
+               * archived - Datatype (bool)
+               * expand - Datatype (str)
+               * description - Datatype (str)
+               * id - Datatype(str)
+               * issueStatusForFixVersion - Datatype (VersionIssueStatus)
+               * moveUnfixIssuesTo - Datatype (str)
+               * name - Datatype (str)
+               * operations - Datatype (list)
+               * overdue - Datatype (bool)
+               * project - Datatype (str)
+               * projectId - Datatype (int)
+               * releaseDate - Datatype (str)
+               * release - Datatype (bool)
+               * startDate - Datatype (str)
+               * userReleaseDate - Datatype (str)
+               * userStateDate - Datatype (str)
+               * self - Datatype (str)
+
+        :request POST: Deletes a version.
+
+            :body param: Used with delete and replace version
+
+                * customFieldReplacementList - Datatype (list)
+                * moveAffectedIssuesTo - Datatype (int)
+                * moveFixedIssuesTo - Datatype (int)
+
+            Example::
+
+              body = {
+                    "customFieldReplacementList": [
+                           {
+                       "customFieldId": 66,
+                      "moveTo": 67
+                          }
+                               ],
+                         "moveAffectedIssuesTo": 97,
+                        "moveFixIssuesTo": 92
+                         }
+
+            :body param: Moves a version
+
+                 * after - Datatype (str)
+                 * position - - Datatype (str)
+
+
+        For pagination argument, you can send
+
+        :return: A string of the url
+        """
+        if ids is not None:
+            if move is True:
+                if move_to_issue is not None:
+                    return "{}/rest/api/{}/version/{}/mergeto/{}".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", ids,
+                        move
+                    )
+                else:
+
+                    return "{}/rest/api/{}/version/{}/move".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", ids
+                    )
+
+            else:
+                if issue_count is True:
+                    return "{}/rest/api/{}/version/{}/relatedIssueCounts".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", ids
+                    )
+                elif unresolved_count is True:
+                    return "{}/rest/api/{}/version/{}/unresolvedIssueCount".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", ids
+                    )
+                else:
+                    if swap is True:
+                        return "{}/rest/api/{}/version/{}/removeAndSwap".format(
+                            LOGIN.base_url, "3" if LOGIN.api is True else "latest", ids
+                        )
+                    else:
+
+                        return "{}/rest/api/{}/version/{}".format(
+                            LOGIN.base_url, "3" if LOGIN.api is True else "latest", ids
+                        )
+        elif id_or_key is not None:
+            if pagination is True:
+                if query is not None:
+                    return "{}/rest/api/{}/project/{}/version?{}".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key,
+                        query
+                    )
+                else:
+                    return "{}/rest/api/{}/project/{}/version".format(
+                        LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key
+                    )
+            else:
+                return "{}/rest/api/{}/project/{}/versions".format(
+                    LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key
+                )
+        else:
+            return "{}/rest/api/{}/version".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
 
     @classmethod
     def get_resolutions(cls) -> str:
@@ -1232,7 +1504,7 @@ class EndPoints:
 
     @classmethod
     def remote_links(
-        cls, key_or_id: Optional[str] = None, link_id: Optional[str] = None
+            cls, key_or_id: Optional[str] = None, link_id: Optional[str] = None
     ) -> str:
         """Returns the remote issue links for an issue.
         When a remote issue link global ID is provided
@@ -1314,21 +1586,21 @@ class EndPoints:
 
     @classmethod
     def work_logs(
-        cls,
-        key_or_id: Optional[str] = None,
-        start_at: int = 0,
-        max_results: int = 1048576,
-        started_after: int = None,
-        started_before: int = None,
-        worklog_id: Optional[str] = None,
-        expand: Optional[str] = None,
-        notify_users: Optional[bool] = True,
-        adjust_estimate: Optional[str] = "auto",
-        new_estimate: Optional[str] = None,
-        increase_by: Optional[str] = None,
-        override_editable_flag: Optional[bool] = False,
-        reduce_by: Optional[str] = None,
-        since: Optional[int] = None,
+            cls,
+            key_or_id: Optional[str] = None,
+            start_at: int = 0,
+            max_results: int = 1048576,
+            started_after: int = None,
+            started_before: int = None,
+            worklog_id: Optional[str] = None,
+            expand: Optional[str] = None,
+            notify_users: Optional[bool] = True,
+            adjust_estimate: Optional[str] = "auto",
+            new_estimate: Optional[str] = None,
+            increase_by: Optional[str] = None,
+            override_editable_flag: Optional[bool] = False,
+            reduce_by: Optional[str] = None,
+            since: Optional[int] = None,
     ) -> str:
         """Returns worklogs for an issue, starting from
         the oldest worklog or from the worklog started on or
@@ -1716,7 +1988,7 @@ class EndPoints:
 
     @classmethod
     def issue_watchers(
-        cls, key_or_id: Optional[str] = None, account_id: Optional[str] = None
+            cls, key_or_id: Optional[str] = None, account_id: Optional[str] = None
     ) -> str:
         """This operation requires the Allow users
         to watch issues option to be ON.
@@ -1791,10 +2063,10 @@ class EndPoints:
 
     @classmethod
     def worklog_properties(
-        cls,
-        key_or_id: Optional[str] = None,
-        worklog_id: Optional[str] = None,
-        property_key: Optional[str] = None,
+            cls,
+            key_or_id: Optional[str] = None,
+            worklog_id: Optional[str] = None,
+            property_key: Optional[str] = None,
     ) -> str:
         """
         Returns the worklog properties of an issue
@@ -1847,11 +2119,11 @@ class EndPoints:
 
     @classmethod
     def project_avatar(
-        cls,
-        key_or_id: Optional = None,
-        avatar_id: Optional = None,
-        method: Optional = "get",
-        **kwargs,
+            cls,
+            key_or_id: Optional = None,
+            avatar_id: Optional = None,
+            method: Optional = "get",
+            **kwargs,
     ) -> str:
         """
         Performs multiple operations to the avatar displayed for a project.
@@ -2020,7 +2292,7 @@ class EndPoints:
 
     @classmethod
     def get_board_by_filter_id(
-        cls, filter_id, start_at: int = 0, max_results: int = 50
+            cls, filter_id, start_at: int = 0, max_results: int = 50
     ) -> str:
         """Returns any boards which use the provided filter id.
 
@@ -2056,7 +2328,7 @@ class EndPoints:
 
     @classmethod
     def get_issues_on_backlog(
-        cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50
+            cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50
     ) -> str:
         """Returns all issues from the board's backlog, for the given board ID.
 
@@ -2094,7 +2366,7 @@ class EndPoints:
 
     @classmethod
     def get_issues_on_board(
-        cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50
+            cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50
     ) -> str:
         """Returns all issues from a board, for a given board ID.
 
@@ -2150,7 +2422,7 @@ class EndPoints:
 
     @classmethod
     def get_projects_on_board(
-        cls, board_id, start_at: int = 0, max_results: int = 50
+            cls, board_id, start_at: int = 0, max_results: int = 50
     ) -> str:
         """Returns all projects that are associated with the board, for the given board ID.
 
@@ -2171,7 +2443,7 @@ class EndPoints:
 
     @classmethod
     def get_all_quick_filters(
-        cls, board_id, start_at: int = 0, max_results: int = 50
+            cls, board_id, start_at: int = 0, max_results: int = 50
     ) -> str:
         """Returns all quick filters from a board, for a given board ID.
 
@@ -2206,7 +2478,7 @@ class EndPoints:
 
     @classmethod
     def get_all_sprints(
-        cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50
+            cls, board_id, query: str = None, start_at: int = 0, max_results: int = 50
     ) -> str:
         """Get all Sprint on a Board.
 
@@ -2319,7 +2591,7 @@ class EndPoints:
 
     @classmethod
     def get_organizations(
-        cls, start: int = 0, limit: int = 50, account_id: str = None
+            cls, start: int = 0, limit: int = 50, account_id: str = None
     ) -> str:
         """This method returns a list of organizations in the Jira Service Management instance.
 
@@ -2466,7 +2738,7 @@ class EndPoints:
 
     @classmethod
     def get_sd_organizations(
-        cls, service_desk_id, start: int = 0, limit: int = 50, account_id: str = None
+            cls, service_desk_id, start: int = 0, limit: int = 50, account_id: str = None
     ) -> str:
         """This method returns a list of all organizations associated with a service desk.
 
@@ -2529,7 +2801,7 @@ class EndPoints:
 
     @classmethod
     def get_customers(
-        cls, service_desk_id, start: int = 0, limit: int = 50, query: str = None
+            cls, service_desk_id, start: int = 0, limit: int = 50, query: str = None
     ) -> str:
         """This method returns a list of the customers on a service desk.
 
@@ -2707,11 +2979,11 @@ class EndPoints:
 
     @classmethod
     def projects(
-        cls,
-        id_or_key,
-        query: Optional[str] = None,
-        uri: Optional[str] = None,
-        enable_undo: Optional[bool] = None,
+            cls,
+            id_or_key,
+            query: Optional[str] = None,
+            uri: Optional[str] = None,
+            enable_undo: Optional[bool] = None,
     ) -> str:
         """Create, delete, update, archive, get status.
 
@@ -2792,11 +3064,11 @@ class EndPoints:
 
     @classmethod
     def issues(
-        cls,
-        issue_key_or_id: Optional[Any] = None,
-        query: Optional[Any] = None,
-        uri: Optional[str] = None,
-        event: bool = False,
+            cls,
+            issue_key_or_id: Optional[Any] = None,
+            query: Optional[Any] = None,
+            uri: Optional[str] = None,
+            event: bool = False,
     ) -> str:
         """Creates issues, delete issues,  bulk create issue, transitions.
 
@@ -2918,13 +3190,13 @@ class EndPoints:
 
     @classmethod
     def comment(
-        cls,
-        query: str = None,
-        key_or_id: str = None,
-        start_at: int = 0,
-        max_results: int = 50,
-        ids: int = None,
-        event: bool = False,
+            cls,
+            query: str = None,
+            key_or_id: str = None,
+            start_at: int = 0,
+            max_results: int = 50,
+            ids: int = None,
+            event: bool = False,
     ) -> str:
         """Create, update, delete or get a comment.
 
@@ -3007,7 +3279,7 @@ class EndPoints:
                 f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment"
                 if event is False
                 else f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment?"
-                f"startAt={start_at}&maxResults={max_results}&{query}"
+                     f"startAt={start_at}&maxResults={max_results}&{query}"
             )
 
         elif key_or_id is not None and ids is not None:
@@ -3021,20 +3293,32 @@ class EndPoints:
 
     @classmethod
     def issue_export(
-        cls, url: Optional[str] = None, start: int = 0, limit: int = 1000
+            cls, query: Optional[str] = None,
+            start: int = 0,
+            limit: int = 1000,
+            fields: str = "all"
     ) -> str:
         """
         Generate an export of Jira issues using a JQL.
 
-        :param url: A JQL of the issues to be exported
+        :param query: A JQL of the issues to be exported
         :param start: A start counter
         :param limit: Max limit allowed for export
+        :param fields: Determine if export is current fields or all fields.
+
+        .. versionchanged:: 0.7.6
+
+        fields - added a keyword argument for transition between current and all
+                fields
+
+        query - Renamed "url" parameter into "query" for better clarity of names.
+
         :return: A string of the export URL
         """
         return (
-            "{}/sr/jira.issueviews:searchrequest-csv-all-fields/temp/"
+            "{}/sr/jira.issueviews:searchrequest-csv-{}-fields/temp/"
             "SearchRequest.csv?jqlQuery={}&tempMax={}&pager/start={}".format(
-                LOGIN.base_url, url, limit, start
+                LOGIN.base_url, fields, query, limit, start
             )
         )
 
@@ -3080,7 +3364,7 @@ class For(object):
     """
 
     def __init__(
-        self, data: Union[list, tuple, dict, set, str, int], limit: int = 0
+            self, data: Union[list, tuple, dict, set, str, int], limit: int = 0
     ) -> None:
         self.data = data
         if isinstance(self.data, int):
@@ -3239,6 +3523,7 @@ class Field(object):
                                     "key": a["key"],
                                     "searchable": a["searchable"],
                                     "type": a["schema"]["type"],
+                                    "system": a["schema"].get("system"),
                                 }
                             return {
                                 "name": a["name"],
@@ -3260,13 +3545,13 @@ class Field(object):
                             }
 
     def update_field_data(
-        self,
-        data: Any = None,
-        find_field: str = None,
-        field_type: str = "custom",
-        key_or_id: Union[str, int] = None,
-        show: bool = True,
-        **kwargs,
+            self,
+            data: Any = None,
+            find_field: str = None,
+            field_type: str = "custom",
+            key_or_id: Union[str, int] = None,
+            show: bool = True,
+            **kwargs,
     ) -> Any:
         """Field works for.
 
@@ -3457,7 +3742,7 @@ class Field(object):
                                 attr = {search["id"]: data}
                                 payload = self.data_load(attr)
                     elif (
-                        options == "add" or options == "remove"
+                            options == "add" or options == "remove"
                     ):  # update the field with the desired value
                         if not isinstance(data, list):
                             raise JiraOneErrors("wrong", "Expecting a list of values")
@@ -3612,7 +3897,7 @@ class Field(object):
                             attr = {search["id"]: data}
                             payload = self.data_load(attr)
                     elif (
-                        options == "add" or options == "remove"
+                            options == "add" or options == "remove"
                     ):  # update the field with the desired value
                         if not isinstance(data, list):
                             raise JiraOneErrors("wrong")
@@ -3742,10 +4027,10 @@ class Field(object):
 
     @staticmethod
     def extract_issue_field_options(
-        key_or_id: Union[str, int] = None,
-        search: Dict = None,
-        amend: str = None,
-        data: Any = Any,
+            key_or_id: Union[str, int] = None,
+            search: Dict = None,
+            amend: str = None,
+            data: Any = Any,
     ) -> Any:
         """Get the option from an issue.
 
