@@ -5,6 +5,7 @@ This module provides any utility classes or functions that helps to
 provide additional ability to jiraone.
 """
 import typing as t
+import threading
 
 
 class DotNotation(dict):
@@ -86,3 +87,31 @@ class DotNotation(dict):
                 value[key] = DotNotation(values)
             elif isinstance(values, list):
                 self.__expose_list__(values)
+
+
+def process_executor(func: t.Callable,
+                     *,
+                     data: t.Iterable = None,
+                     workers: int = 4,
+                     timeout: t.Union[float, int] = 2.5,
+                     **kwargs) -> None:
+    """
+    A process executor function
+
+    :param func: A function to act upon
+    :param data: A data that the function processes
+    :param workers: Number of threads to use and wait until terminates
+    :param timeout: Specifies a timeout to join threads
+    :param kwargs: Additional arguments supplied to Thread class
+    :return: None
+    """
+    process = threading.Thread(target=func, args=(data,), kwargs=kwargs)
+    process.start()
+    if threading.active_count() > workers:
+        process.join(timeout=timeout)
+
+
+# Regular expressions
+CUSTOM_FIELD_REGEX = r"(Custom field).+([\(]{1}.+?[\)]{1})$"
+CUSTOM_FIELD_REGEX_PLUS = r"(Custom field).+([\(]{1}.+?[\)]{1})\w+"
+ISSUE_KEY_REGEX = r"(?:\s|^)([A-Za-z0-9]+-[0-9]+)(?=\s|$)"
