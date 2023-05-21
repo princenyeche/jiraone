@@ -115,3 +115,13 @@ def process_executor(func: t.Callable,
 # Regular expressions
 CUSTOM_FIELD_REGEX = r"(Custom field).+([\(]{1}.+?[\)]{1})$"
 ISSUE_KEY_REGEX = r"(?:\s|^)([A-Za-z0-9]+-[0-9]+)(?=\s|$)"
+
+# date utility
+dd_MM_YYYY_hh_MM_AM_PM = "%d/%m/%Y %I:%M %p"  # dd/MM/YYYY h:mm: AM
+dd_MMM_yy_hh_MM_AM_PM = "%d/%b/%y %I:%M %p"  # dd/MMM/yy h:mm: AM
+dd_MMM_YYYY_hh_MM_SS_AM_PM = "%d-%b-%Y %I:%M:%S %p"  # dd-MMM-YYYY h:mm:ss AM
+MM_dd_yy_hh_MM_AM_PM = "%m-%d-%y %I:%M %p"  # MM-dd-yy h:mm AM
+YYYY_MM_dd_hh_MM_SS_AM_PM = "%Y-%m-%d %I:%M:%S %p"  # YYYY-MM-dd h:mm:ss AM
+dd_MM_YYYY_hh_MM_SS_AM_PM = "%d/%m/%Y %I:%M:%S %p"  # dd-MM-YYYY h:mm:ss AM
+YYYY_MM_dd_HH_MM_SS_MS_TZ = "%Y-%m-%dT%H:%M:%S.%f%z"  # YYYY-MM-ddTHH:mm:ss.s+0
+YYYY_MM_dd_HH_MM_SS_MS = "%Y-%m-%d %H:%M:%S.%f"  # YYYY-MM-ddTHH:mm:ss.s
