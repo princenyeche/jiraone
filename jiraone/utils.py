@@ -119,8 +119,7 @@ ISSUE_KEY_REGEX = r"(?:\s|^)([A-Za-z0-9]+-[0-9]+)(?=\s|$)"
 
 
 # date utility
-@enum.unique
-class DateFormat(enum.StrEnum):
+class DateFormat(enum.Enum):
     """
      A representation of Python's string directive for
      datetime formats
@@ -140,3 +139,4 @@ class DateFormat(enum.StrEnum):
     dd_MM_YYYY_space_hh_MM_AM_PM = "%d/%m/%Y %I:%M %p"  # dd/MM/YYYY h:mm AM
     MMM_dd_YYYY_hh_MM_SS_AM_PM = "%b %d, %Y %I:%M:%S %p"  # MMM dd, YYYY h:mm:ss AM
     MM_dd_YYYY_hh_MM_AM_PM = "%m/%d/%Y %I:%M %p"  # MM/dd/YYYY h:mm AM
+    dd_MMM_yy = "%d/%b/%y"  # dd/MMM/yy
