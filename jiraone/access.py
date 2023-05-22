@@ -654,17 +654,25 @@ class EndPoints:
         )
 
     @classmethod
-    def search_users(cls, query: int = 0, max_result: int = 50) -> str:
+    def search_users(cls, start_at: int = 0, max_result: int = 50,
+                     default: bool = False) -> str:
         """Search multiple users and retrieve the data
 
-        :param query: An integer record row
+        :param start_at: An integer record row
 
         :param max_result: An integer of max capacity
 
+        :param default: Changes context between default user search
+        and all search
+
         :return: A string of the url
         """
+        if default is True:
+            return "{}/rest/api/{}/users?startAt={}&maxResults={}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", start_at, max_result
+            )
         return "{}/rest/api/{}/users/search?startAt={}&maxResults={}".format(
-            LOGIN.base_url, "3" if LOGIN.api is True else "latest", query, max_result
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", start_at, max_result
         )
 
     @classmethod
@@ -1581,6 +1589,69 @@ class EndPoints:
             )
         else:
             return "{}/rest/api/{}/issueLink".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
+            )
+
+    @classmethod
+    def issue_link_types(cls, link_type_id: Optional[str] = None,
+                         ) -> str:
+        """
+        Returns a list of all issue link types.
+
+        :request GET: To use this operation, the site must
+        have issue linking enabled.
+
+        :request GET: Get issue link types, this requires the
+        linked type id.
+
+        :request POST: Creates an issue link type. Use this
+        operation to create descriptions of the reasons
+        why issues are linked.
+
+           :body param:
+               * id - Datatype (str)
+               * inward - Datatype (str)
+               * name - Datatype (str)
+               * outward - Datatype (str)
+               * self - Datatype (str)
+
+           Example::
+               payload = {
+                       "inward": "Duplicated by",
+                       "name": "Duplicate",
+                       "outward": "Duplicates"
+                        }
+
+        :request DELETE: Deletes an issue link type.
+        This requires the linked type id
+
+        :request PUT: Updates an issue link type.
+        This requires the linked type id
+
+             :body param:
+               * id - Datatype (str)
+               * inward - Datatype (str)
+               * name - Datatype (str)
+               * outward - Datatype (str)
+               * self - Datatype (str)
+
+           Example::
+               payload = {
+                       "inward": "Duplicated by",
+                       "name": "Duplicate",
+                       "outward": "Duplicates"
+                        }
+
+        :param link_type_id: The link type id
+
+        :return:
+        """
+        if link_type_id:
+            return "{}/rest/api/{}/issueLinkType/{}".format(
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", link_type_id
+            )
+        else:
+            return "{}/rest/api/{}/issueLinkType".format(
                 LOGIN.base_url, "3" if LOGIN.api is True else "latest"
             )
 
