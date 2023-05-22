@@ -115,6 +115,8 @@ def process_executor(func: t.Callable,
 # Regular expressions
 CUSTOM_FIELD_REGEX = r"(Custom field).+([\(]{1}.+?[\)]{1})$"
 ISSUE_KEY_REGEX = r"(?:\s|^)([A-Za-z0-9]+-[0-9]+)(?=\s|$)"
+INWARD_ISSUE_LINK = r"(Inward issue link).+([\(]{1}.+?[\)]{1})$"
+OUTWARD_ISSUE_LINK = r"(Outward issue link).+([\(]{1}.+?[\)]{1})$"
 
 
 # date utility
