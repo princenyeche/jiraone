@@ -6,7 +6,6 @@ provide additional ability to jiraone.
 """
 import typing as t
 import threading
-import enum
 
 
 class DotNotation(dict):
@@ -119,7 +118,7 @@ ISSUE_KEY_REGEX = r"(?:\s|^)([A-Za-z0-9]+-[0-9]+)(?=\s|$)"
 
 
 # date utility
-class DateFormat(enum.Enum):
+class DateFormat:
     """
      A representation of Python's string directive for
      datetime formats
