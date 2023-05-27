@@ -2056,7 +2056,8 @@ class Projects:
 
                   * allow_media: Datatype (bool) Ability to add a user
                   credential to each attachment uri of the "Attachment" column
-                  of a CSV export
+                  of a CSV export. This helps to easily append credentials to 
+                  all rows of the CSV export with your current credentials.
 
                   * sub_tasks: Datatype (list) Ability to identify all the
                   sub-tasks issues present in a JSON export. Useful when you
@@ -3726,10 +3727,10 @@ class Projects:
                 first_run = True
                 exclude_list.append(exclude_data)
 
-            print("Excluding declared field columns into the CSV file")
+            print("Reconstructing file headers")
             file_writer(folder, temp_file, data=[file_headers],
                         mark="many", mode="w+")
-            print("Reconstructing file headers")
+            print("Excluding declared field columns into the CSV file")
             file_writer(folder, temp_file, data=exclude_list,
                         mark="many")
 
@@ -3762,10 +3763,10 @@ class Projects:
                 first_run = True
                 include_list.append(include_data)
 
-            print("Including declared field columns into the CSV file")
+            print("Reconstructing file headers")
             file_writer(folder, temp_file, data=[file_headers],
                         mark="many", mode="w+")
-            print("Reconstructing file headers")
+            print("Including declared field columns into the CSV file")
             file_writer(folder, temp_file, data=include_list,
                         mark="many")
 
@@ -4932,6 +4933,39 @@ class Projects:
             for file in config["exports"]:
                 path = path_builder(folder, file)
                 os.remove(path)
+
+        if allow_media is True:
+            data_frame(files_=temp_file)
+            attach_read = file_reader(folder,
+                                      temp_file,
+                                      skip=True)
+
+            _change_flag_ = False
+            for _attach_column_ in attach_read:
+                for allow_row, attach_header in zip(_attach_column_,
+                                                    config["headers"]):
+                    if attach_header.get("column_name") == "Attachment":
+                        if allow_row is None or allow_row == "":
+                            pass
+                        else:
+                            _change_flag_ = True
+                            _get_items_ = allow_row.split(";")
+                            get_attachment = _get_items_.pop(-1)
+                            get_parse_value = parse_media(get_attachment)
+                            _get_items_.append(get_parse_value)
+                            amend_attachment = ";".join(_get_items_)
+                            _attach_column_[
+                                attach_header.get("column_index")
+                            ] = amend_attachment
+
+            _file_headers_ = [x.get("column_name") for x in config["headers"]]
+            print("Reconstructing file headers")
+            file_writer(folder, temp_file, data=[_file_headers_],
+                        mark="many", mode="w+")
+            print("Applying updated data into the CSV file") if _change_flag_ \
+                   is True else print("No change for attachment done to CSV file")
+            file_writer(folder, temp_file, data=attach_read,
+                        mark="many")
 
         if exclude_fields:
             field_exclude()
