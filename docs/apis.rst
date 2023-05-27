@@ -223,3 +223,31 @@ Examples below
 .. note::
 
    When loading a list of dictionary, please refer to the second example as shown on the above code. The dictionary needs to be assigned to a key (any naming convention will do) to get the value. Failure will result in an error.
+   
+.. autoclass:: DateFormat
+    :members:
+
+The ``DateFormat`` class provides the ability to construct datetime string directive which is used in Python's datetime class.
+
+.. code-block:: python
+    
+    from jiraone.utils import DateFormat
+    
+    my_date = DateFormat.dd_MM_YYYY_hh_MM_AM_PM
+
+.. autofunction:: process_executor
+
+The ``process_executor`` helps to generate multiple threads used to make HTTP request. To properly use this function,
+you should pass a function which has an argument in a ``for`` loop to begin the iteration. You can increase the number of
+threads to start with by increasing the ``workers`` argument
+
+.. code-block:: python
+
+    from jiraone.utils import process_executor
+    
+    # a function called extract_issues(data)
+    # list_items a list of data
+    for items in list_items
+        process_executor(extract_issues, data=items)
+        
+ 
