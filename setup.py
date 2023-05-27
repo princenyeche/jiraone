@@ -12,7 +12,9 @@ setuptools.setup(
                 "for performing other Jira queries.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/princenyeche/jiraone",
+    url="https://jiraone.readthedocs.io",
+    license="MIT License",
+    keywords="jiraone,Atlassian API,Jira API",
     packages=setuptools.find_packages(),
     install_requires=['requests'],
     classifiers=[
@@ -21,4 +23,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
+    project_urls={"Tracker": "https://github.com/princenyeche/jiraone/issues", 
+                  "Source": "https://github.com/princenyeche/jiraone"}
 )
