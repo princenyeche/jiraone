@@ -70,7 +70,7 @@ You can access this class and make updates to Jira fields.
   
   # previous login statement
   issue = "T6-75"
-  fields = "Multiple files" # a multiselect custom field
+  fields = "Multiple files" # a multi-select custom field
   case_value = ["COM Row 1", "Thanos"]
   for value in case_value:
       c = field.update_field_data(data=value, find_field=fields, key_or_id=issue, options="add", show=False)
@@ -95,7 +95,7 @@ For
 manage
 ----------
 
-The ``manage`` class is a alias to ``UserManagement`` class of the ``management`` module. It focuses primarily on
+The ``manage`` class is an alias to the ``UserManagement`` class of the ``management`` module. It focuses primarily on
 user and organization management. The authentication is different as it uses a bearer token.
 
 .. code-block:: python
@@ -156,7 +156,7 @@ USER
 Module
 ---------
 
-The ``module`` module contains functions that are specific towards certain task. Each function is designed to be as straightforward
+The ``module`` module contains functions that are specific towards a certain task. Each function is designed to be as straightforward
 as possible, so you can easily make calls to Jira's endpoint and get the required data.
 
 .. code-block:: python
@@ -199,7 +199,7 @@ Utils
 .. autoclass:: DotNotation
    :members:
 
-This ``DotNotation`` class provides the ability of using a dot notation on any dict object. Making it easier when working with dictionary objects.
+This ``DotNotation`` class provides the ability to use a dot notation on any dict object. Making it easier when working with dictionary objects.
 Examples below
 
 .. code-block:: python
@@ -222,4 +222,32 @@ Examples below
     
 .. note::
 
-   When loading a list of dictionary, please refer to the second example as shown on the above code. The dictionary needs to be assigned to a key (any naming convention will do) to get the value. Failure will result in an error.
+   When loading a list of dictionaries, please refer to the second example as shown on the above code. The dictionary needs to be assigned to a key (any naming convention will do) to get the value. Failure will result in an error.
+   
+.. autoclass:: DateFormat
+    :members:
+
+The ``DateFormat`` class provides the ability to construct datetime string directive which is used in Python's datetime class.
+
+.. code-block:: python
+    
+    from jiraone.utils import DateFormat
+    
+    my_date = DateFormat.dd_MM_YYYY_hh_MM_AM_PM
+
+.. autofunction:: process_executor
+
+The ``process_executor`` helps to generate multiple threads used to make HTTP requests. To properly use this function,
+you should pass a function which has an argument in a ``for`` loop to begin the iteration. You can increase the number of
+threads to start with by increasing the ``workers`` argument
+
+.. code-block:: python
+
+    from jiraone.utils import process_executor
+    
+    # a function called extract_issues(data)
+    # list_items a list of data
+    for items in list_items
+        process_executor(extract_issues, data=items)
+        
+ 

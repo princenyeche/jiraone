@@ -1,20 +1,24 @@
 # Jira one change log
 
+**Release 0.7.7** - 2023-06-14
+### Minor update #111
+* Added minor updates to the `export_issues` method. Corrected some few grammatical errors
+
 **Release 0.7.6** - 2023-05-27
 ### Minor update #110
-* Added multiple arguments to `issue_export` method
-  * It is now possible to perform an export in JSON format
+* Added multiple arguments to the `issue_export` method
+  * It is now possible to perform export in JSON format
   * Added field exclusion and inclusion in CSV format export
 * Added new methods `get_project_versions` and `issue_link_types` to access.py module
 * Added a `process_executor` function, regular express constants and a `DateFormat` class to 
 the utils module of jiraone.
-* Added examples in documentations
+* Added examples in the documentation
 
 
 **Release 0.7.5** - 2023-03-16
 ### Update #109
-* Added a new condition to use encoding argument in `file_writer` in text mode
-* Added examples in documentations
+* Added a new condition to using encoding argument in `file_writer` in text mode
+* Added examples in documentation
 
 
 **Release 0.7.4** - 2023-03-13

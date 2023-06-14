@@ -2,10 +2,11 @@
 
 ## Supported Versions
 
-Below shows the list of supported version for the jiraone library
+Below shows the list of supported versions for the jiraone library
 
 | Version | Supported          |
 |---------|--------------------|
+| 0.7.7   | :white_check_mark: |
 | 0.7.6   | :white_check_mark: |
 | 0.7.5   | :white_check_mark: |
 | 0.7.4   | :white_check_mark: |
