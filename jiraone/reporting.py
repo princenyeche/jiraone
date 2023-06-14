@@ -1832,11 +1832,11 @@ class Projects:
 
         :param folder: The name of a folder
 
-        :param jql: A valid JQL (required) if ``merge_file`` args is not
+        :param jql: A valid JQL (required) if ``merge_files`` args is not
         provided
 
         :param page: An iterative counter for page index denoting the
-        pagination for JQl search
+        pagination for JQL search
 
         :param kwargs: Additional arguments that can be supplied.
 
@@ -1856,7 +1856,7 @@ class Projects:
                   form that can be used as authentication. This needs to
                   be set for the ``fields`` argument to work properly.
 
-                  When used as a string, just supply the instance baseURL
+                  When used as a string, just supply the instance base URL
                   as string only.
 
                   Example::
@@ -1894,8 +1894,9 @@ class Projects:
                   either CSV or JSON format. e.g. options are "csv" or "json"
 
                   Example::
-                    # previous statements
-                    PROJECT.export_issues(jql=jql, extension="csv")
+
+                     # previous statements
+                     PROJECT.export_issues(jql=jql, extension="csv")
 
                   * field_type: Datatype (str) Ability to define if all fields
                   or default fields are exported. e.g. options are "all" or
@@ -1905,9 +1906,10 @@ class Projects:
                   defined on the UI.
 
                   Example::
-                    # previous statements
-                    my_current_field = "current"
-                    PROJECT.export_issues(jql=jql, field_type=my_current_field)
+
+                     # previous statements
+                     my_current_field = "current"
+                     PROJECT.export_issues(jql=jql, field_type=my_current_field)
 
                   * exclude_fields: Datatype (list) Ability to exclude certain
                   fields from the exported file. This field must be an exact
@@ -1915,9 +1917,10 @@ class Projects:
                   when ``include_fields`` args is not empty
 
                   Example::
-                    # previous statements
-                    fields = ["Labels", "Comment", "SupportTeam"]
-                    PROJECT.export_issues(jql=jql, exclude_fields=fields)
+
+                     # previous statements
+                     fields = ["Labels", "Comment", "SupportTeam"]
+                     PROJECT.export_issues(jql=jql, exclude_fields=fields)
 
                   * include_fields: Datatype (list) Ability to include certain
                   fields from the exported file. This field must be an exact string
@@ -1925,18 +1928,21 @@ class Projects:
                   ``exclude_fields`` is not empty.
 
                   Example::
-                    # previous statements
-                    fields = ["Summary", "Comment", "SupportTeam"]
-                    PROJECT.export_issues(jql=jql, include_fields=fields)
+
+                     # previous statements
+                     fields = ["Summary", "Comment", "SupportTeam"]
+                     PROJECT.export_issues(jql=jql, include_fields=fields)
 
                   * workers: Datatype (int) Ability to use process workers for
                   faster iterations. This helps during http request to
                   endpoints. By default, 4 threads are put into motion
 
                   Example::
+
                      # previous statement
                      workers = 20
-                     PROJECT.export_issues(jql=jql, workers=workers)
+                     PROJECT.export_issues(jql=jql, extension="json",
+                     workers=workers)
 
                   * is_sd_internal: Datatype (bool) Ability to add additional
                   properties to a JSON comment export for JSM projects.
@@ -1945,10 +1951,11 @@ class Projects:
                   tailored for JSM projects.
 
                   Example::
-                    # Given the below is a CSV row of a comment field
-                    "25/Apr/22 11:15 AM;
-                    557058:f58131cb-b67d-43c7-b30d-6b58d40bd077;
-                    Hello this work;true"
+
+                     # Given the below is a CSV row of a comment field
+                     "25/Apr/22 11:15 AM;
+                     557058:f58131cb-b67d-43c7-b30d-6b58d40bd077;
+                     Hello this work;true"
 
                   The last value there "true" will determine the visibility of
                    a comment on a JSM project import.
@@ -1958,6 +1965,7 @@ class Projects:
                    You can supply the filename in a list e.g.
 
                   Example::
+
                      # previous statements
                      my_files = ["file1.csv", "file2.csv", file3.csv"]
                      PROJECT.export_issues(merge_files=my_files)
@@ -1984,6 +1992,7 @@ class Projects:
                   history
 
                   Example::
+
                      # previous statements
                      props = ["users", "links"]
                      jql = "project in (ABC, IT)"
@@ -1995,6 +2004,7 @@ class Projects:
                   useful when ``merge_files`` argument is used alone.
 
                   Example::
+
                      # previous statements
                      my_files = ["file1.csv", "file2.csv", file3.csv"]
                      PROJECT.export_issues(merge_files=my_files,
@@ -2056,7 +2066,7 @@ class Projects:
 
                   * allow_media: Datatype (bool) Ability to add a user
                   credential to each attachment uri of the "Attachment" column
-                  of a CSV export. This helps to easily append credentials to 
+                  of a CSV export. This helps to easily append credentials to
                   all rows of the CSV export with your current credentials.
 
                   * sub_tasks: Datatype (list) Ability to identify all the
@@ -2825,9 +2835,6 @@ class Projects:
 
         config["is_valid"] = False
 
-        # Get an index of all columns within the first file
-        # Then use it across other files in the list
-
         def parse_media(uri: str) -> str:
             """
             Parse a URL string to include the
@@ -2838,9 +2845,12 @@ class Projects:
             """
             if uri.startswith("http") or uri.startswith("https"):
                 rem_http = uri.split("://")
-                user_id = LOGIN.user.split("@")
+                user_id = LOGIN.user.split("@") if LOGIN.api is True else \
+                    LOGIN.user
                 auth_uri = f"{rem_http[0]}://{user_id[0]}%40{user_id[1]}:" \
-                           f"{LOGIN.password}@{rem_http[-1]}"
+                           f"{LOGIN.password}@{rem_http[-1]}" if LOGIN.api is True \
+                    else f"{rem_http[0]}://{user_id[0]}:" \
+                         f"{LOGIN.password}@{rem_http[-1]}"
                 return auth_uri
 
         def get_pkey_index(pkey: list, key: str,
@@ -2869,6 +2879,8 @@ class Projects:
                         return config[key_search[0]][key_search[1]]
             return config[key_search[0]][key_search[1]]
 
+        # Get an index of all columns within the first file
+        # Then use it across other files in the list
         def data_frame(files_: str = None,
                        activate: bool = True,
                        poll: list = None, **kwargs) -> None:
@@ -4071,7 +4083,7 @@ class Projects:
                     elif len(_user_value_list) > 1:
                         # Since we're finding these users by display name
                         # if multiple users with the same name exist, we want to
-                        # take a calculated guess
+                        # take a calculated guess but this is not accurate as its probability
                         guess = random.choices(
                             _user_value_list, [float(_user_value_list.index(
                                 each_user) + 0.5) for each_user in _user_value_list])
@@ -4156,7 +4168,7 @@ class Projects:
 
                     :return: None
                     """
-                    nonlocal my_index, do_once
+                    nonlocal my_index
 
                     def start_process() -> None:
                         """
@@ -4164,7 +4176,7 @@ class Projects:
 
                         :return: None
                         """
-                        nonlocal my_index, do_once
+                        nonlocal my_index
                         json_customfield_template = {"customFieldValues": []}
                         json_customfield_sub_template = {"value": []}
                         json_attachment_template = {"attachments": []}
@@ -4200,7 +4212,7 @@ class Projects:
                             """
                             Parse time value into ISO_8601 durations
                             source: https://en.wikipedia.org/wiki/ISO_8601#Durations
-                            Using seconds for every tiem value.
+                            Using seconds for every time value.
 
                             :param time_value: A time estimate value
                             :return: str
@@ -4586,7 +4598,9 @@ class Projects:
                                                 "sourceId": bundle[config["issuekey_data"]["col_name_index"]]
                                             }
                                         )
-                                elif obj_name.get("column_name").startswith("Watchers Id"):
+                                elif obj_name.get("column_name").startswith("Watchers Id" if
+                                                                            LOGIN.api is True else
+                                                                            "Watchers"):
                                     if obj_value == "" or obj_value is None:
                                         pass
                                     else:
@@ -4692,7 +4706,8 @@ class Projects:
                         issue_data["projectDescription"] = issue_data.get(
                             "Project description")
                         issue_data["projectKey"] = issue_data.get("Project key")
-                        issue_data["projectLead"] = issue_data.get("Project lead id")
+                        issue_data["projectLead"] = issue_data.get("Project lead id" if LOGIN.api is True
+                                                                   else "Project lead")
                         issue_data["projectName"] = issue_data.get("Project name")
                         issue_data["projectType"] = issue_data.get("Project type")
                         issue_data["projectUrl"] = issue_data.get("Project url")
@@ -4749,7 +4764,7 @@ class Projects:
 
                     start_process()
 
-                my_index, do_once = -1, False
+                my_index = -1
                 # Begin the JSON conversion process
                 print("JSON conversion started.")
                 try:
@@ -4790,21 +4805,34 @@ class Projects:
                                                skip=True)
                     history_data = []
                     for _history_ in read_history:
-                        name_mapper = {
-                            "issueKey": _history_[0],
-                            "summary": _history_[1],
-                            "author": _history_[2],
-                            "created": _history_[3],
-                            "fieldType": _history_[4],
-                            "field": _history_[5],
-                            "fieldId": _history_[6],
-                            "from_": _history_[7],
-                            "fromString": _history_[8],
-                            "to_": _history_[9],
-                            "toString": _history_[10],
-                            "fromAccountId": _history_[11],
-                            "toAccountId": _history_[12]
-                        }
+                        name_mapper = ({
+                                           "issueKey": _history_[0],
+                                           "summary": _history_[1],
+                                           "author": _history_[2],
+                                           "created": _history_[3],
+                                           "fieldType": _history_[4],
+                                           "field": _history_[5],
+                                           "fieldId": _history_[6],
+                                           "from_": _history_[7],
+                                           "fromString": _history_[8],
+                                           "to_": _history_[9],
+                                           "toString": _history_[10],
+                                           "fromAccountId": _history_[11],
+                                           "toAccountId": _history_[12]
+                                       } if LOGIN.api is True else
+                                       {
+                                           "issueKey": _history_[0],
+                                           "summary": _history_[1],
+                                           "author": _history_[2],
+                                           "created": _history_[3],
+                                           "fieldType": _history_[4],
+                                           "field": _history_[5],
+                                           "fieldId": _history_[6],
+                                           "from_": _history_[7],
+                                           "fromString": _history_[8],
+                                           "to_": _history_[9],
+                                           "toString": _history_[10]
+                                       })
                         mapped = DotNotation(name_mapper)
                         _history_data_ = {
                             "author": name_to_user_id(
@@ -4963,7 +4991,8 @@ class Projects:
             file_writer(folder, temp_file, data=[_file_headers_],
                         mark="many", mode="w+")
             print("Applying updated data into the CSV file") if _change_flag_ \
-                   is True else print("No change for attachment done to CSV file")
+                                                                is True else print(
+                "No change for attachment done to CSV file")
             file_writer(folder, temp_file, data=attach_read,
                         mark="many")
 
