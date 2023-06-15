@@ -498,7 +498,7 @@ class UserManagement:
         """
         many = []
         total = (
-            -1 if types == "org" or types == "domain" else data.json()["meta"]["total"]
+            -1 if types == "org" or types == "domain" else data.json()["meta"]["page_size"]
         )
         count = 0
         for ids in data.json()["data"]:
