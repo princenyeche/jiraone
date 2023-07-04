@@ -2194,9 +2194,45 @@ class Projects:
         import random
         from time import sleep
 
+        def validate_on_error(name_field: Any = None,
+                              data_type: tuple = None,
+                              err_message: str = None) -> None:
+            """
+            Validate an argument and prepares an error response
+
+            :param name_field: An argument field name
+
+            :param data_type: The data type of the argument, it expects
+            a datatype object, the name of the argument and a message
+            which explains the expected object of the argument
+
+            :param err_message: Expected error message
+
+            :return: None
+            """
+            if not isinstance(name_field, data_type[0]):
+                add_log(
+                    'The `{}` argument seems to be using the wrong '
+                    'data structure "{}" as value, '
+                    'expecting {}.'.format(data_type[1],
+                                           name_field, data_type[2]),
+                    "error",
+                )
+                raise JiraOneErrors(
+                    "wrong",
+                    "The `{}` argument should be "
+                    "{}."
+                    "Detected {} instead.".format(data_type[1], err_message,
+                                                  type(name_field)),
+                )
+
         check_auth: bool = (
             kwargs["check_auth"] if "check_auth" in kwargs else True
         )
+        validate_on_error(check_auth, (bool, "check_auth",
+                                       "a boolean to denote true or false"),
+                          "a boolean to denote true or "
+                          "false to check the initial authentication")
 
         if check_auth is True:
             reason = LOGIN.get(endpoint.myself())
@@ -2336,38 +2372,6 @@ class Projects:
         )
         # stores most configuration data using a dictionary
         config = {}
-
-        def validate_on_error(name_field: Any = None,
-                              data_type: tuple = None,
-                              err_message: str = None) -> None:
-            """
-            Validate an argument and prepares an error response
-
-            :param name_field: An argument field name
-
-            :param data_type: The data type of the argument, it expects
-            a datatype object, the name of the argument and a message
-            which explains the expected object of the argument
-
-            :param err_message: Expected error message
-
-            :return: None
-            """
-            if not isinstance(name_field, data_type[0]):
-                add_log(
-                    'The `{}` argument seems to be using the wrong '
-                    'data structure "{}" as value, '
-                    'expecting {}.'.format(data_type[1],
-                                           name_field, data_type[2]),
-                    "error",
-                )
-                raise JiraOneErrors(
-                    "wrong",
-                    "The `{}` argument should be "
-                    "{}."
-                    "Detected {} instead.".format(data_type[1], err_message,
-                                                  type(name_field)),
-                )
 
         # Checking that the arguments are passing correct data structure.
         def field_value_check(
