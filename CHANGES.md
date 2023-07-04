@@ -1,5 +1,10 @@
 # Jira one change log
 
+**Release 0.7.8** - 2023-07-04
+### Minor update #112
+* Fix to management API for organization management.
+
+
 **Release 0.7.7** - 2023-06-14
 ### Minor update #111
 * Added minor updates to the `export_issues` method. Corrected some few grammatical errors
