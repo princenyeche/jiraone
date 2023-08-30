@@ -1,5 +1,5 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/86f1594e0ac3406aa9609c4cd7c70642)](https://www.codacy.com/gh/princenyeche/jiraone/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=princenyeche/jiraone&amp;utm_campaign=Badge_Grade)
-[![Downloads](https://pepy.tech/badge/jiraone)](https://pepy.tech/project/jiraone)
+[![Downloads](https://static.pepy.tech/badge/jiraone)](https://pepy.tech/project/jiraone)
 [![PyPI version](https://badge.fury.io/py/jiraone.svg)](https://badge.fury.io/py/jiraone)
 ![PyPI - License](https://img.shields.io/pypi/l/jiraone)
 ![Build Doc](https://readthedocs.org/projects/jiraone/badge/?version=latest)
