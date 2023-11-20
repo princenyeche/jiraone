@@ -12,9 +12,9 @@
 A REST API Implementation to Jira Cloud APIs for creating reports and for performing other Jira queries.
 
 ## Configurations
-Install using `pip`. You have to be on python >= 3.6.x in order to utilize this script.
-* Download python and install on your device by visiting [python.org](https://python.org/downloads)
-* Run the below command either using a virtual environment or from your python alias
+Install using `pip`. You have to be on Python >= 3.8.x to utilize this script.
+* Download Python and install it on your device by visiting [python.org](https://python.org/downloads)
+* Run the below command either using a virtual environment or from your Python alias
 ```bash
 pip install jiraone
 ```
@@ -31,7 +31,7 @@ For further knowledge on how to use the classes, methods or functions. Open the 
 aforementioned methods or functions above to get further information.
 
 If you're connecting to Jira server or datacenter, you will need to change the API endpoint to point to server instances. To do that, simply change
-the attribute `LOGIN.api = False` this helps to use the endpoint `/rest/api/latest` which is compatible for Jira server or datacenter.
+the attribute `LOGIN.api = False` helps to use the endpoint `/rest/api/latest` which is compatible with Jira server or datacenter.
 
 ```python
 from jiraone import LOGIN
@@ -41,7 +41,7 @@ LOGIN.api = False
 LOGIN(*data)
 ```
 
-The above login method applies only when you need to access a Jira server or datacenter type instances. The above has little or no effect on cloud instance and will work normally.
+The above login method applies only when you need to access a Jira server or datacenter type instances. The above has little or no effect on cloud instances and will work normally.
 
 # Directory
 * [Using the API](https://jiraone.readthedocs.io/en/latest/api.html)
