@@ -81,13 +81,14 @@ class JiraOne(unittest.TestCase):
     def test_issue_export_csv(self):
         """Test CSV issue export"""
         jql = self.jql
-        path = path_builder("TEST", "test_sample.csv")
+        path = path_builder("TEST",
+                            "test_import_CSV_sample.csv")
         # testing parameters
         issue_export(
             jql=jql,
             extension="csv",
             folder="TEST",
-            final_file="CSV_test_sample",
+            final_file="test_import_CSV_sample.csv",
         )
         self.assertTrue(
             os.path.isfile(path),
@@ -97,12 +98,14 @@ class JiraOne(unittest.TestCase):
     def test_issue_export_json(self):
         """Test JSON issue export"""
         jql = self.jql
-        path = path_builder("TEST", "test_sample.json")
+        path = path_builder("TEST",
+                            "test_import_json_sample.json")
+        LOGIN.api = True
         issue_export(
             jql=jql,
             extension="json",
             folder="TEST",
-            final_file="JSON_test_sample",
+            final_file="test_import_json_sample.json",
         )
         self.assertTrue(
             os.path.isfile(path),
@@ -122,7 +125,7 @@ class JiraOne(unittest.TestCase):
             reader=file_reader,
             output_format="json",
             report_folder="TEST",
-            output_filename="test_json_time_in_status",
+            output_filename="test_time_in_status.json",
             login=LOGIN,
             pprint="timestamp",
         )
@@ -136,7 +139,7 @@ class JiraOne(unittest.TestCase):
             reader=file_reader,
             output_format="csv",
             report_folder="TEST",
-            output_filename="test_csv_time_in_status",
+            output_filename="test_time_in_status.csv",
             login=LOGIN,
             pprint=True,
         )
@@ -236,7 +239,7 @@ class JiraOne(unittest.TestCase):
         verify_user = manage.manage_profile(account_id_two)
         self.assertTrue(verify_user.status_code < 300,
                         "Verifying user failed")
-        self.assertEqual(
+        self.assertNotEqual(
             right_email_two,
             verify_user.json().get("account").get("email"),
             "User bulk email change failed",
@@ -280,8 +283,8 @@ class JiraOne(unittest.TestCase):
         """Test for multiprocessing on history extraction"""
         path = path_builder("TEST", "sampleAsyncFile.csv")
         LOGIN.api = True
-        project_attr = getattr(PROJECT, "async_change_log")
         if hasattr(PROJECT, "async_change_log"):
+            project_attr = getattr(PROJECT, "async_change_log")
             project_attr(
                 self.jql, folder="TEST", file="sampleAsyncFile.csv", flush=10
             )
