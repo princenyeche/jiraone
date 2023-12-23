@@ -1,6 +1,10 @@
+"""
+Run test for different features of the library
+"""
 import os
 import json
 import unittest
+from collections import deque
 from jiraone import (
     LOGIN,
     endpoint,
@@ -8,10 +12,20 @@ from jiraone import (
     path_builder,
     PROJECT,
     file_reader,
+    manage,
+    delete_attachments,
+    USER,
+    file_writer,
+    field,
 )
+from jiraone.module import time_in_status, bulk_change_email
 
 
 class JiraOne(unittest.TestCase):
+    """
+    Unit test for jiraone
+    """
+
     def setUp(self):
         """Configure test case"""
         user = os.environ.get("JIRAONEUSERNAME") or "email"
@@ -41,8 +55,7 @@ class JiraOne(unittest.TestCase):
     def test_login_basic_auth(self):
         """Test the LOGIN authentication for basic auth"""
         load = LOGIN.get(endpoint.myself())
-        self.assertTrue(load.status_code == 200,
-                        "Login not successful")
+        self.assertTrue(load.status_code == 200, "Login not successful")
 
     def test_context_login_session(self):
         """Test a context login using LOGIN.session"""
@@ -63,8 +76,7 @@ class JiraOne(unittest.TestCase):
         load = LOGIN.get(endpoint.get_all_priorities())
         if load.status_code == 200:
             e = json.loads(load.content)
-            self.assertIsInstance(e, (list, dict),
-                                  "Extraction failed")
+            self.assertIsInstance(e, (list, dict), "Extraction failed")
 
     def test_issue_export_csv(self):
         """Test CSV issue export"""
@@ -72,8 +84,10 @@ class JiraOne(unittest.TestCase):
         path = path_builder("TEST", "test_sample.csv")
         # testing parameters
         issue_export(
-            jql=jql, extension="csv", folder="TEST",
-            final_file="CSV_test_sample"
+            jql=jql,
+            extension="csv",
+            folder="TEST",
+            final_file="CSV_test_sample",
         )
         self.assertTrue(
             os.path.isfile(path),
@@ -85,8 +99,10 @@ class JiraOne(unittest.TestCase):
         jql = self.jql
         path = path_builder("TEST", "test_sample.json")
         issue_export(
-            jql=jql, extension="json", folder="TEST",
-            final_file="JSON_test_sample"
+            jql=jql,
+            extension="json",
+            folder="TEST",
+            final_file="JSON_test_sample",
         )
         self.assertTrue(
             os.path.isfile(path),
@@ -95,8 +111,6 @@ class JiraOne(unittest.TestCase):
 
     def test_time_in_status(self):
         """Test for time in status for CSV or JSON"""
-        from jiraone.module import time_in_status
-
         key = self.issue_key
         json_file = path_builder("TEST",
                                  "test_time_in_status.json")
@@ -144,8 +158,6 @@ class JiraOne(unittest.TestCase):
 
     def test_delete_attachment(self):
         """Test for attachment deletion"""
-        from jiraone import delete_attachments
-
         issue_key = self.issue_keys
         # upload a public file for the test
         file_name = "test-attachment"
@@ -161,8 +173,7 @@ class JiraOne(unittest.TestCase):
             endpoint.issue_attachments(issue_key, query="attachments"),
             files=payload,
         )
-        self.assertTrue(upload.status_code < 300,
-                        "Cannot add attachment")
+        self.assertTrue(upload.status_code < 300, "Cannot add attachment")
         # delete file
         delete_attachments(search=issue_key)
         # check for file existence
@@ -172,16 +183,11 @@ class JiraOne(unittest.TestCase):
 
     def test_search_user(self):
         """Test for user search"""
-        from jiraone import USER
-
         user = USER.search_user("Prince Nyeche", "TEST")
         self.assertIsInstance(user, list, "User cannot be found")
 
     def test_bulk_email_change(self):
         """Test for bulk email change"""
-        from jiraone import manage, file_writer
-        from jiraone.module import bulk_change_email
-
         # change email amongst users
         manage.add_token(self.token)
         manage.get_organization()
@@ -215,9 +221,8 @@ class JiraOne(unittest.TestCase):
             return arrange_user_by_two
 
         values = rearrange_users()
-        account_id_two, left_email_two, right_email_two = (
+        account_id_two, right_email_two = (
             values[1][0],
-            values[1][1],
             values[1][3],
         )
         file_writer(
@@ -239,9 +244,6 @@ class JiraOne(unittest.TestCase):
 
     def test_organization_access(self):
         """Test for organization authentication and usage"""
-        from jiraone import manage
-        from collections import deque
-
         # login to organization
         manage.add_token(self.token)
         manage.get_organization()
@@ -278,16 +280,17 @@ class JiraOne(unittest.TestCase):
         """Test for multiprocessing on history extraction"""
         path = path_builder("TEST", "sampleAsyncFile.csv")
         LOGIN.api = True
-        PROJECT.async_change_log(self.jql, folder="TEST",
-                                 file="sampleAsyncFile.csv",
-                                 flush=10)
-        self.assertTrue(
-            os.path.isfile(path), "Unable to find change log file.")
+        project_attr = getattr(PROJECT, "async_change_log")
+        if hasattr(PROJECT, "async_change_log"):
+            project_attr(
+                self.jql, folder="TEST", file="sampleAsyncFile.csv", flush=10
+            )
+            self.assertTrue(
+                os.path.isfile(path), "Unable to find change log file."
+            )
 
     def test_field_extraction(self):
         """Test for field extraction"""
-        from jiraone import field
-
         name = field.get_field("Test Field")
         self.assertIsInstance(name, dict, "Field cannot be found")
 

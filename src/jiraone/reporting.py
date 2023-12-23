@@ -5,6 +5,11 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
+import json
+import csv
+import sys
+import os
+import re
 from typing import (
     Any,
     List,
@@ -25,11 +30,6 @@ from jiraone import (
     add_log,
     WORK_PATH,
 )
-import json
-import csv
-import sys
-import os
-import re
 
 
 class Projects:
@@ -8045,7 +8045,7 @@ def delete_attachments(
         )
     search_path = None
     folder: str = "DATA"
-    allow_cp: bool = True if "allow_cp" not in kwargs else False
+    allow_cp: bool = "allow_cp" not in kwargs
     saved_file: str = (
         "data_block.json"
         if "saved_file" not in kwargs
@@ -8314,7 +8314,7 @@ def delete_attachments(
                 ex = ex.lower().split(",")
                 return ex
             return ex.lower()
-        elif isinstance(
+        if isinstance(
             ex,
             list,
         ):
@@ -8356,7 +8356,7 @@ def delete_attachments(
                 )
             )
             return _ex_name == func
-        elif isinstance(
+        if isinstance(
             func,
             list,
         ):

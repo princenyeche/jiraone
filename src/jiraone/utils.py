@@ -6,6 +6,10 @@ provide additional ability to jiraone.
 """
 import typing as t
 import threading
+import re
+from datetime import datetime as dt, timedelta, timezone
+from jiraone import add_log
+from jiraone.exceptions import JiraOneErrors
 
 
 class DotNotation(dict):
@@ -41,7 +45,7 @@ class DotNotation(dict):
          :return: None
 
         """
-        super(DotNotation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for items in args:
             for key, value in items.items():
                 if isinstance(value, dict):
@@ -68,7 +72,7 @@ class DotNotation(dict):
 
     def __setitem__(self, key, value) -> None:
         """Sets an item in the attribute."""
-        super(DotNotation, self).__setitem__(key, value)
+        super().__setitem__(key, value)
         self.__dict__.update({key: value})
 
     def __delattr__(self, item) -> None:
@@ -77,7 +81,7 @@ class DotNotation(dict):
 
     def __delitem__(self, key) -> None:
         """Deletes an item in the attribute."""
-        super(DotNotation, self).__delitem__(key)
+        super().__delitem__(key)
         del self.__dict__[key]
 
     def __expose_list__(self, value) -> None:
@@ -196,8 +200,6 @@ def convert_to_local_time(
 
     :return: tuple of date, time, and datetime all in strings
     """
-    import re
-    from datetime import datetime as dt, timedelta, timezone
 
     def parse_timezone(_tzinfo_: str = None) -> str:
         """Process a timezone info"""
@@ -209,7 +211,7 @@ def convert_to_local_time(
     def actual_time(gmt: str = None):
         """Send an actual timezone then get the hour or minute"""
         new_time = list(gmt)
-        sign, *hour_or_min, last_digit = new_time
+        sign, *hour_or_min, _ = new_time
         hour_hand = (
             int(hour_or_min[1])
             if int(hour_or_min[0]) == 0
@@ -299,21 +301,16 @@ def validate_on_error(
     :return: None
     :raise: JiraOneErrors
     """
-    from jiraone import add_log
-    from jiraone.exceptions import JiraOneErrors
 
     if not isinstance(name_field, data_type[0]):
         add_log(
-            "The `{}` argument seems to be using the wrong "
-            'data structure "{}" as value, '
-            "expecting {}.".format(data_type[1], name_field, data_type[2]),
+            f"The `{data_type[1]}` argument seems to be using the wrong "
+            f'data structure "{name_field}" as value, '
+            f"expecting {data_type[2]}.",
             "error",
         )
         raise JiraOneErrors(
             "wrong",
-            "The `{}` argument should be "
-            "{}."
-            "Detected {} instead.".format(
-                data_type[1], err_message, type(name_field)
-            ),
-        )
+            f"The `{data_type[1]}` argument should be "
+            f"{err_message}."
+            f"Detected {type(name_field)} instead.")

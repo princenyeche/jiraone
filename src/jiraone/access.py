@@ -9,17 +9,17 @@
 """
 import string
 import random
-import requests
 import sys
 import json
-from requests.auth import HTTPBasicAuth
 from typing import Any, Optional, Union, Dict, List
 from pprint import PrettyPrinter
+import requests
+from requests.auth import HTTPBasicAuth
 from jiraone.exceptions import JiraOneErrors
 from jiraone.jira_logs import add_log
 
 
-class Credentials(object):
+class Credentials:
     """class.Credentials -> used for authentication of the user
     to the Instance."""
 
@@ -587,12 +587,12 @@ class Credentials(object):
                     LOGIN(**auth)
                     return obj
                 else:
-                    exit(
+                    sys.exit(
                         "Unable to read other values within the ``JIRA``"
                         " object. Authentication cannot proceed further."
                     )
             else:
-                exit(
+                sys.exit(
                     "Could not detect a `JIRA` object from the command."
                     " Please check that you have the `jira` python package "
                     "installed."
@@ -602,8 +602,8 @@ class Credentials(object):
                 "wrong",
                 "An unknown exception has occurred "
                 "Other errors: "
-                " {}".format(err),
-            )
+                f" {err}.",
+            ) from err
 
 
 class Echo(PrettyPrinter):
@@ -619,7 +619,7 @@ class Echo(PrettyPrinter):
 
         :return: None
         """
-        super(Echo, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
         """Makes our class callable."""
@@ -667,7 +667,7 @@ class InitProcess(Credentials):
 
         :return: None
         """
-        super(InitProcess, self).__init__(
+        super().__init__(
             user=user, password=password, url=url, oauth=oauth, session=session
         )
 
@@ -3894,7 +3894,7 @@ class EndPoints:
                 )
 
 
-class For(object):
+class For:
     """A Class to show the implementation of a 'for' loop.
 
     It calls the __iter__ magic method then the __next__ method
@@ -3966,7 +3966,7 @@ class For(object):
         return {list(keys)[index]: list(values)[index]}
 
 
-class Field(object):
+class Field:
     """Field class helps with Jira fields.
 
     It helps with posting, putting and getting various fields or field type.

@@ -8,11 +8,12 @@ Create an API key from this URL https://confluence.atlassian.com/x/jPnJOQ
 This API provides all the access to the User management REST API.
 """
 import typing as t
-import requests
 import threading
 import re
-from jiraone.exceptions import JiraOneErrors
+import sys
+import requests
 from collections import deque
+from jiraone.exceptions import JiraOneErrors
 
 
 # Define APIs
@@ -634,11 +635,11 @@ class UserManagement:
 
         :return: Deque List
         """
-        exit("Your source data isn't a valid JSON object.") if not isinstance(
+        sys.exit("Your source data isn't a valid JSON object.") if not isinstance(
             source, t.Mapping
         ) else ""
         user_collection = deque()
-        exit(
+        sys.exit(
             f"Incorrect data type {type(detail)} for keyword "
             "argument 'detail'. "
             "Expecting bool type"

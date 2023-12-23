@@ -7,14 +7,14 @@ import os
 import re
 import json
 from typing import Union, Any, Optional, List, Callable, Dict
-from jiraone.exceptions import JiraOneErrors
 from collections import namedtuple, deque
 from datetime import datetime as dt
 from itertools import zip_longest
 from copy import deepcopy
+from jiraone.exceptions import JiraOneErrors
 
 
-class Permissions(object):
+class Permissions:
     """A constant of Jira permission scheme attributes."""
 
     ASSIGNABLE_USER = "ASSIGNABLE_USER"
@@ -505,7 +505,7 @@ def pretty_format(
                 if get_numbers is not None:
                     d = get_numbers.findall(make_date)
                     return f"{d[0]}h {d[1]}m {d[2]}s"
-    elif isinstance(pprint, str):
+    if isinstance(pprint, str):
         if pprint == "timestamp":
             from jiraone.utils import DateFormat
 
