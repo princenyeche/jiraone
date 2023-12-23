@@ -4,8 +4,15 @@
 ### Minor update #115
 * Update to `time_in_status` function to include timestamp in UTC
 * Update to `issue_export` method for better performance and caching
-* Update to `field` class in Server/DC Jira preventing key error
-* Update to `change_log` method which now supports multiprocessing and/or threading
+* Fix to `field` class in Server/DC Jira preventing key error
+* Added to `async_change_log` method which now supports multiprocessing and/or threading
+```python
+# import statement
+PROJECT.async_change_log(
+               jql, folder="TEST", file="sample.csv", flush=10
+            )
+```
+
 * Added new methods to `endpoint` alias for issuetype scheme, security scheme etc
 * Added tests for all the major functions/methods for CI/CD process
 * Added requirement for Python 3.8.x and above to run jiraone
