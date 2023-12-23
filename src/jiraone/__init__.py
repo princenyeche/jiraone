@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-JiraOne is an Atlassian REST API Interface used to generate report on certain aspect of Jira.
+jiraone is an Atlassian REST API Interface used to generate report on
+certain aspect of Jira.
 
 You can dynamically generate a report of
 
@@ -36,7 +37,7 @@ from jiraone.reporting import (
 from jiraone.management import manage
 
 __author__ = "Prince Nyeche"
-__version__ = "0.7.8"
+__version__ = "0.7.9"
 __all__ = [
     "LOGIN",
     "endpoint",

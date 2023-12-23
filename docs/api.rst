@@ -3,8 +3,8 @@ Using the API
 =============
 .. module:: jiraone
 
-Jiraone basically allows you to create a report based method using Atlassian REST API on your cloud infrastructure.
-It uses a class method on the Endpoint class, so you can easily call the direct Atlassian API.
+jiraone basically allows you to create a report based method using Atlassian REST API on your cloud infrastructure.
+It uses a class method on the :ref:`endpoint-class` class, so you can easily call the direct Atlassian API.
 In generating reports, you can create functions, classes or even methods to derive the desired results.
 
 
@@ -25,16 +25,14 @@ In generating reports, you can create functions, classes or even methods to deri
               ...
 
 
-The script comes with a "User" and "Project" classes which includes basic reporting examples. The User class has a user generator,
+The script comes with a :ref:`user-class` and :ref:`project-class` classes which includes basic reporting examples. The :ref:`user-class` class has a user generator,
 which easily enables you to fetch all users on the instance without you programming such yourself.
 All these methods and functions are accessible directly from the jiraone package.
 
 
-.. _endpoint:
-
 endpoint
 --------
-This is an alias to the ``EndPoints`` class and it has many methods that can be called directly. 
+This is an alias to the :ref:`endpoint-class` class and it has many methods that can be called directly.
 
 Example usage: ``endpoint.myself()``, ``endpoint.search_users()``
 
@@ -45,12 +43,12 @@ LOGIN
 --------
 
 
-This is a call to the ``Credentials`` class and the accepted parameters are
+This is a call to the :ref:`credential-class` class and the accepted parameters are
   * user - string
   * password - string
-  * url - string 
+  * url - string
   * oauth - dict - An OAuth 2.0 3LO implementation
-  
+
 Example usage:
 
 .. code-block:: python
@@ -64,23 +62,23 @@ Example usage:
 
 
 **Adding your own custom SSL or self-signed certificate**
- 
+
   You can do this by providing a direct path to your certificate. This way, the entire jiraone library can use your self-signed certificate in performing the HTTP request.
-  
+
   For example::
-   
+
    import os
-   
+
    your_cert_path = "direct_absolute_path/to/cert"
    os.environ["REQUESTS_CA_BUNDLE"] = your_cert_path
    # before calling jiraone statements
- 
+
 **Creating a Bearer authentication**
 
  Besides using the basic authentication method, you can generate or create header authentication using any prefix type.
-  
+
    For example::
-   
+
      from jiraone import LOGIN, endpoint
 
      # previous statement
@@ -90,20 +88,52 @@ Example usage:
      LOGIN.base_url = url
      # You need to pass the token variable to a keyword argument called `sess`
      LOGIN.token_session(sess=token)
-      
- If you want to change the prefix of the authorization type e.g. `Bearer`, use the keyword argument in the `token_session` called `_type`
+
+ If you want to change the prefix of the authorization type e.g. `Bearer`, use the keyword argument in the ``token_session`` called ``_type``
  which should alter the authorization prefix
- 
+
    For example::
-   
+
      from jiraone import LOGIN
-      
+
      # previous expression
      LOGIN.token_session(sess=token, _type="JWT")
-      
- 
-  
-**Attributes**, available to the LOGIN alias
+
+
+**Establishing other session**
+
+ The ``LOGIN.session`` attribute can be used to establish another session using the current authenticated session.
+
+   For example 1::
+
+     from jiraone import LOGIN, endpoint
+
+     # previous login
+     LOGIN.session.headers = LOGIN.headers
+     LOGIN.session.auth = LOGIN.auth_request
+     response = LOGIN.session.get(endpoint.myself())
+     print(response.status_code)
+     # <Response 200>
+
+ If you want to use a self-signed certificate. You can set a path to the certificate or do not verify it.
+
+   For example 2::
+
+     from jiraone import LOGIN, endpoint
+
+     # previous login
+     LOGIN.session.headers = LOGIN.headers
+     LOGIN.session.auth = LOGIN.auth_request
+     # not verifying SSL cert
+     LOGIN.session.verify = False
+     # setting a path to the certificate
+     LOGIN.session.verify = "your_cert_path"
+     response = LOGIN.session.get(endpoint.myself())
+     print(response.status_code)
+     # <Response 200>
+
+
+**Attributes**, available to the :ref:`login` alias
 
 * ``LOGIN.base_url``
 
@@ -115,13 +145,13 @@ Example usage:
 
 * ``LOGIN.api`` <default> to True - This helps with changing the api version from 3 to use the latest version.
 
-* ``LOGIN.auth_requests`` 
+* ``LOGIN.auth_requests``
 
-* ``LOGIN.save_oauth`` Is a property value of a saved OAuth data session
+* ``LOGIN.save_oauth`` Is a property value of a saved OAuth data session.
 
-* ``LOGIN.instance_name`` represents the name of an instance when using OAuth
+* ``LOGIN.instance_name`` represents the name of an instance when using OAuth.
 
-* ``LOGIN.session`` represents the session from the initialization
+* ``LOGIN.session`` represents a session which can be initialized with the active session.
 
 * ``LOGIN.auth2_0`` represents the oauth attribute for the property setter.
 
@@ -143,9 +173,9 @@ such as ``files``, ``data`` etc.
 * ``LOGIN.from_jira(obj)`` - which takes an instance of the jira object from the python jira package.
     This allows the ability to access jira's object methods, classes and properties. Making it possible to combine both
     jiraone's and jira's packages as one. Please note this will only work with basic authentication as of now!
-    
+
 .. code-block:: python
-       
+
        from jira import JIRA
        from jiraone import LOGIN, endpoint
        my_jira = JIRA(server="https://nexusfive.atlassian.net",
@@ -158,11 +188,11 @@ such as ``files``, ``data`` etc.
 
 
 .. note::
- 
-  If you want to save the OAuth data session, you will need to call the ``LOGIN.save_oauth`` property. 
+
+  If you want to save the OAuth data session, you will need to call the ``LOGIN.save_oauth`` property.
   This property is set once an OAuth authentication  has been initialized. If an OAuth session is not created, the value won't return anything.
-  
-  Also, if you want to save the OAuth data session into a ``DB`` of ``file``, you can call this property value ``LOGIN.save_oauth``. 
+
+  Also, if you want to save the OAuth data session into a ``DB`` of ``file``, you can call this property value ``LOGIN.save_oauth``.
   To access the saved oauth session, please see the example used by the oauth method. You will need to push the data to the property setter using ``LOGIN.save_oauth``.
 
 
@@ -172,14 +202,14 @@ echo
 --------
 .. autofunction:: echo
 
-This is a function which uses a copy of the PrettyPrint class used to nicely format a represented printed result. To call, simply use the function ``echo``.
-It accepts one required parameter, which can be any object. 
+This is a function which uses a copy of the ``PrettyPrint`` class used to nicely format a represented printed result. To call, simply use the function ``echo``.
+It accepts one required parameter, which can be any object.
 Example usage:
 
 .. code-block:: python
 
      from jiraone import echo
-    
+
      data = "hello world"
      echo(data)
      # prints //
@@ -193,7 +223,7 @@ add_log
 .. autofunction:: add_log
 
 This function is used to log messages to a log file. It accepts two required parameters ``message`` and ``level`` of which both are strings.
-The function uses the logging module and writes a log, based on 3 levels. 
+The function uses the logging module and writes a log, based on 3 levels.
 
 * ``debug``
 
@@ -202,15 +232,15 @@ The function uses the logging module and writes a log, based on 3 levels.
 * ``error``
 
 The message part is a string used to denote what is written to the log and the level parameter can use any of the strings above as options.
-Example usage: 
+Example usage:
 
 .. code-block:: python
 
  from jiraone import add_log
-    
+
  message = "successfully Initiated the script"
  add_log(message, "info")
-  
+
 
 
 .. _file_writer:
@@ -219,7 +249,7 @@ file_writer
 
 .. autofunction:: file_writer
 
-This function helps in creating a csv file or a normal file. It comes with the below parameters as keyword arguments 
+This function helps in creating a csv file or a normal file. It comes with the below parameters as keyword arguments
   * ``folder``: string - a path to the name of the folder
   * ``file_name``:  string - the name of the file being created.
   * ``data``: iterable - an iterable data, usually in form of a list.
@@ -229,20 +259,20 @@ This function helps in creating a csv file or a normal file. It comes with the b
   * ``delimiter``: string - a file separator. Defaults to ","
   * ``encoding``: string - a string of character encoding. Defaults to "utf-8"
  Example usage:
- 
+
 .. code-block:: python
 
  from jiraone import file_writer
-    
+
  a_list = [1, 14, 22, "hello", "file"]
  files = file_writer(folder="TEST", file_name="test.csv", data=a_list)
-    
+
 
 
 .. _file_reader:
 file_reader
 ------------
- 
+
 .. autofunction:: file_reader
 
 This function helps in reading a csv file and returning a list comprehension of the data or read a byte file. Accepted
@@ -254,15 +284,15 @@ parameter include
   * ``content``: bool - True allows you to read a byte file. By default it is set to False
   * ``encoding``: string - standard encoding strings. e.g “utf-8”.
   * ``delimter``: string - a file separator. Defaults to ","
-  
-  Example usage: 
-  
+
+  Example usage:
+
 .. code-block:: python
 
  from jiraone import file_reader
-    
+
  files = file_reader(folder="TEST", file_name="test.csv")
-    
+
 
 
 .. _path_builder:
@@ -277,27 +307,25 @@ parameters include
 
   * ``path``: string - a path to declare absolute to where the script is executed.
   * ``file_name``:  string - the name of the file being created
-  
+
    Example usage:
-  
+
 .. code-block:: python
 
  from jiraone import path_builder
-    
+
  path = "Test_folder"
  file = "test.csv"
  dir_path = path_builder(path=path, file_name=file)
-    
+
  # output
  # "Test_folder/test.csv"
 
 
-.. _for:
-
 For
 ------
 
-It contains one required parameter called ``data`` which it uses to receive the various datatype and translate them into a list of items, 
+It contains one required parameter called ``data`` which it uses to receive the various datatype and translate them into a list of items,
 retaining their own unique datatype.
 
 It also contains a unique method called ``__dictionary__()`` which helps in indexing dict objects. It works the same way as any iteration.
@@ -353,7 +381,7 @@ The above example is one of the ways you can make a request. You can make a requ
  key = "COM-120,TP-15" # a string separated by comma
  key = ["COM-120", "IP-18", 10034] # a list of issue keys or issue id
  key = {"jql": "project in (COM) ORDER BY Rank DESC"} # a dict with a valid jql
- 
+
 The above will enable you to search for viable issues that has an attachment value. The extension argument can be used as below
 
 .. code-block:: python
@@ -363,7 +391,7 @@ The above will enable you to search for viable issues that has an attachment val
  ext = ".png" # a string
  ext = ".png,.pdf" a string separated by comma
  ext = [".png", ".zip", ".csv"] # a list of extensions
- 
+
 You can also use it without the “dot” prefix on the extension but make sure that if the dot is not being used for multiple extensions either by string or list, the dot prefix is not maintained at all. E.g
 
 *Valid* :check_mark:
@@ -372,7 +400,7 @@ You can also use it without the “dot” prefix on the extension but make sure 
 
  # previous expression
  ext = [".png", ".zip", ".csv"] # a list of extensions
- 
+
 *Valid* :check_mark:
 
 .. code-block:: python
@@ -387,7 +415,7 @@ You can also use it without the “dot” prefix on the extension but make sure 
 
  # previous expression
  ext = [".png", "zip", ".csv"] # a list of extension
- 
+
 In the case of the invalid example, notice that one of the extensions doesn’t have a “dot” prefix! When such happens the file extension is skipped and won’t be deleted in the final execution of the API.
 
 The ``by_user`` argument allows you to use accountId to filter the deletion by such users. This argument expects a list of users
@@ -397,7 +425,7 @@ The ``by_user`` argument allows you to use accountId to filter the deletion by s
  # previous expression
 
  users = ["5abcXXX", "617bcvXXX"]
- 
+
 When the user that matches is found, then the deletion will occur.
 
 The ``by_size`` argument helps with deletion by byte size. You can specify the limit by using the below format. The acceptable format for by_size uses this mechanism
@@ -411,7 +439,7 @@ size = [condition][number][byte type]
 * Byte type refers to the byte size allocation. Either in *kb*, *mb*, *gb* or blank representing sizes in *bytes*
 
 .. code-block:: python
- 
+
  # previous expression
 
  size = ">12mb" # greater than 12mb in size
@@ -422,13 +450,13 @@ size = [condition][number][byte type]
 Using the ``by_date`` argument within this function helps to determine if and when an attachment should be removed. It uses the initiator's current local time derived from your machine to determine the time and date; down to the last second. Then it compares, that current time to the issue time when the attachment was created and then determine a time delta of the difference. If it can determine that the time period or range is lesser than the DateTime the attachment existed, then it returns true otherwise returns false. You can make the request by performing any of the below tasks.
 
 .. code-block:: python
- 
+
  # previous expression
 
  dates = "3 days ago"
  dates = "3 months ago" # you can say 3 months
  dates = "15 weeks" # the ago part can be left out and it won't matter.
- 
+
 The accepted format of using this argument is given below and only strings are accepted.
 
 dates = "[number] <space> [time_info] <space> ago"
@@ -445,7 +473,7 @@ Depending on the context and which one makes the most accurate depiction in the 
 
  dates = "14 hours ago"
  dates = "1 year ago"
- 
+
 Besides using the standard way to call this function, you can always mix and match your search criteria using these four arguments. ``extension``, ``by_user``, ``by_size``, ``by_date``
 The hierarchy follows the same way as they are arranged above.
 
@@ -464,9 +492,9 @@ You do not have to edit the file or change the format in any way. If you’ve ex
  ext = [".csv", ".mov", ".png"]
  file = "Jira-export.csv"
  delete_attachments(file=file, extension=ext)
- 
+
 Example with delimiter parameter.
- 
+
 .. code-block:: python
 
  # previous login statement with variable options
@@ -486,7 +514,7 @@ If you just want to test the function without actually deleting any attachments 
  delete_attachments(file=file, extension=ext, delimiter=";", delete=False)
  # result
  # Safe mode on: Attachment will not be deleted "jira_workflow_vid.mp4" | Key: COM-701
- 
+
 The same argument is available when you use the search method.
 
 .. code-block:: python
@@ -503,14 +531,14 @@ When safe mode is on, all filtering is ignored.
 .. _replacement_placeholder:
 replacement_placeholder
 ------------------------
- 
+
 .. autofunction:: replacement_placeholder
 
 
  This function returns multiple string replacement. This can be used to replace multiple strings in a list where a placeholder can be identified and used
  as a marker to replace the strings.
- 
-Example usage: 
+
+Example usage:
 
 .. code-block:: python
 
@@ -523,16 +551,15 @@ Example usage:
 
  # output
  # ["Hello John doe, welcome to the Post mortem of what is to come"]
- 
- 
-.. _field:
+
+
 
 field
 --------
-Alias to the ``Field`` class and it basically helps to update custom or system fields on Jira. It comes with the below methods. 
+Alias to the :ref:`field-class` class and it basically helps to update custom or system fields on Jira. It comes with the below methods.
 
-   
-Example usage: 
+
+Example usage:
 
 .. code-block:: python
 
@@ -553,19 +580,19 @@ Example usage:
  # output
  # < Response[204] >
 
-        
-``field.get_field_value(name='String', keys='Union[string, integer]')`` 
+
+``field.get_field_value(name='String', keys='Union[string, integer]')``
 
 * ``name`` datatype[String] a name of the custom field.
 * ``keys`` datatype[String, Integer] issue key or id of an issue.
-        
+
 .. code-block:: python
 
  from jiraone import field, echo
  # ...previous login statements
  # it expects the field name as the first parameter and the issue key where the field is used as the second parameter
  value = field.get_field_value("Labels", "COM-15")
- echo(value) 
+ echo(value)
 
 
 .. _comment:
@@ -603,7 +630,7 @@ The ``manage`` API brings organization and user REST API features to jiraone. Wi
 
 
 This API requires that you enter a API token for your organization.
-                
+
 .. code-block:: python
 
  from jiraone import manage
@@ -624,21 +651,30 @@ You can be able to call various methods by altering the ``method`` keyword argum
 * ``GET`` request: Returns information about a single Atlassian account by ID by using a "GET" request.
 
 * ``PATCH`` request: Updates fields in a user account.
+
      * Body parameter
+
          * Any or all user object this is value
+
+         For example::
+
             e.g. {"name": "Lila User", "nickname": "marshmallow"}
-                
+
 * ``PUT`` request: Sets the specified user's email address.
+
      * Body parameter
-          e.g. {"email": "prince.nyeche@elfapp.website"}
-                
+
+         For example::
+
+            e.g. {"email": "prince.nyeche@elfapp.website"}
+
 
 
 Gets the API tokens owned by the specified user or deletes a specifid API token by ID.
-                  
 
 
-Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege. 
+
+Disables the specified user account. The permission to make use of this resource is exposed by the lifecycle.enablement privilege.
 OR
 Enables the specified user account.The permission to make use of this resource is exposed by the lifecycle.enablement privilege
 
@@ -655,22 +691,22 @@ Enables the specified user account.The permission to make use of this resource i
 
  # output
  # <Response 204>
-  
- 
+
+
 .. warning::
- 
-  The token used by the ``manage`` API is completely different from the one used with the basic authentication method. 
+
+  The token used by the ``manage`` API is completely different from the one used with the basic authentication method.
   Therefore, ensure that the right token is used when making either calls.
-  
+
 
 GET request for the organization API. Returns organization users, domains, policies and events based on different keyword arguments passed to the method.
 
-The ``filter_by`` arguments accepts 4 valid options which as ``users``, ``domains``, ``policies``, and ``events``. 
+The ``filter_by`` arguments accepts 4 valid options which as ``users``, ``domains``, ``policies``, and ``events``.
 The ``action`` argument allows a certain action for the events filter_by option. When set ``action=True`` it returns the event actions rather than a list of events.
 
 The ``kwargs`` argument accepts valid response arguments such as ``json``, ``data`` etc which can be used as body parameter when making the request.
-                
-                
+
+
 .. code-block:: python
 
  from jiraone import manage
@@ -698,13 +734,13 @@ Get the data from the list of policies
  # output
  # <Response 204>
 
-                
+
 
 Create, put and delete organization data, create a policy for an org, send a post request by using ``method="post"`` as keyword args.Update a policy for an org.
 Send a put request by using ``method="put"`` as keyword args.
 The `method` argument accepts "put", "post" or "delete" (case insensitive)
-  
-  
+
+
 .. _other_variables:
 Other variables
 --------

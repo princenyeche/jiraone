@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""A logging handler file, which helps in providing logs of the script execution."""
+"""A logging handler file, which helps in providing logs
+of the script execution."""
 from logging.handlers import RotatingFileHandler
 from datetime import datetime
 from platform import system
@@ -21,7 +22,8 @@ if system() == "Linux" or system() == "Darwin":
     if not os.path.exists(LOGGER):
         os.mkdir(LOGGER)
     handler = RotatingFileHandler(
-        "{}/{}".format(LOGGER, "app.log"), maxBytes=1000000, backupCount=20
+        "{}/{}".format(
+            LOGGER, "app.log"), maxBytes=1000000, backupCount=20
     )
     handler.setFormatter(formatting)
     logger.addHandler(handler)
@@ -31,7 +33,8 @@ if system() == "Windows":
     if not os.path.exists(LOGGER):
         os.mkdir(LOGGER)
     handler = RotatingFileHandler(
-        "{}\\{}".format(LOGGER, "app.log"), maxBytes=1000000, backupCount=20
+        "{}\\{}".format(
+            LOGGER, "app.log"), maxBytes=1000000, backupCount=20
     )
     handler.setFormatter(formatting)
     logger.addHandler(handler)

@@ -7,14 +7,14 @@ import os
 import re
 import json
 from typing import Union, Any, Optional, List, Callable, Dict
-from jiraone.exceptions import JiraOneErrors
 from collections import namedtuple, deque
 from datetime import datetime as dt
 from itertools import zip_longest
 from copy import deepcopy
+from jiraone.exceptions import JiraOneErrors
 
 
-class Permissions(object):
+class Permissions:
     """A constant of Jira permission scheme attributes."""
 
     ASSIGNABLE_USER = "ASSIGNABLE_USER"
@@ -119,9 +119,11 @@ def time_in_status(
     across different sets of issues. Display the output or send the output into
     a file either in CSV or JSON.
 
-    :param var: Alias to the ``PROJECT`` which can invoke the ``change_log()`` method
+    :param var: Alias to the ``PROJECT`` which can invoke the
+                ``change_log()`` method
 
-    :param key_or_id: An issue key or id or keys put in a list to derive multiples values
+    :param key_or_id: An issue key or id or keys put in a list to
+                     derive multiples values
                     or use a jql format in dictionary
 
     :param reader: ``file_reader`` function needs to be passed here
@@ -130,7 +132,8 @@ def time_in_status(
 
     :param report_folder: A folder where data resides
 
-    :param output_format: An output format either in CSV or JSON. e.g csv or json (case insensitive)
+    :param output_format: An output format either in CSV or JSON.
+                         e.g. csv or json (case-insensitive)
 
     :param status: A status name to check or output.
 
@@ -140,7 +143,11 @@ def time_in_status(
 
                * login - Required keyword argument to authenticate request
 
-               * pprint -Bool, Optional -formats the datetime output into a nice pretty format.
+               * pprint -Bool or Str, Optional - formats the datetime output
+                 into a nice pretty format.
+                 if true, false returns a readable less pretty format.
+                 Defaults to string "timestamp" which
+                 renders it with a datetime format.
 
                * is_printable - Bool, prints output to terminal if true
 
@@ -148,8 +155,10 @@ def time_in_status(
     .. code-block:: python
 
       # previous expression
-      # To print out the function, you can either use ``echo`` function or ``print`` built-in
-      status = time_in_status(PROJECT, key, file_reader, login=LOGIN, pprint=True, output_format="json",
+      # To print out the function, you can either use ``echo``
+      # function or ``print`` built-in
+      status = time_in_status(
+      PROJECT, key, file_reader, login=LOGIN, pprint=True, output_format="json",
                             is_printable=True)
       echo(status)
 
@@ -157,20 +166,26 @@ def time_in_status(
     :return: A Printable representation of the data or output files.
 
     """
+    from jiraone.utils import DateFormat
+
     login = kwargs["login"] if "login" in kwargs else False
-    pprint = kwargs["pprint"] if "pprint" in kwargs else False
+    pprint = kwargs["pprint"] if "pprint" in kwargs else "timestamp"
     is_printable = kwargs["is_printable"] if "is_printable" in kwargs else False
     output_filename = (
-        kwargs["output_filename"] if "output_filename" in kwargs else "data_output_file"
+        kwargs["output_filename"]
+        if "output_filename" in kwargs
+        else "data_output_file"
     )
     if login is False:
         raise JiraOneErrors(
-            "login", "The `LOGIN` alias is required to authenticate this request"
+            "login",
+            "The `LOGIN` alias is required to authenticate this request",
         )
     if reader is None or not callable(reader):
         raise JiraOneErrors(
             "value",
-            "You need to pass the `file_reader` function, so the data can be read.",
+            "You need to pass the `file_reader` function, "
+            "so the data can be read.",
         )
     determine = key_or_id
     form = "key {ins} {determine}"
@@ -275,15 +290,22 @@ def time_in_status(
         def initialize(to_, from_) -> None:
             """Rerun the data for time extraction.
 
-            :param to_: A timedelta object showing the present or future datetime
+            :param to_: A timedelta object showing the present or
+                       future datetime
 
             :param from_: A timedelta object showing the previous datetime
 
             :return: none
             """
             difference = to_ - from_
+            time_data = {"from": from_, "to": to_}
             data_bundle = {
-                "time_status": pretty_format(difference, pprint),
+                "time_status": pretty_format(
+                    difference,
+                    pprint,
+                    past_time=time_data,
+                    output_format=output_format,
+                ),
                 "issue_key": items["issue_key"],
                 "from_string": items["from_string"],
                 "to_string": items["to_string"],
@@ -298,22 +320,39 @@ def time_in_status(
         # same as of the period the status changed
         if items["issue_key"] == item["issue_key"]:
             # parse the datetime string with a proper format
-            from_time = dt.strptime(items["created"], "%Y-%m-%dT%H:%M:%S.%f%z")
-            to_time = dt.strptime(item["created"], "%Y-%m-%dT%H:%M:%S.%f%z")
+            from_time = dt.strptime(
+                items["created"], DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ)
+
+            to_time = dt.strptime(
+                item["created"], DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ
+            )
             # get a timedelta of the datetime value
             initialize(to_time, from_time)
         else:
             if items["from_string"] == items["to_string"]:
-                from_time = dt.strptime(items["created"], "%Y-%m-%dT%H:%M:%S.%f%z")
-                # convert the current time to something we that we can use timedelta on
-                present = dt.strftime(dt.astimezone(dt.now()), "%Y-%m-%dT%H:%M:%S.%f%z")
-                today = dt.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
+                from_time = dt.strptime(
+                    items["created"], DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ
+                )
+                # convert the current time to something we
+                # that we can use timedelta on
+                present = dt.strftime(
+                    dt.astimezone(
+                        dt.now()), DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ
+                )
+                today = dt.strptime(
+                    present, DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ)
                 initialize(today, from_time)
             else:
                 # default here if this is the current status.
-                from_time = dt.strptime(items["created"], "%Y-%m-%dT%H:%M:%S.%f%z")
-                present = dt.strftime(dt.astimezone(dt.now()), "%Y-%m-%dT%H:%M:%S.%f%z")
-                today = dt.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
+                from_time = dt.strptime(
+                    items["created"], DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ
+                )
+                present = dt.strftime(
+                    dt.astimezone(
+                        dt.now()), DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ
+                )
+                today = dt.strptime(
+                    present, DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ)
                 initialize(today, from_time)
         if rows >= number_of_history_items:
             break
@@ -368,9 +407,18 @@ def time_in_status(
         pass
     else:
         if output_format.lower() == "csv":
-            header = ["Issue Key", "Summary", "Author", "Time in Status", "Status"]
+            header = [
+                "Issue Key",
+                "Summary",
+                "Author",
+                "Time in Status",
+                "Status",
+            ]
             file_writer(
-                folder=report_folder, file_name=output_name, mode="w+", data=header
+                folder=report_folder,
+                file_name=output_name,
+                mode="w+",
+                data=header,
             )
             file_writer(
                 folder=report_folder,
@@ -392,15 +440,21 @@ def time_in_status(
                 make.append(payload)
             json.dump(
                 make,
-                open(f"{report_folder}/{output_name}", mode="w+", encoding="utf-8"),
+                open(
+                    f"{report_folder}/{output_name}",
+                    mode="w+",
+                    encoding="utf-8",
+                ),
                 sort_keys=True,
                 indent=4,
             )
         else:
             raise JiraOneErrors(
                 "value",
-                f'Unexpected output "{output_format}" received as value, '
-                f"for output_format argument - unable to understand option. Exiting",
+                f'Unexpected output "{output_format}" '
+                'received as value, '
+                "for output_format argument - unable to "
+                "understand option. Exiting",
             )
 
     return (
@@ -411,32 +465,78 @@ def time_in_status(
 
 
 # get a pretty format of the datetime output
-def pretty_format(date: Any, pprint: bool) -> str:
-    """Scan the datetime value and return a pretty format in string if true else returns string of datetime object.
+def pretty_format(
+    date: Any,
+    pprint: Union[bool, str] = "timestamp",
+    past_time: dict = None,
+    **kwargs: Any,
+) -> Union[dict, str]:
+    """Scan the datetime value and return a pretty format in string
+    if true else returns string of datetime object.
 
     :param date: A datetime object or a string datetime value
 
-    :param pprint: A bool object
+    :param pprint: A bool or string object
 
-    :return: A string value
+    :param past_time: A datetime object used to determine different
+                      formats of pprint.
+
+    .. versionadded:: 0.7.9
+
+    past_time - Datatype(dict) - Allows the ability to include a datetime format
+                and difference in status
+
+    :return: A string or dict value
     """
+    output_format = kwargs.get("output_format")
     pattern = r"\d+"  # searches for the digits in the value
     make_date = str(date)
-    if pprint is True:
-        if "," in make_date:
-            new_date = make_date.split(",")
-            get_days = re.compile(pattern)
-            get_times = re.compile(pattern)
-            if get_days is not None:
-                m = get_times.findall(new_date[1])
-                return (
-                    f"{get_days.search(new_date[0]).group()}d {m[0]}h {m[1]}m {m[2]}s"
+    if isinstance(pprint, bool):
+        if pprint is True:
+            if "," in make_date:
+                new_date = make_date.split(",")
+                get_days = re.compile(pattern)
+                get_times = re.compile(pattern)
+                if get_days is not None:
+                    m = get_times.findall(new_date[1])
+                    return f"{get_days.search(new_date[0]).group()}d {m[0]}h {m[1]}m {m[2]}s"
+            else:
+                get_numbers = re.compile(pattern)
+                if get_numbers is not None:
+                    d = get_numbers.findall(make_date)
+                    return f"{d[0]}h {d[1]}m {d[2]}s"
+    if isinstance(pprint, str):
+        if pprint == "timestamp":
+            from jiraone.utils import DateFormat
+
+            # created a datetime object
+            if output_format:
+                if output_format.lower() == "json":
+                    results = {
+                        "fromTime": past_time.get("from").strftime(
+                            DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ
+                        ),
+                        "toTime": past_time.get("to").strftime(
+                            DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ
+                        ),
+                        "diffTime": str(date),
+                    }
+                    return results
+                elif output_format.lower() == "csv":
+                    return past_time.get("to").strftime(
+                        DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ
+                    )
+            else:
+                return past_time.get("to").strftime(
+                    DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ
                 )
+
         else:
-            get_numbers = re.compile(pattern)
-            if get_numbers is not None:
-                d = get_numbers.findall(make_date)
-                return f"{d[0]}h {d[1]}m {d[2]}s"
+            raise JiraOneErrors(
+                "errors",
+                'Invalid option value specified '
+                'for "pprint" argument.',
+            )
     return make_date
 
 
@@ -447,7 +547,8 @@ def bulk_change_email(data: str, token: str) -> None:
 
     :param token: A string of the API token to authenticate the request
 
-    Additionally, the output of failed attempts is written back to your data file.
+    Additionally, the output of failed attempts is written back
+    to your data file.
 
     :return: None
     """
@@ -462,9 +563,13 @@ def bulk_change_email(data: str, token: str) -> None:
     if len(data_check[0]) != 4:
         raise JiraOneErrors(
             "value",
-            f"The expected data column should be 4 columns got {len(data_check[0])} instead",
+            "The expected data column should be 4 "
+            f"columns got {len(data_check[0])} instead",
         )
-    items = namedtuple("items", ["account_id", "current_email", "name", "target_email"])
+    items = namedtuple(
+        "items",
+        ["account_id", "current_email", "name", "target_email"]
+    )
     org.add_token(token)
     for _ in read:
         user = items._make(_)
@@ -474,16 +579,20 @@ def bulk_change_email(data: str, token: str) -> None:
         )
         if response.status_code < 300:
             print(
-                f"Changed current email: {user.current_email} to target email: {user.target_email}"
+                f"Changed current email: {user.current_email} "
+                f"to target email: {user.target_email}"
             )
         else:
             print(
-                f"Not able to change current email: {user.current_email} to target email: {user.target_email} "
+                "Not able to change current "
+                f"email: {user.current_email} to "
+                f"target email: {user.target_email} "
                 f"- {response.reason}"
             )
             collect.append(_)
 
-    # If any of the email address isn't changed, write the output to the same file.
+    # If any of the email address isn't changed,
+    # write the output to the same file.
     file_writer(file_name=data, mode="a+", mark="many", data=collect)
     print("Change process completed".upper())
     collect.clear()
@@ -492,8 +601,8 @@ def bulk_change_email(data: str, token: str) -> None:
 def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
     """The function helps to swap an email address to another.
 
-    If the target email exist as an Atlassian account email, this will help to swap
-    that email address to the desired target email.
+    If the target email exist as an Atlassian account email,
+    this will help to swap that email address to the desired target email.
 
     :param data: A string of the file name
 
@@ -503,11 +612,12 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
 
                 *Valid values*
 
-                * dummy - A dummy email address to choose if not a default is formed
-                   from your email address
+                * dummy - A dummy email address to choose if not a
+                default is formed from your email address
 
-                * users - The name of a file to check the users and their account_id
-                    only needed if you want to search a predefined set of users.
+                * users - The name of a file to check the users and
+                their account_id only needed if you want to search
+                a predefined set of users.
 
     :return: None
     """
@@ -527,13 +637,21 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
     if len(data_check[0]) != 4:
         raise JiraOneErrors(
             "value",
-            f"The expected data column should be 4 columns got {len(data_check[0])} instead",
+            f"The expected data column should be 4 "
+            f"columns got {len(data_check[0])} instead",
         )
-    user_items = namedtuple("user_items", ["account_id", "email"])
-    items = namedtuple("items", ["account_id", "current_email", "name", "target_email"])
+    user_items = namedtuple(
+        "user_items",
+        ["account_id", "email"])
+    items = namedtuple(
+        "items",
+        ["account_id", "current_email", "name", "target_email"]
+    )
     # If you want, you can supply your own user list for find_id()
     users = (
-        file_reader(file_name=kwargs["users"], skip=True) if "users" in kwargs else None
+        file_reader(file_name=kwargs["users"], skip=True)
+        if "users" in kwargs
+        else None
     )
     data_response = {"count": 0, "email": None}
     source_data = org.get_organization(filter_by="users").json()
@@ -560,17 +678,24 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
 
         :param emails: A namedtuple to string of an email address
 
-        :param count: An integer count, basically trying to see if we can keep track of the changes.
+        :param count: An integer count, basically trying to see
+                      if we can keep track of the changes.
 
         :return: dict
         """
         check_email = org.manage_profile(emails.account_id).json()
         if dummy == check_email.get("account").get("email"):
             access = {"email": emails.target_email}
-            result = org.manage_profile(emails.account_id, json=access, method="put")
+            result = org.manage_profile(
+                emails.account_id, json=access, method="put"
+            )
             if result.status_code < 300:
                 count += 1
-                return {"result": result, "count": count, "email": emails.target_email}
+                return {
+                    "result": result,
+                    "count": count,
+                    "email": emails.target_email,
+                }
         return {"result": None, "count": count, "email": None}
 
     def target_swap(emails: Any, count: int) -> Dict:
@@ -578,7 +703,8 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
 
         :param emails: A namedtuple to string
 
-        :param count: An integer count, basically trying to see if we can keep track of the changes.
+        :param count: An integer count, basically trying to see if
+                      we can keep track of the changes.
 
         :return: dict
         """
@@ -588,17 +714,27 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
             result = org.manage_profile(get_id, json=access, method="put")
             if result.status_code < 300:
                 count += 1
-                return {"result": result, "count": count, "email": emails.current_email}
+                return {
+                    "result": result,
+                    "count": count,
+                    "email": emails.current_email,
+                }
         return {"result": None, "count": count, "email": None}
 
     swap_completion = 0
     for _ in read:
         user = items._make(_)
         current = user.current_email.split("@")[1]
-        dummy = "dummy0000008@" + current if "dummy" not in kwargs else kwargs["dummy"]
+        dummy = (
+            "dummy0000008@" + current
+            if "dummy" not in kwargs
+            else kwargs["dummy"]
+        )
         payload = {"email": dummy}
 
-        response = org.manage_profile(user.account_id, method="put", json=payload)
+        response = org.manage_profile(
+            user.account_id, method="put", json=payload
+        )
         if response.status_code < 300:
             print("Success:", f"Status: {response.status_code}", sep="---")
             print(
@@ -609,22 +745,26 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
                 data_response = target_swap(user, data_response["count"])
                 if data_response["email"] is not None:
                     print(
-                        f"Changing target email: {user.target_email} to current email: {data_response['email']}"
+                        f"Changing target email: {user.target_email} "
+                        f"to current email: {data_response['email']}"
                     )
                     data_response = dummy_swap(user, data_response["count"])
                     if data_response["email"] is not None:
                         print(
-                            f"Changing dummy email: {dummy} to target email: {data_response['email']}"
+                            f"Changing dummy email: {dummy} to "
+                            f"target email: {data_response['email']}"
                         )
                         swap_completion += 1
                         data_response["count"] -= 2
                     else:
                         print(
-                            f"Unable to change dummy email: {dummy} to target email: {data_response['email']}"
+                            f"Unable to change dummy email: {dummy} "
+                            f"to target email: {data_response['email']}"
                         )
                 else:
                     print(
-                        f"Unable to change target email: {user.target_email} to current email: {data_response['email']}"
+                        f"Unable to change target email: {user.target_email} "
+                        f"to current email: {data_response['email']}"
                     )
                     error_data = [
                         user.account_id,
@@ -642,7 +782,8 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
                 sep="---",
             )
             print(
-                f"Unable to change current email: {user.current_email} to dummy email: {dummy}"
+                f"Unable to change current email: {user.current_email} "
+                f"to dummy email: {dummy}"
             )
             error_data = [
                 user.account_id,
@@ -657,7 +798,8 @@ def bulk_change_swap_email(data: str, token: str, **kwargs: Any) -> None:
     # For any email that is not changed, write it back to the same file
     file_writer(file_name=data, mode="a+", mark="many", data=collect)
     print(
-        "Process complete, made swap attempt of {} email(s), complete cycle swap of {} email(s).".format(
+        "Process complete, made swap attempt of {} email(s), "
+        "complete cycle swap of {} email(s).".format(
             data_response["count"], swap_completion
         )
     )
