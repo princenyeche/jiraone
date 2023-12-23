@@ -1,0 +1,8 @@
+sphinxcontrib-httpdomain==1.7.0
+jiraone
+sphinx-autoapi
+sphinx
+scipy
+numpy
+pandas
+matplotlib
