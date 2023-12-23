@@ -106,31 +106,31 @@ Example usage:
 
    For example 1::
 
-   from jiraone import LOGIN, endpoint
+     from jiraone import LOGIN, endpoint
 
-   # previous login
-   LOGIN.session.headers = LOGIN.headers
-   LOGIN.session.auth = LOGIN.auth_request
-   response = LOGIN.session.get(endpoint.myself())
-   print(response.status_code)
-   # <Response 200>
+     # previous login
+     LOGIN.session.headers = LOGIN.headers
+     LOGIN.session.auth = LOGIN.auth_request
+     response = LOGIN.session.get(endpoint.myself())
+     print(response.status_code)
+     # <Response 200>
 
  If you want to use a self-signed certificate. You can set a path to the certificate or do not verify it.
 
    For example 2::
 
-   from jiraone import LOGIN, endpoint
+     from jiraone import LOGIN, endpoint
 
-   # previous login
-   LOGIN.session.headers = LOGIN.headers
-   LOGIN.session.auth = LOGIN.auth_request
-   # not verifying SSL cert
-   LOGIN.session.verify = False
-   # setting a path to the certificate
-   LOGIN.session.verify = "your_cert_path"
-   response = LOGIN.session.get(endpoint.myself())
-   print(response.status_code)
-   # <Response 200>
+     # previous login
+     LOGIN.session.headers = LOGIN.headers
+     LOGIN.session.auth = LOGIN.auth_request
+     # not verifying SSL cert
+     LOGIN.session.verify = False
+     # setting a path to the certificate
+     LOGIN.session.verify = "your_cert_path"
+     response = LOGIN.session.get(endpoint.myself())
+     print(response.status_code)
+     # <Response 200>
 
 
 **Attributes**, available to the :ref:`login` alias
@@ -651,13 +651,22 @@ You can be able to call various methods by altering the ``method`` keyword argum
 * ``GET`` request: Returns information about a single Atlassian account by ID by using a "GET" request.
 
 * ``PATCH`` request: Updates fields in a user account.
+
      * Body parameter
+
          * Any or all user object this is value
+
+         For example::
+
             e.g. {"name": "Lila User", "nickname": "marshmallow"}
 
 * ``PUT`` request: Sets the specified user's email address.
+
      * Body parameter
-          e.g. {"email": "prince.nyeche@elfapp.website"}
+
+         For example::
+
+            e.g. {"email": "prince.nyeche@elfapp.website"}
 
 
 

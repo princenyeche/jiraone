@@ -282,7 +282,7 @@ This function has the ability to generate the time an issue has stayed in a part
  key = ["COM-12", "COM-114", "TPS-14", 10024] # a list of issue keys or issue ids
  key = {"jql": "project = COM ORDER BY created DESC"} # a dict using JQL
 
-The third argument is file_reader function which you will need to pass or you can pass as a keyword argument as reader=file_reader. The remaining arguments can be passed as keyword arguments, pprint enables you to print out the time in status in Jira’s pretty format e.g. 13d 11h 22m 15s if it is set to True otherwise if it is not set at all, you will get the DateTime output as *13 days, 11:22:15.913* which is a time delta string of the DateTime string collected from the issue history. The output_format argument enables you to generate a report file either in *CSV* or *JSON* format. The words have to be strings and are case insensitive. E.g cSV or JsoN will output the correct file. The output_file argument basically just allows you to name the file, avoid using any extension as this will be automatically added based on the output_format. The status argument allows you to only output statuses that have that status name. For example, you want a report of only “In Progress” status, then you should write the name "In Progress" (this is case sensitive) as the value to the status argument. If left blank, the result will be all the statuses within the issues being searched. Therefore, if you want the time in status for all the statuses that exist within the Jira issues, do not set the status argument. The login argument is essential to the function as it is required for authenticating your API to the Jira issues. The `report_file` basically helps within the history generation, you do not have to set this as it is optional. The same goes for `report_folder` you do not have to set this as it is optional.
+The third argument is file_reader function which you will need to pass or you can pass as a keyword argument as ``reader=file_reader``. The remaining arguments can be passed as keyword arguments, ``pprint`` enables you to print out the time in status in Jira’s pretty format e.g. 13d 11h 22m 15s if it is set to True otherwise if it is not set at all, you will get the DateTime output as *13 days, 11:22:15.913* which is a time delta string of the DateTime string collected from the issue history. The output_format argument enables you to generate a report file either in *CSV* or *JSON* format. The words have to be strings and are case insensitive. E.g cSV or JsoN will output the correct file. The output_file argument basically just allows you to name the file, avoid using any extension as this will be automatically added based on the output_format. The status argument allows you to only output statuses that have that status name. For example, you want a report of only “In Progress” status, then you should write the name "In Progress" (this is case sensitive) as the value to the status argument. If left blank, the result will be all the statuses within the issues being searched. Therefore, if you want the time in status for all the statuses that exist within the Jira issues, do not set the status argument. The login argument is essential to the function as it is required for authenticating your API to the Jira issues. The `report_file` basically helps within the history generation, you do not have to set this as it is optional. The same goes for ``report_folder`` you do not have to set this as it is optional.
 
 Once you run the script, you will end up with a report that looks like the one below as the output
 
@@ -304,6 +304,12 @@ Once you run the script, you will end up with a report that looks like the one b
    "timeStatus": "8d 6h 32m 52s"
   }
  ]
+
+
+.. note::
+
+  The ``time_in_status`` - ``pprint`` argument supports both string and bool data types as of v0.7.9. When set with the string "timestamp" it produces the time_in_status with a
+  timestamp.
 
 
 * Update custom field or system fields using a field update function. Please ensure that the fields you want to update is visible on screen in your projects, if not you will get a 400 error response instead. The API doesn't override the screen functions.
@@ -332,7 +338,7 @@ Once you run the script, you will end up with a report that looks like the one b
 
 
 The above function is able to update any field used on Jira cloud. All you simply need to do is find the field based on it's name (case sensitive). If it exist, then a result will be shown for it. The field_update requires the below argument.
-* field: a call to the :ref;`field-class` class needs to be passed as the first argument.
+* field: a call to the :ref:`field-class` class needs to be passed as the first argument.
 * key_or_id: An issue key or issue id needs to be passed as the second argument or you can use a keyword argument.
 * update: A way to update the custom field. It accepts two valid values either ``add`` (adds a value to a list or dict) or `remove` (removes from a value to a list or dict)
 * name: The name of a field

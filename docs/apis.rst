@@ -4,6 +4,7 @@ API Documentation
 .. module:: jiraone.access
 
 
+.. _endpoint-class:
 endpoint
 --------
 
@@ -26,11 +27,12 @@ You can access this classmethod by calling ``jiraone.endpoint``.
               ...
 
 
-.. _endpoint-class:
 
 .. autoclass:: EndPoints
    :members:
 
+
+.. _credential-class:
 
 LOGIN
 --------
@@ -57,11 +59,12 @@ Once a login session starts, you can join other classes and make a call directly
   LOGIN.get(endpoint.myself())
 
 
-.. _credential-class:
 
 .. autoclass:: Credentials
    :members:
 
+
+.. _field-class:
 
 field
 ---------
@@ -81,18 +84,19 @@ You can access this class and make updates to Jira fields.
       c = field.update_field_data(data=value, find_field=fields, key_or_id=issue, options="add", show=False)
       echo(c)
 
-.. _field-class:
 
 .. autoclass:: Field
    :members:
 
+
+.. _for-class:
 
 For
 -------
  The :ref:`for-class` class shows an implementation of a ``for`` loop. It comes with a special method that
  helps with dictionary indexing.
 
-.. _for-class:
+
 
 .. autoclass:: For
    :members:
@@ -125,6 +129,8 @@ user and organization management. The authentication is different as it uses a b
 .. module:: jiraone.reporting
 
 
+.. _project-class:
+
 PROJECT
 -----------
 
@@ -138,11 +144,13 @@ This is an alias to the :ref:`project-class` class of the ``reporting`` module. 
    jql = "project = ABC ORDER BY Rank DESC"
    PROJECT.change_log(jql)
 
-.. _project-class:
+
 
 .. autoclass:: Projects
    :members:
 
+
+.. _user-class:
 
 USER
 ------
@@ -157,7 +165,6 @@ USER
    USER.get_all_users(file="user.csv", folder="USERS")
 
 
-.. _user-class:
 
 .. autoclass:: Users
    :members:
@@ -195,7 +202,7 @@ as possible, so you can easily make calls to Jira's endpoint and get the require
  # <Response [204]>
 
 
-.. function:: field_update
+.. autofunction:: field_update
 
 .. autofunction:: time_in_status
 
@@ -207,10 +214,11 @@ as possible, so you can easily make calls to Jira's endpoint and get the require
 .. module:: jiraone.utils
 
 
+.. _dotnotation-class:
+
 Utils
 ---------
 
-.. _dotnotation-class:
 
 .. autoclass:: DotNotation
    :members:
@@ -240,12 +248,11 @@ Examples below
 
    When loading a list of dictionaries, please refer to the second example as shown on the above code. The dictionary needs to be assigned to a key (any naming convention will do) to get the value. Failure will result in an error.
 
-.. _dateformat-class:
 
 .. autoclass:: DateFormat
     :members:
 
-The :ref:`dateformat-class` class provides the ability to construct datetime string directive which is used in Python's datetime class.
+The ``DateFormat`` class provides the ability to construct datetime string directive which is used in Python's datetime class.
 
 .. code-block:: python
 
@@ -267,5 +274,6 @@ threads to start with by increasing the ``workers`` argument
     # list_items a list of data
     for items in list_items
         process_executor(extract_issues, data=items)
+
 
 .. autofunction:: validate_on_error

@@ -125,7 +125,7 @@ class JiraOne(unittest.TestCase):
             reader=file_reader,
             output_format="json",
             report_folder="TEST",
-            output_filename="test_time_in_status.json",
+            output_filename="test_time_in_status",
             login=LOGIN,
             pprint="timestamp",
         )
@@ -139,7 +139,7 @@ class JiraOne(unittest.TestCase):
             reader=file_reader,
             output_format="csv",
             report_folder="TEST",
-            output_filename="test_time_in_status.csv",
+            output_filename="test_time_in_status",
             login=LOGIN,
             pprint=True,
         )
