@@ -2,7 +2,7 @@
 name = "jiraone"
 version = "v0.7.9"
 authors = [
-    { name = "Prince Nyeche", email = "support@elfapp.website" },
+    { name="Prince Nyeche", email="support@elfapp.website" },
 ]
 description = "A REST API Implementation to Jira Cloud APIs for creating reports and for performing other Jira queries."
 classifiers = [
