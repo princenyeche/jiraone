@@ -1,6 +1,59 @@
+[project]
+name = "jiraone"
+version = "v0.7.9"
+authors = [
+    { name = "Prince Nyeche", email = "support@elfapp.website" },
+]
+description = "A REST API Implementation to Jira Cloud APIs for creating reports and for performing other Jira queries."
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "requests",
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Homepage = "https://github.com/princenyeche/jiraone"
+Source = "https://github.com/princenyeche/jiraone"
+Documentation = "https://jiraone.readthedocs.io/"
+"Tracker" = "https://github.com/princenyeche/jiraone/issues"
+
+
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "sphinxcontrib-httpdomain",
+    "jiraone",
+    "sphinx-autoapi",
+    "scipy",
+    "numpy",
+    "pandas",
+    "matplotlib",
+]
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]
+namespaces = false
+
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools>=65",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"

@@ -5,9 +5,26 @@
 Provided herein are Report Generator Classes and Methods,
 Easily generate report for the various endpoints
 """
-from typing import Any, List, Iterable, Tuple, Union, Dict, Optional
-from collections import deque, namedtuple, OrderedDict
-from jiraone import LOGIN, endpoint, add_log, WORK_PATH
+from typing import (
+    Any,
+    List,
+    Iterable,
+    Tuple,
+    Union,
+    Dict,
+    Optional,
+)
+from collections import (
+    deque,
+    namedtuple,
+    OrderedDict,
+)
+from jiraone import (
+    LOGIN,
+    endpoint,
+    add_log,
+    WORK_PATH,
+)
 import json
 import csv
 import sys
@@ -20,18 +37,19 @@ class Projects:
 
     @staticmethod
     def projects_accessible_by_users(
-            *args: str,
-            project_folder: str = "Project",
-            project_file_name: str = "project_file.csv",
-            user_extraction_file: str = "project_extract.csv",
-            permission: str = "BROWSE",
-            **kwargs,
+        *args: str,
+        project_folder: str = "Project",
+        project_file_name: str = "project_file.csv",
+        user_extraction_file: str = "project_extract.csv",
+        permission: str = "BROWSE",
+        **kwargs,
     ) -> None:
         """
         Send an argument as String equal to a value, example: status=live.
 
-        Multiple arguments separate by comma as the first argument in the function, all other arguments should
-        be keyword args that follows. This API helps to generate full user accessibility to Projects on Jira.
+        Multiple arguments separate by comma as the first argument in the
+        function, all other arguments should be keyword args that follows.
+        This API helps to generate full user accessibility to Projects on Jira.
         It checks the users access and commits the finding to a report file.
 
         You can tweak the permission argument with the options mention `here
@@ -56,12 +74,28 @@ class Projects:
         :return: None
         """
         count_start_at = 0
-        headers = ["Project Key", "Project Name", "Issue Count", "Last Issue Update"]
-        file_writer(folder=project_folder, file_name=project_file_name, data=headers)
+        headers = [
+            "Project Key",
+            "Project Name",
+            "Issue Count",
+            "Last Issue Update",
+        ]
+        file_writer(
+            folder=project_folder,
+            file_name=project_file_name,
+            data=headers,
+        )
 
         def project():
-            file_writer(project_folder, project_file_name, data=raw)
-            read_users = file_reader(folder=project_folder, file_name=file_name)
+            file_writer(
+                project_folder,
+                project_file_name,
+                data=raw,
+            )
+            read_users = file_reader(
+                folder=project_folder,
+                file_name=file_name,
+            )
             for user in read_users:
                 account_id = user[0]
                 display_name = user[2]
@@ -69,7 +103,9 @@ class Projects:
                 project_key = keys
                 find = LOGIN.get(
                     endpoint.find_users_with_permission(
-                        account_id, project_key, permission
+                        account_id,
+                        project_key,
+                        permission,
                     )
                 )
                 data = json.loads(find.content)
@@ -80,7 +116,11 @@ class Projects:
                         f"Project: {name}",
                         f"User Status: {active_status}",
                     ]
-                    file_writer(project_folder, project_file_name, data=raw_vision)
+                    file_writer(
+                        project_folder,
+                        project_file_name,
+                        data=raw_vision,
+                    )
                 else:
                     for d in data:
                         d_name = d["displayName"]
@@ -92,14 +132,30 @@ class Projects:
                             f"User Status: {active_status}",
                         ]
 
-                        file_writer(project_folder, project_file_name, data=raw_vision)
+                        file_writer(
+                            project_folder,
+                            project_file_name,
+                            data=raw_vision,
+                        )
 
         file_name = user_extraction_file
-        USER.get_all_users(file=file_name, folder=project_folder, **kwargs)
+        USER.get_all_users(
+            file=file_name,
+            folder=project_folder,
+            **kwargs,
+        )
         print("Project User List Extracted")
-        add_log("Project User List Extracted", "info")
+        add_log(
+            "Project User List Extracted",
+            "info",
+        )
         while True:
-            load = LOGIN.get(endpoint.get_projects(*args, start_at=count_start_at))
+            load = LOGIN.get(
+                endpoint.get_projects(
+                    *args,
+                    start_at=count_start_at,
+                )
+            )
             count_start_at += 50
             if load.status_code == 200:
                 results = json.loads(load.content)
@@ -108,7 +164,10 @@ class Projects:
                     name = key["name"]
                     if "insight" in key:
                         insight = key["insight"]
-                        if "totalIssueCount" and "lastIssueUpdateTime" in insight:
+                        if (
+                            "totalIssueCount"
+                            and "lastIssueUpdateTime" in insight
+                        ):
                             raw = [
                                 keys,
                                 name,
@@ -117,8 +176,8 @@ class Projects:
                             ]
                             project()
                         elif (
-                                "totalIssueCount" in insight
-                                and "lastIssueUpdateTime" not in insight
+                            "totalIssueCount" in insight
+                            and "lastIssueUpdateTime" not in insight
                         ):
                             raw = [
                                 keys,
@@ -128,38 +187,52 @@ class Projects:
                             ]
                             project()
                     else:
-                        raw = [keys, name, "No data available", "No data available"]
+                        raw = [
+                            keys,
+                            name,
+                            "No data available",
+                            "No data available",
+                        ]
                         project()
 
                 if count_start_at > results["total"]:
                     print("Project Reporting Completed")
                     print(
-                        "File extraction completed. Your file is located at {}".format(
+                        "File extraction completed. "
+                        "Your file is located at {}".format(
                             path_builder(
-                                path=project_folder, file_name=project_file_name
+                                path=project_folder,
+                                file_name=project_file_name,
                             )
                         )
                     )
-                    add_log("Project Reporting Completed", "info")
+                    add_log(
+                        "Project Reporting Completed",
+                        "info",
+                    )
                     break
             else:
                 sys.stderr.write(
                     "Unable to fetch data status {} ".format(load.status_code)
                 )
-                add_log(f"Data retrieval failure due to {load.reason}", "error")
+                add_log(
+                    f"Data retrieval failure " f"due to {load.reason}",
+                    "error",
+                )
                 sys.exit(1)
 
     @staticmethod
     def dashboards_shared_with(
-            dashboard_folder: str = "Dashboard",
-            dashboard_file_name: str = "dashboard_file.csv",
-            **kwargs,
+        dashboard_folder: str = "Dashboard",
+        dashboard_file_name: str = "dashboard_file.csv",
+        **kwargs,
     ) -> None:
         """
         Retrieve the Dashboard Id/Name/owner and who it is shared with.
 
-        The only requirement is that the user querying this API should have access to all
-        the Dashboard available else it will only return dashboard where the user's view access is allowed.
+        The only requirement is that the user querying this API should have
+        access to all the Dashboard available else it will only return
+        dashboard where the user's view access is allowed.
 
         :param dashboard_folder: A folder
 
@@ -171,9 +244,15 @@ class Projects:
         """
         count_start_at = 0
         dash_list = deque()  # get the id of dashboard search
-        put_list = deque()  # arrange the different values associated with dashboard
+        # arrange the different values associated with dashboard
+        put_list = deque()
         dump_list = deque()  # dump the results into our csv writer
-        headers = ["Dashboard Id", "Dashboard Name", "Owner", "Shared Permission"]
+        headers = [
+            "Dashboard Id",
+            "Dashboard Name",
+            "Owner",
+            "Shared Permission",
+        ]
         file_writer(
             folder=dashboard_folder,
             file_name=dashboard_file_name,
@@ -182,18 +261,26 @@ class Projects:
         )
 
         while True:
-            load = LOGIN.get(endpoint.search_for_dashboard(start_at=count_start_at))
+            load = LOGIN.get(
+                endpoint.search_for_dashboard(start_at=count_start_at)
+            )
             count_start_at += 50
             if load.status_code == 200:
                 results = json.loads(load.content)
                 for value in results["values"]:
                     valid = value["id"]
                     name = value["name"]
-                    raw = [valid, name]
+                    raw = [
+                        valid,
+                        name,
+                    ]
                     dash_list.append(raw)
 
                 print("Dashboard List Extracted")
-                add_log("Dashboard List Extracted", "info")
+                add_log(
+                    "Dashboard List Extracted",
+                    "info",
+                )
 
                 def dash_run():
                     for pem in shared_permission:
@@ -206,13 +293,20 @@ class Projects:
                         if "type" in pem:
                             types = pem["type"]
                             if types == "project":
-                                project = f"Project Name: {pem['project']['name']}"
+                                project = (
+                                    f"Project Name: {pem['project']['name']}"
+                                )
                                 put_list.append(project)
                             if types == "loggedin" or types == "global":
                                 put_list.append(types)
 
                     extract = [d for d in put_list]
-                    raw = [value[0], names, owner, extract]
+                    raw = [
+                        value[0],
+                        names,
+                        owner,
+                        extract,
+                    ]
                     dump_list.append(raw)
 
                 for value in dash_list:
@@ -227,27 +321,35 @@ class Projects:
                         put_list = deque()
 
                 file_writer(
-                    dashboard_folder, dashboard_file_name, data=dump_list, mark="many"
+                    dashboard_folder,
+                    dashboard_file_name,
+                    data=dump_list,
+                    mark="many",
                 )
 
                 if count_start_at > results["total"]:
                     print("Dashboard Reporting Completed")
                     print(
-                        "File extraction completed. Your file is located at {}".format(
+                        "File extraction completed. "
+                        "Your file is located at {}".format(
                             path_builder(
-                                path=dashboard_folder, file_name=dashboard_file_name
+                                path=dashboard_folder,
+                                file_name=dashboard_file_name,
                             )
                         )
                     )
-                    add_log("Dashboard Reporting Completed", "info")
+                    add_log(
+                        "Dashboard Reporting Completed",
+                        "info",
+                    )
                     break
 
     @staticmethod
     def get_all_roles_for_projects(
-            roles_folder: str = "Roles",
-            roles_file_name: str = "roles_file.csv",
-            user_extraction: str = "role_users.csv",
-            **kwargs,
+        roles_folder: str = "Roles",
+        roles_file_name: str = "roles_file.csv",
+        user_extraction: str = "role_users.csv",
+        **kwargs,
     ) -> None:
         """
         Get the roles available in a project and which user is assigned to which
@@ -274,7 +376,10 @@ class Projects:
             "User role in Project",
         ]
         file_writer(
-            folder=roles_folder, file_name=roles_file_name, data=headers, **kwargs
+            folder=roles_folder,
+            file_name=roles_file_name,
+            data=headers,
+            **kwargs,
         )
 
         # get extraction of projects data
@@ -287,7 +392,10 @@ class Projects:
                 name = keys["name"]
                 roles = LOGIN.get(endpoint.get_roles_for_project(pid))
                 print("Extracting Project Keys {}".format(key))
-                add_log("Extracting Project Keys {}".format(key), "info")
+                add_log(
+                    "Extracting Project Keys {}".format(key),
+                    "info",
+                )
 
                 # find out what roles exist within each project
                 def role_over() -> Tuple:
@@ -298,19 +406,32 @@ class Projects:
                         only_values = extract.items()
                         puller = list(only_values)
                         z = [d for d in puller]
-                        return casting, z
+                        return (
+                            casting,
+                            z,
+                        )
 
                 caster = role_over()
-                raw = [pid, key, name, caster[0]]
+                raw = [
+                    pid,
+                    key,
+                    name,
+                    caster[0],
+                ]
                 role_list.append(raw)
-                add_log("Appending data to List Queue", "info")
+                add_log(
+                    "Appending data to List Queue",
+                    "info",
+                )
 
                 for user in read_users:
                     account_id = user[0]
                     display_name = user[2]
 
                     # extract the user role using the appropriate accountId
-                    def get_user_role(user_data) -> None:
+                    def get_user_role(
+                        user_data,
+                    ) -> None:
                         for users in user_data[1]:
                             check = LOGIN.get(users[1])
                             if check.status_code == 200:
@@ -318,7 +439,10 @@ class Projects:
                                 actors = result_data["actors"]
                                 for act in actors:
                                     if "actorUser" in act:
-                                        if account_id == act["actorUser"]["accountId"]:
+                                        if (
+                                            account_id
+                                            == act["actorUser"]["accountId"]
+                                        ):
                                             res = f"Role Name: {result_data['name']}"
                                             project_role_list.append(res)
 
@@ -350,16 +474,25 @@ class Projects:
                     get_user_role(caster)
                     project_role_list = deque()
 
-        USER.get_all_users(folder=roles_folder, file=user_extraction, **kwargs)
+        USER.get_all_users(
+            folder=roles_folder,
+            file=user_extraction,
+            **kwargs,
+        )
         read_users = file_reader(
-            folder=roles_folder, file_name=user_extraction, **kwargs
+            folder=roles_folder,
+            file_name=user_extraction,
+            **kwargs,
         )
         while True:
             init = LOGIN.get(endpoint.get_projects(start_at=count_start_at))
             if init.status_code == 200:
                 print("Project Extraction")
                 results = json.loads(init.content)
-                add_log("Project Extraction Initiated", "info")
+                add_log(
+                    "Project Extraction Initiated",
+                    "info",
+                )
                 if count_start_at > results["total"]:
                     break
                 if results["total"] > 0:
@@ -368,21 +501,28 @@ class Projects:
 
         print(
             "File extraction completed. Your file is located at {}".format(
-                path_builder(path=roles_folder, file_name=roles_file_name)
+                path_builder(
+                    path=roles_folder,
+                    file_name=roles_file_name,
+                )
             )
         )
-        add_log("File extraction completed", "info")
+        add_log(
+            "File extraction completed",
+            "info",
+        )
 
     def get_attachments_on_projects(
-            self,
-            attachment_folder: str = "Attachment",
-            attachment_file_name: str = "attachment_file.csv",
-            **kwargs,
+        self,
+        attachment_folder: str = "Attachment",
+        attachment_file_name: str = "attachment_file.csv",
+        **kwargs,
     ) -> None:
         """Return all attachments of a Project or Projects
 
-        Get the size of attachments on an Issue, count those attachments collectively and return the total number
-        on all Projects searched. JQL is used as a means to search for the project.
+        Get the size of attachments on an Issue, count those attachments
+        collectively and return the total number on all Projects searched.
+        JQL is used as a means to search for the project.
 
         :param attachment_folder: A temp folder
 
@@ -421,7 +561,9 @@ class Projects:
             nonlocal attach_list
             for issues in result_data["issues"]:
                 keys = issues["key"]
-                get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=keys))
+                get_issue_keys = LOGIN.get(
+                    endpoint.issues(issue_key_or_id=keys)
+                )
                 if get_issue_keys.status_code == 200:
                     key_data = json.loads(get_issue_keys.content)
                     data = key_data["fields"]
@@ -433,14 +575,18 @@ class Projects:
                         if attachment is not None:
                             for attach in attachment:
                                 if "author" in attach:
-                                    display_name = attach["author"]["displayName"]
+                                    display_name = attach["author"][
+                                        "displayName"
+                                    ]
 
                                 def pull_attachment() -> None:
                                     """
                                     Arranges extracts data
                                     :return: None
                                     """
-                                    file_name = attach["filename"]  # name of the file
+                                    file_name = attach[
+                                        "filename"
+                                    ]  # name of the file
                                     created = attach[
                                         "created"
                                     ]  # datetime need to convert it
@@ -450,7 +596,9 @@ class Projects:
                                     mime_type = attach.get("mimeType")
                                     attachment_url = attach["content"]
 
-                                    calc_size = self.byte_converter(attachment_size)
+                                    calc_size = self.byte_converter(
+                                        attachment_size
+                                    )
                                     calc_date = self.date_converter(created)
 
                                     pull = [
@@ -470,23 +618,35 @@ class Projects:
 
             raw_data = [x for x in attach_list]
             file_writer(
-                attachment_folder, attachment_file_name, data=raw_data, mark="many"
+                attachment_folder,
+                attachment_file_name,
+                data=raw_data,
+                mark="many",
             )
             attach_list.clear()
 
         while True:
             get_issue = LOGIN.get(
-                endpoint.search_issues_jql(start_at=count_start_at, **kwargs)
+                endpoint.search_issues_jql(
+                    start_at=count_start_at,
+                    **kwargs,
+                )
             )
             if get_issue.status_code == 200:
                 result_data = json.loads(get_issue.content)
                 if count_start_at > result_data["total"]:
                     print("Attachment extraction completed")
-                    add_log("Attachment extraction completed", "info")
+                    add_log(
+                        "Attachment extraction completed",
+                        "info",
+                    )
                     break
 
                 print("Attachment extraction processing")
-                add_log("Attachment extraction processing", "info")
+                add_log(
+                    "Attachment extraction processing",
+                    "info",
+                )
                 pull_attachment_sequence()
 
             count_start_at += 50
@@ -496,11 +656,18 @@ class Projects:
             Rewrite and sort the extracted data
             :return: None
             """
-            calc_made = self.grade_and_sort(attach_list, read_file)
+            calc_made = self.grade_and_sort(
+                attach_list,
+                read_file,
+            )
             attach_list.clear()
             rd_file = read_file
             # sort the file using the issue_key column
-            sorts = sorted(rd_file, key=lambda row: row[3], reverse=False)
+            sorts = sorted(
+                rd_file,
+                key=lambda row: row[3],
+                reverse=False,
+            )
             for i in sorts:
                 _project_id = i[0]
                 _project_key = i[1]
@@ -522,7 +689,11 @@ class Projects:
                     _created_by,
                     _attach_url,
                 ]
-                file_writer(attachment_folder, attachment_file_name, data=raw_data_file)
+                file_writer(
+                    attachment_folder,
+                    attachment_file_name,
+                    data=raw_data_file,
+                )
 
             # lastly we want to append the total sum of attachment size.
             raw_data_file = [
@@ -536,28 +707,49 @@ class Projects:
                 "",
                 "",
             ]
-            file_writer(attachment_folder, attachment_file_name, data=raw_data_file)
+            file_writer(
+                attachment_folder,
+                attachment_file_name,
+                data=raw_data_file,
+            )
 
-        read_file = file_reader(attachment_folder, attachment_file_name, skip=True)
-        file_writer(attachment_folder, attachment_file_name, data=headers, mode="w")
+        read_file = file_reader(
+            attachment_folder,
+            attachment_file_name,
+            skip=True,
+        )
+        file_writer(
+            attachment_folder,
+            attachment_file_name,
+            data=headers,
+            mode="w",
+        )
         re_write()
 
         print(
             "File extraction completed. Your file is located at {}".format(
-                path_builder(path=attachment_folder, file_name=attachment_file_name)
+                path_builder(
+                    path=attachment_folder,
+                    file_name=attachment_file_name,
+                )
             )
         )
-        add_log("File extraction completed", "info")
+        add_log(
+            "File extraction completed",
+            "info",
+        )
 
     @staticmethod
-    def byte_converter(val) -> str:
+    def byte_converter(
+        val,
+    ) -> str:
         """1 Byte = 8 Bits.
 
         using megabyte MB, value is 1000^2
 
         mebibyte MiB, value is 1024^2
 
-        Therefore total = val / MB
+        total = val / MB
 
         :param val: A value to supply
 
@@ -569,7 +761,9 @@ class Projects:
         return "Size: {:.2f} MB".format(visor)
 
     @staticmethod
-    def date_converter(val) -> str:
+    def date_converter(
+        val,
+    ) -> str:
         """split the datetime value and output a string.
 
         :param val: A value to be supplied
@@ -581,7 +775,10 @@ class Projects:
         return f"Created on {get_date_time[0]} {get_am_pm[0]}"
 
     @staticmethod
-    def grade_and_sort(attach_list, read_file) -> Union[float, int]:
+    def grade_and_sort(
+        attach_list,
+        read_file,
+    ) -> Union[float, int,]:
         """
         Arranges and sorts the data.
 
@@ -602,7 +799,9 @@ class Projects:
         return calc_sum
 
     @staticmethod
-    def bytes_converter(val) -> str:
+    def bytes_converter(
+        val,
+    ) -> str:
         """Returns unit in KB or MB.
 
         1 Byte = 8 Bits.
@@ -611,7 +810,7 @@ class Projects:
 
         mebibyte MiB, value is 1024^2
 
-        Therefore total = val / MB
+        total = val / MB
 
         :param val: An integer value
 
@@ -627,27 +826,30 @@ class Projects:
         else:
             visor = byte_size / kilo_byte  # KB converter
             unit = "KB"
-        return "Size: {:.2f} {}".format(visor, unit)
+        return "Size: {:.2f} {}".format(
+            visor,
+            unit,
+        )
 
     @staticmethod
     def move_attachments_across_instances(
-            attach_folder: str = "Attachment",
-            attach_file: str = "attachment_file.csv",
-            key: int = 3,
-            attach: int = 8,
-            file: int = 6,
-            last_cell: bool = True,
-            **kwargs,
+        attach_folder: str = "Attachment",
+        attach_file: str = "attachment_file.csv",
+        key: int = 3,
+        attach: int = 8,
+        file: int = 6,
+        last_cell: bool = True,
+        **kwargs,
     ) -> None:
         """Ability to post an attachment into another Instance.
 
-        given the data is extracted from a csv file which contains the below information
+        given the data is extracted from a csv file which contains the
+        below information
          * Issue key
          * file name
          * attachment url
 
-        we assume you're getting this from
-        ``def get_attachments_on_project()``
+        we assume you're getting this from ``def get_attachments_on_project()``
 
         :param attach_folder: a folder or directory path
 
@@ -659,8 +861,9 @@ class Projects:
 
         :param file:  integers to specify the index of the columns
 
-        :param last_cell: is a boolean determines if the last cell should be counted.
-             e.g
+        :param last_cell: is a boolean determines if the last cell should
+                          be counted.
+             e.g.
 
               * key=3,
 
@@ -669,15 +872,21 @@ class Projects:
               * file=8
 
         the above example corresponds with the index if using the
-         ``def get_attachments_on_project()`` otherwise, specify your value in each
-         keyword args when calling the method.
+         ``def get_attachments_on_project()`` otherwise, specify your
+         value in each keyword args when calling the method.
 
          :return: None
         """
         read = file_reader(
-            folder=attach_folder, file_name=attach_file, skip=True, **kwargs
+            folder=attach_folder,
+            file_name=attach_file,
+            skip=True,
+            **kwargs,
         )
-        add_log("Reading attachment {}".format(attach_file), "info")
+        add_log(
+            "Reading attachment {}".format(attach_file),
+            "info",
+        )
         count = 0
         cols = read
         length = len(cols)
@@ -687,16 +896,27 @@ class Projects:
             attachment = r[attach]
             _file_name = r[file]
             fetch = LOGIN.get(attachment).content
-            # use the file's keyword args to send multipart/form-data in the post request of LOGIN.post
-            payload = {"file": (_file_name, fetch)}
-            # modified our initial headers to accept X-Atlassian-Token to avoid (CSRF/XSRF)
+            # use the file's keyword args to send multipart/form-data
+            # in the post request of LOGIN.post
+            payload = {
+                "file": (
+                    _file_name,
+                    fetch,
+                )
+            }
+            # modified our initial headers to accept X-Atlassian-Token
+            # to avoid (CSRF/XSRF)
             new_headers = {
                 "Accept": "application/json",
                 "X-Atlassian-Token": "no-check",
             }
             LOGIN.headers = new_headers
             run = LOGIN.post(
-                endpoint.issue_attachments(keys, query="attachments"), files=payload
+                endpoint.issue_attachments(
+                    keys,
+                    query="attachments",
+                ),
+                files=payload,
             )
             if run.status_code != 200:
                 print(
@@ -704,7 +924,10 @@ class Projects:
                     "Status code: {}".format(run.status_code),
                 )
                 add_log(
-                    "Attachment not added to {} due to {}".format(keys, run.reason),
+                    "Attachment not added to {} due to {}".format(
+                        keys,
+                        run.reason,
+                    ),
                     "error",
                 )
             else:
@@ -712,7 +935,10 @@ class Projects:
                     "Attachment added to {}".format(keys),
                     "Status code: {}".format(run.status_code),
                 )
-                add_log("Attachment added to {}".format(keys), "info")
+                add_log(
+                    "Attachment added to {}".format(keys),
+                    "info",
+                )
             # remove the last column since if it contains empty cells.
             if last_cell is True:
                 if count >= (length - 1):
@@ -720,16 +946,17 @@ class Projects:
 
     @staticmethod
     def download_attachments(
-            file_folder: str = None,
-            file_name: str = None,
-            download_path: str = "Downloads",
-            attach: int = 8,
-            file: int = 6,
-            **kwargs,
+        file_folder: str = None,
+        file_name: str = None,
+        download_path: str = "Downloads",
+        attach: int = 8,
+        file: int = 6,
+        **kwargs,
     ) -> None:
         """Download the attachments to your local device read from a csv file.
 
-        we assume you're getting this from   ``def get_attachments_on_project()`` method.
+        we assume you're getting this from ``def get_attachments_on_project()``
+        method.
 
         :param attach: integers to specify the index of the columns
 
@@ -745,13 +972,21 @@ class Projects:
                   * attach=6,
                   * file=8
 
-        the above example corresponds with the index if using the ``def get_attachments_on_project()``
-        otherwise, specify your value in each keyword args when calling the method.
+        the above example corresponds with the index if using the
+        ``def get_attachments_on_project()`` otherwise, specify your value
+        in each keyword args when calling the method.
 
         :return: None
         """
-        read = file_reader(folder=file_folder, file_name=file_name, **kwargs)
-        add_log("Reading attachment {}".format(file_name), "info")
+        read = file_reader(
+            folder=file_folder,
+            file_name=file_name,
+            **kwargs,
+        )
+        add_log(
+            "Reading attachment {}".format(file_name),
+            "info",
+        )
         count = 0
         cols = read
         length = len(cols)
@@ -772,16 +1007,22 @@ class Projects:
                 "Attachment downloaded to {}".format(download_path),
                 "Status code: {}".format(fetch.status_code),
             )
-            add_log("Attachment downloaded to {}".format(download_path), "info")
+            add_log(
+                "Attachment downloaded to {}".format(download_path),
+                "info",
+            )
             if last_cell is True:
                 if count >= (length - 1):
                     break
 
     @staticmethod
     def get_total_comments_on_issues(
-            folder: str = "Comment", file_name: str = "comment_file.csv", **kwargs
+        folder: str = "Comment",
+        file_name: str = "comment_file.csv",
+        **kwargs,
     ) -> None:
-        """Return a report with the number of comments sent to or by a reporter (if any).
+        """Return a report with the number of comments sent to or by a
+        reporter (if any).
 
         This api will return comment count, the total comment sent by a reporter
         per issue and collectively sum up a total.
@@ -797,10 +1038,18 @@ class Projects:
         """
         comment_list = deque()
         pull = "active" if "pull" not in kwargs else kwargs["pull"]
-        user_type = "atlassian" if "user_type" not in kwargs else kwargs["user_type"]
+        user_type = (
+            "atlassian" if "user_type" not in kwargs else kwargs["user_type"]
+        )
         file = "user_file.csv" if "file" not in kwargs else kwargs["file"]
-        find_user = "test user" if "find_user" not in kwargs else kwargs["find_user"]
-        duration = "startOfWeek(-1)" if "duration" not in kwargs else kwargs["duration"]
+        find_user = (
+            "test user" if "find_user" not in kwargs else kwargs["find_user"]
+        )
+        duration = (
+            "startOfWeek(-1)"
+            if "duration" not in kwargs
+            else kwargs["duration"]
+        )
         status = None if "status" not in kwargs else kwargs["status"]
         get_user = ""
         headers = [
@@ -814,29 +1063,60 @@ class Projects:
             "Comment by Reporter",
             "Comment by others",
         ]
-        file_writer(folder, file_name, data=headers)
-        USER.get_all_users(pull=pull, user_type=user_type, file=file, folder=folder)
-        CheckUser = namedtuple(
-            "CheckUser", ["accountId", "account_type", "display_name", "active"]
+        file_writer(
+            folder,
+            file_name,
+            data=headers,
         )
-        read = file_reader(folder=folder, file_name=file)
+        USER.get_all_users(
+            pull=pull,
+            user_type=user_type,
+            file=file,
+            folder=folder,
+        )
+        CheckUser = namedtuple(
+            "CheckUser",
+            [
+                "accountId",
+                "account_type",
+                "display_name",
+                "active",
+            ],
+        )
+        read = file_reader(
+            folder=folder,
+            file_name=file,
+        )
         for _ in read:
             f = CheckUser._make(_)
             if find_user in f._asdict().values():
                 get_user = f.accountId
-                print("User {} found - accountId: {}".format(find_user, get_user))
+                print(
+                    "User {} found - accountId: {}".format(
+                        find_user,
+                        get_user,
+                    )
+                )
 
         if get_user == "":
             print("User: {}, not found exiting search...".format(find_user))
             sys.exit(1)
         search_issues = (
-            "reporter = {} AND updated <= {}".format(get_user, duration)
+            "reporter = {} AND updated <= {}".format(
+                get_user,
+                duration,
+            )
             if "status" not in kwargs or status is None
             else "reporter = {} AND updated <= {} AND status in ({})".format(
-                get_user, duration, status
+                get_user,
+                duration,
+                status,
             )
         )
-        print("Searching with JQL:", search_issues)
+        print(
+            "Searching with JQL:",
+            search_issues,
+        )
         count_start_at = 0
 
         def extract_issue() -> None:
@@ -847,7 +1127,9 @@ class Projects:
             comment_by_others = 0
             for issues in result_data["issues"]:
                 keys = issues["key"]
-                get_issue_keys = LOGIN.get(endpoint.issues(issue_key_or_id=keys))
+                get_issue_keys = LOGIN.get(
+                    endpoint.issues(issue_key_or_id=keys)
+                )
                 if get_issue_keys.status_code == 200:
                     key_data = json.loads(get_issue_keys.content)
                     data = key_data["fields"]
@@ -866,8 +1148,12 @@ class Projects:
                                 reporter_aid = ""
                                 for comment in comment_data["comments"]:
                                     if "author" in comment:
-                                        display_name = comment["author"]["displayName"]
-                                        account_id = comment["author"]["accountId"]
+                                        display_name = comment["author"][
+                                            "displayName"
+                                        ]
+                                        account_id = comment["author"][
+                                            "accountId"
+                                        ]
                                         if account_id == get_user:
                                             reporter_name = display_name
                                             reporter_aid = account_id
@@ -898,18 +1184,29 @@ class Projects:
                                 comment_by_others = 0
 
             raw_data = [z for z in comment_list]
-            file_writer(folder, file_name, data=raw_data, mark="many")
+            file_writer(
+                folder,
+                file_name,
+                data=raw_data,
+                mark="many",
+            )
             comment_list.clear()
 
         while True:
             get_issues = LOGIN.get(
-                endpoint.search_issues_jql(query=search_issues, start_at=count_start_at)
+                endpoint.search_issues_jql(
+                    query=search_issues,
+                    start_at=count_start_at,
+                )
             )
             if get_issues.status_code == 200:
                 result_data = json.loads(get_issues.content)
                 if count_start_at > result_data["total"]:
                     print("Issues extraction completed")
-                    add_log("Issue extraction completed", "info")
+                    add_log(
+                        "Issue extraction completed",
+                        "info",
+                    )
                     break
 
                 print("Extracting Issues...")
@@ -917,7 +1214,13 @@ class Projects:
 
             count_start_at += 50
 
-        def count_and_total() -> Tuple[int, int, int]:
+        def count_and_total() -> (
+            Tuple[
+                int,
+                int,
+                int,
+            ]
+        ):
             """
             Sorts and arranges the extracted data
 
@@ -932,7 +1235,11 @@ class Projects:
             calc_list_zero = sum(wid_list)
             calc_list_one = sum(row_list)
             calc_list_two = sum(col_list)
-            return calc_list_zero, calc_list_one, calc_list_two
+            return (
+                calc_list_zero,
+                calc_list_one,
+                calc_list_two,
+            )
 
         def write_result() -> None:
             """
@@ -942,7 +1249,11 @@ class Projects:
             """
             list_data = count_and_total()
             comment_list.clear()
-            sorts = sorted(read_file, key=lambda rows: rows[3], reverse=False)
+            sorts = sorted(
+                read_file,
+                key=lambda rows: rows[3],
+                reverse=False,
+            )
             for c in sorts:
                 _project_id = c[0]
                 _project_key = c[1]
@@ -965,7 +1276,11 @@ class Projects:
                     _comm_by_reporter,
                     _comm_by_others,
                 ]
-                file_writer(folder, file_name, data=raw_data_file)
+                file_writer(
+                    folder,
+                    file_name,
+                    data=raw_data_file,
+                )
 
             # arranging the file last row
             raw_data_file = [
@@ -979,26 +1294,49 @@ class Projects:
                 "Total comments by Reporter: {}".format(list_data[1]),
                 "Total comments by others: {}".format(list_data[2]),
             ]
-            file_writer(folder, file_name, data=raw_data_file)
+            file_writer(
+                folder,
+                file_name,
+                data=raw_data_file,
+            )
 
-        read_file = file_reader(folder, file_name, skip=True)
-        file_writer(folder, file_name, mode="w", data=headers)
+        read_file = file_reader(
+            folder,
+            file_name,
+            skip=True,
+        )
+        file_writer(
+            folder,
+            file_name,
+            mode="w",
+            data=headers,
+        )
         write_result()
 
         print(
-            "File extraction for comments completed. Your file is located at {}".format(
-                path_builder(path=folder, file_name=file_name)
+            "File extraction for comments completed. "
+            "Your file is located at {}".format(
+                path_builder(
+                    path=folder,
+                    file_name=file_name,
+                )
             )
         )
-        add_log("File extraction for comments completed", "info")
+        add_log(
+            "File extraction for comments completed",
+            "info",
+        )
 
     @staticmethod
     def change_log(
-            folder: str = "ChangeLog",
-            file: str = "change_log.csv",
-            back_up: bool = False,
-            allow_cp: bool = True,
-            **kwargs: Union[str, bool],
+        folder: str = "ChangeLog",
+        file: str = "change_log.csv",
+        back_up: bool = False,
+        allow_cp: bool = True,
+        **kwargs: Union[
+            str,
+            bool,
+        ],
     ) -> None:
         """Extract the issue history of an issue.
 
@@ -1031,32 +1369,48 @@ class Projects:
 
         :return: None
         """
-        from jiraone.exceptions import JiraOneErrors
+        from jiraone.exceptions import (
+            JiraOneErrors,
+        )
 
         if LOGIN.get(endpoint.myself()).status_code > 300:
             raise JiraOneErrors(
-                "login", "Authentication failed. Please check your credentials."
+                "login",
+                "Authentication failed. " "Please check your credentials.",
             )
         changes = deque()
         item_list = deque()
         jql: str = (
-            kwargs["jql"] if "jql" in kwargs else exit("A JQL query is required.")
+            kwargs["jql"]
+            if "jql" in kwargs
+            else exit("A JQL query is required.")
         )
         saved_file: str = (
-            "iter_saves.json" if "saved_file" not in kwargs else kwargs["saved_file"]
+            "iter_saves.json"
+            if "saved_file" not in kwargs
+            else kwargs["saved_file"]
         )
         field_name = kwargs["field_name"] if "field_name" in kwargs else None
         show_output: bool = False if "show_output" in kwargs else True
         print("Extracting issue histories...")
-        add_log("Extracting issue histories...", "info")
+        add_log(
+            "Extracting issue histories...",
+            "info",
+        )
         # Indicates the first iteration in the main loop sequence.
         attempt: int = 1
         _fix_status_: bool = True if "fix" in kwargs else False
 
-        def blank_data(key_val: str, sums: str, item_val: Any, name_: str) -> None:
+        def blank_data(
+            key_val: str,
+            sums: str,
+            item_val: Any,
+            name_: str,
+        ) -> None:
             """
             Write the created date of an issue to a file.
-            This is used for ``time_in_status()`` to accurately calculate the difference in status time.
+            This is used for ``time_in_status()`` to accurately calculate
+            the difference in status time.
 
             :param key_val: An issue key
 
@@ -1104,7 +1458,12 @@ class Projects:
                             item_val.tmpToAccountId,
                         ]
                     )
-                    file_writer(folder, file, data=raw_, mode="a+")
+                    file_writer(
+                        folder,
+                        file,
+                        data=raw_,
+                        mode="a+",
+                    )
                     attempt += 2
 
         def changelog_search() -> None:
@@ -1117,27 +1476,33 @@ class Projects:
                 keys = issue["key"]
                 attempt = 1
 
-                def re_instantiate(val: str) -> None:
+                def re_instantiate(
+                    val: str,
+                ) -> None:
                     """
                     Evaluate the issue key to run
                     :param val: An issue key variable
                     :return: None
                     """
                     nonlocal attempt
-                    # reach the changelog endpoint and extract the data of history for servers.
+                    # reach the changelog endpoint and extract
+                    # the data of history for servers.
                     # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
                     get_issue_keys = LOGIN.get(
                         endpoint.issues(
                             issue_key_or_id=val,
                             query="expand=renderedFields,names,schema,operations,"
-                                  "editmeta,changelog,versionedRepresentations",
+                            "editmeta,changelog,versionedRepresentations",
                         )
                     )
                     if get_issue_keys.status_code == 200:
                         key_data = json.loads(get_issue_keys.content)
-                        # Bug Fix to "Extraction Of Jira History Error #47" return value of None in some issue keys.
+                        # Bug Fix to "Extraction Of Jira History Error #47"
+                        # return value of None in some issue keys.
                         # https://github.com/princenyeche/atlassian-cloud-api/issues/47
-                        load_summary = LOGIN.get(endpoint.issues(issue_key_or_id=val))
+                        load_summary = LOGIN.get(
+                            endpoint.issues(issue_key_or_id=val)
+                        )
                         _summary = None
                         if load_summary.status_code < 300:
                             _summary = (
@@ -1150,9 +1515,17 @@ class Projects:
                                 _data = key_data["changelog"]
                                 # grab the change_histories on an issue
                                 print(f"Getting history from issue: {val}")
-                                add_log(f"Getting history from issue: {val}", "info")
+                                add_log(
+                                    "Getting history " f"from issue: {val}",
+                                    "info",
+                                )
                                 changelog_history(
-                                    _data, proj=(val, project_key, _summary)
+                                    _data,
+                                    proj=(
+                                        val,
+                                        project_key,
+                                        _summary,
+                                    ),
                                 )
                                 print("*" * 100)
                         else:
@@ -1161,7 +1534,9 @@ class Projects:
                                 key_data = LOGIN.get(
                                     endpoint.issues(
                                         issue_key_or_id=val,
-                                        query="changelog?startAt={}".format(starter),
+                                        query="changelog?startAt={}".format(
+                                            starter
+                                        ),
                                         event=True,
                                     )
                                 )
@@ -1169,15 +1544,28 @@ class Projects:
                                 if starter >= loads["total"]:
                                     break
                                 print(f"Getting history from issue: {val}")
-                                add_log(f"Getting history from issue: {val}", "info")
+                                add_log(
+                                    "Getting history " f"from issue: {val}",
+                                    "info",
+                                )
                                 changelog_history(
-                                    loads, proj=(val, project_key, _summary)
+                                    loads,
+                                    proj=(
+                                        val,
+                                        project_key,
+                                        _summary,
+                                    ),
                                 )
                                 print("*" * 100)
                                 starter += 100
 
                 infinity_counter += 1
-                data_brick.update({"iter": infinity_counter, "key": keys})
+                data_brick.update(
+                    {
+                        "iter": infinity_counter,
+                        "key": keys,
+                    }
+                )
                 project_key = keys.split("-")[0]
                 json.dump(
                     data_brick,
@@ -1195,7 +1583,12 @@ class Projects:
                 re_instantiate(keys)
 
         def changelog_history(
-                history: Any = Any, proj: tuple = (str, str, str)
+            history: Any = Any,
+            proj: tuple = (
+                str,
+                str,
+                str,
+            ),
         ) -> None:
             """Structure the change history data after being retrieved.
 
@@ -1204,7 +1597,9 @@ class Projects:
             _keys = proj[0]
             _summary = proj[2]
 
-            def render_history(past):
+            def render_history(
+                past,
+            ):
                 created = ""
                 name = ""
                 if "author" in past:
@@ -1312,7 +1707,12 @@ class Projects:
                         for _ in item_list:
                             issue = ItemList._make(_)
                             # Fix for time in status
-                            blank_data(_keys, _summary, issue, name)
+                            blank_data(
+                                _keys,
+                                _summary,
+                                issue,
+                                name,
+                            )
                             raw_vision = (
                                 [
                                     _keys,
@@ -1347,9 +1747,17 @@ class Projects:
                         item_list.clear()
 
                 for case in changes:
-                    file_writer(folder, file, data=case, mode="a+")
+                    file_writer(
+                        folder,
+                        file,
+                        data=case,
+                        mode="a+",
+                    )
                 changes.clear()
-                add_log(f"Clearing history from queue: {_keys}", "info")
+                add_log(
+                    f"Clearing history from queue: {_keys}",
+                    "info",
+                )
 
             if "histories" in history:
                 for change in history["histories"]:
@@ -1398,42 +1806,74 @@ class Projects:
         loop: bool = False
         if allow_cp is True:
             if (
-                    os.path.isfile(path_builder(folder, file_name=saved_file))
-                    and os.stat(path_builder(folder, file_name=saved_file)).st_size != 0
+                os.path.isfile(
+                    path_builder(
+                        folder,
+                        file_name=saved_file,
+                    )
+                )
+                and os.stat(
+                    path_builder(
+                        folder,
+                        file_name=saved_file,
+                    )
+                ).st_size
+                != 0
             ):
                 user_input = input(
                     "An existing save point exist from your last extraction, "
                     "do you want to use it? (Y/N) \n"
                 )
                 set_up = json.load(
-                    open(path_builder(path=folder, file_name=saved_file))
+                    open(
+                        path_builder(
+                            path=folder,
+                            file_name=saved_file,
+                        )
+                    )
                 )
-                if user_input.lower() in ["y", "yes"]:
+                if user_input.lower() in [
+                    "y",
+                    "yes",
+                ]:
                     back_up = True
                 else:
                     print("Starting extraction from scratch.")
                     set_up = None
         descriptor = (
-            os.open(path_builder(path=folder, file_name=saved_file), flags=os.O_CREAT)
+            os.open(
+                path_builder(
+                    path=folder,
+                    file_name=saved_file,
+                ),
+                flags=os.O_CREAT,
+            )
             if allow_cp is True
             else None
         )
         os.close(descriptor) if allow_cp is True else None
         file_writer(
-            folder=folder, file_name=file, data=headers, mode="w+"
+            folder=folder,
+            file_name=file,
+            data=headers,
+            mode="w+",
         ) if set_up is None else None
         depth = 1
         while True:
             load = (
                 LOGIN.get(
                     endpoint.search_issues_jql(
-                        query=set_up["jql"], start_at=set_up["iter"], max_results=100
+                        query=set_up["jql"],
+                        start_at=set_up["iter"],
+                        max_results=100,
                     )
                 )
                 if back_up is True and depth == 1
                 else LOGIN.get(
                     endpoint.search_issues_jql(
-                        query=jql, start_at=count, max_results=100
+                        query=jql,
+                        start_at=count,
+                        max_results=100,
                     )
                 )
             )
@@ -1464,26 +1904,311 @@ class Projects:
                     raise JiraOneErrors(
                         "value",
                         'It seems that the search "{}" cannot be '
-                        "retrieved as we've attempted it {} times".format(jql, cycle),
+                        "retrieved as we've attempted it {} times".format(
+                            jql,
+                            cycle,
+                        ),
                     )
 
         if show_output is True:
             print(
                 "A CSV file has been written to disk, find it here {}".format(
-                    path_builder(folder, file_name=file)
+                    path_builder(
+                        folder,
+                        file_name=file,
+                    )
                 )
             )
-        add_log("File extraction for change log completed", "info")
+        add_log(
+            "File extraction for change log completed",
+            "info",
+        )
         os.remove(
-            path_builder(path=folder, file_name=saved_file)
+            path_builder(
+                path=folder,
+                file_name=saved_file,
+            )
         ) if allow_cp is True else None
 
+    @staticmethod
+    def async_change_log(
+        jql: str,
+        *,
+        folder: Optional[str] = "ChangeLog",
+        file: Optional[str] = "change_log.csv",
+        **kwargs: Any,
+    ) -> None:
+        """Extract the issue history of an issue asynchronously.
+
+        Query the ``changelog`` endpoint if using cloud instance or
+        straight away define access to it on server.
+        Extract the histories and export it to a CSV file.
+
+        :param jql: (required) A valid JQL query for projects
+                    or issues.
+
+        :param folder: A name to a folder where the history file
+                      will be stored.
+
+        :param file: A name to the exported file result.
+
+
+        :param kwargs: The acceptable kwargs that can be passed to the
+                       ``async_change_log`` method are given below.
+                       Like your ``change_log`` method, this allows some of
+                       the same arguments in the ``change_log`` method with
+                       some additional arguments that makes its iteration much
+                       faster than your regular ``change_log`` method.
+
+               * worker: Datatype(int) The number of thread processes to
+                         begin with.
+
+               * timeout: Datatype(float or int) - A number to denote the thread
+                          process timeout.
+
+               * field_name: Datatype(str) - Target a field name to render.
+
+               * flush: Datatype(int) - Delay the time, so any running thread
+                        can finish.
+
+
+        :return: None
+        """
+        from jiraone.utils import (
+            DotNotation,
+            process_executor,
+            validate_on_error,
+        )
+        from time import sleep
+
+        field_name: str = (
+            kwargs.get("field_name") if "field_name" in kwargs else ""
+        )
+        workers: int = kwargs.get("workers") if "workers" in kwargs else 4
+        timeout: Union[
+            float,
+            int,
+        ] = (
+            kwargs.get("timeout") if "timeout" in kwargs else 5
+        )
+        flush: int = kwargs.get("flush") if "flush" in kwargs else 10
+        config = {"history": []}
+        validate_on_error(
+            folder,
+            (
+                str,
+                "folder",
+                "a string",
+            ),
+            "a string of the directory path",
+        )
+        validate_on_error(
+            jql,
+            (
+                str,
+                "jql",
+                "a string",
+            ),
+            "a string of a valid JQL",
+        )
+        validate_on_error(
+            file,
+            (
+                str,
+                "file",
+                "a string",
+            ),
+            "a string of the file path",
+        )
+        validate_on_error(
+            field_name,
+            (
+                str,
+                "field_name",
+                "a string",
+            ),
+            "a string of the field name to filter",
+        )
+        validate_on_error(
+            workers,
+            (
+                int,
+                "workers",
+                "an integer",
+            ),
+            "a number to denote the  number of working "
+            "threads to start with",
+        )
+        validate_on_error(
+            timeout,
+            (
+                (
+                    float,
+                    int,
+                ),
+                "timeout",
+                "a number",
+            ),
+            "a number to denote the timeout for working threads",
+        )
+        validate_on_error(
+            flush,
+            (
+                int,
+                "flush",
+                "an integer",
+            ),
+            "a number to delay the time it takes "
+            "for any running thread to finish",
+        )
+        # extract the issues then separate by issue keys
+        PROJECT.export_issues(
+            folder=folder,
+            jql=jql,
+            final_file=file,
+            show_export_link=False,
+        )
+        file_path = path_builder(
+            folder,
+            file_name=file,
+        )
+        read_file = file_reader(
+            folder,
+            file_name=file,
+        )
+
+        def async_history_data(
+            history_key: str = None,
+        ):
+            """Pass an issue key which can be processed asynchronously.
+
+            :param history_key: A Jira issue key
+
+            :return: None
+            """
+            query = f"key = {history_key}"
+            history_folder = f"{folder}/history"
+            history_file = f"history_{history_key}.csv"
+            PROJECT.change_log(
+                folder=history_folder,
+                allow_cp=False,
+                file=history_file,
+                jql=query,
+                show_output=False,
+                field_name=field_name if field_name else None,
+            )
+            read_history = file_reader(
+                history_folder,
+                history_file,
+                skip=True,
+            )
+            history_data = []
+            for _history_ in read_history:
+                name_mapper = {
+                    "issueKey": _history_[0],
+                    "summary": _history_[1],
+                    "author": _history_[2],
+                    "created": _history_[3],
+                    "fieldType": _history_[4],
+                    "field": _history_[5],
+                    "fieldId": _history_[6],
+                    "from_": _history_[7],
+                    "fromString": _history_[8],
+                    "to_": _history_[9],
+                    "toString": _history_[10],
+                }
+                if LOGIN.api is True:
+                    name_mapper.update(
+                        {
+                            "fromAccountId": _history_[11],
+                            "toAccountId": _history_[12],
+                        }
+                    )
+                mapper = DotNotation(name_mapper)
+                historical_data = [
+                    mapper.issueKey,
+                    mapper.summary,
+                    mapper.author,
+                    mapper.created,
+                    mapper.fieldType,
+                    mapper.field,
+                    mapper.fieldId,
+                    mapper.from_,
+                    mapper.fromString,
+                    mapper.to_,
+                    mapper.toString,
+                ]
+                if LOGIN.api is True:
+                    historical_data.append(mapper.fromAccountId)
+                    historical_data.append(mapper.toAccountId)
+
+                history_data.append(historical_data)
+            config["history"].append(
+                {
+                    "key": history_key,
+                    "value": history_data.copy(),
+                }
+            )
+
+            os.remove(
+                path_builder(
+                    history_folder,
+                    history_file,
+                )
+            )
+
+        header = [
+            "Issue Key",
+            "Summary",
+            "Author",
+            "Created",
+            "Field Type",
+            "Field",
+            "Field Id",
+            "From",
+            "From String",
+            "To",
+            "To String",
+        ]
+        if LOGIN.api is True:
+            header.append("From AccountId")
+            header.append("To AccountId")
+        issue_key_column, count = None, 0
+        for column in read_file:
+            if count == 0:
+                issue_key_column = column.index("Issue key")
+                break
+            count += 1
+        del read_file[0]
+        for column in read_file:
+            process_executor(
+                async_history_data,
+                data=column[issue_key_column],
+                workers=workers,
+                timeout=timeout,
+            )
+
+        file_writer(folder, file_name=file, data=header, mode="w+")
+        sleep(flush)
+        for history_obj in config["history"]:
+            file_writer(
+                folder,
+                file_name=file,
+                data=history_obj.get("value"),
+                mark="many",
+            )
+        print(
+            "Export completed, historical record located at {}".format(
+                file_path
+            )
+        )
+
     def comment_on(
-            self,
-            key_or_id: str = None,
-            comment_id: int = None,
-            method: str = "GET",
-            **kwargs,
+        self,
+        key_or_id: str = None,
+        comment_id: int = None,
+        method: str = "GET",
+        **kwargs,
     ) -> Any:
         """Comment on a ticket or write on a description field.
 
@@ -1526,12 +2251,16 @@ class Projects:
             class ReturnCommentData:
                 """Get a list of the data in one chunk."""
 
-                def __init__(self, results) -> None:
+                def __init__(
+                    self,
+                    results,
+                ) -> None:
                     """Get all data from a comment field.
 
-                    This calls the comment endpoint and returns a list of the data.
-                    Depending on what method you're calling. It is either you call the
-                    method ``comment()`` or you call a property within the method.
+                    This calls the comment endpoint and returns a list
+                    of the data. Depending on what method you're calling.
+                    It is either you call the method ``comment()`` or you call
+                    a property within the method.
 
                     .. code-block:: python
 
@@ -1562,7 +2291,8 @@ class Projects:
                         echo(get_com)
                         # This will simply return the comment text separated by comma
 
-                    :param results: A dict object that loads the result of comments.
+                    :param results: A dict object that loads the result of
+                                    comments.
 
                     """
                     self.data = results
@@ -1571,10 +2301,14 @@ class Projects:
                     self._update_author = None
                     self._other_fields = None
 
-                def comment(self, type_field: str) -> Any:
+                def comment(
+                    self,
+                    type_field: str,
+                ) -> Any:
                     """Return a comment field data.
 
-                    :param type_field: A string used to determine which data to pull
+                    :param type_field: A string used to determine which data
+                                       to pull
 
                     options available
 
@@ -1610,7 +2344,10 @@ class Projects:
                                     "updated": f.get("updated"),
                                 }
                                 result_data.append(
-                                    {"body": self._body, "fieldset": self._other_fields}
+                                    {
+                                        "body": self._body,
+                                        "fieldset": self._other_fields,
+                                    }
                                 )
 
                             if type_field == "updateAuthor":
@@ -1634,7 +2371,9 @@ class Projects:
 
                         pull = deque()
 
-                        def __init__(self):
+                        def __init__(
+                            self,
+                        ):
                             """Return the data value when a property is used."""
                             self.result = result_data
                             self._body_ = None
@@ -1646,8 +2385,12 @@ class Projects:
                                     if self._author_ is None:
                                         self.author = [
                                             {
-                                                "author": j["author"]["displayName"],
-                                                "accountId": j["author"]["accountId"],
+                                                "author": j["author"][
+                                                    "displayName"
+                                                ],
+                                                "accountId": j["author"][
+                                                    "accountId"
+                                                ],
                                                 "active": j["author"]["active"],
                                                 "accountType": j["author"][
                                                     "accountType"
@@ -1657,35 +2400,55 @@ class Projects:
                                         ]
                                 if "body" in d:
                                     if self._body_ is None:
-                                        self.body = [j.get("body") for j in self.result]
-                                        first_comm, *_, last_comm = self.body
+                                        self.body = [
+                                            j.get("body") for j in self.result
+                                        ]
+                                        (
+                                            first_comm,
+                                            *_,
+                                            last_comm,
+                                        ) = self.body
                                         self.last_comment = last_comm
                                         self.first_comment = first_comm
 
                         @property
-                        def author(self):
+                        def author(
+                            self,
+                        ):
                             """Property of author field.
 
-                            Returns some data set of the author, extracted from the comment.
+                            Returns some data set of the author, extracted
+                            from the comment.
                             """
                             return self._author_
 
                         @author.setter
-                        def author(self, user):
-                            """Sets the author field of an object with the dataset."""
+                        def author(
+                            self,
+                            user,
+                        ):
+                            """Sets the author field of an object with
+                            the dataset."""
                             self._author_ = user
 
                         @property
-                        def body(self):
+                        def body(
+                            self,
+                        ):
                             """Property of body field.
 
-                            Returns some data set of the body, extracted from the comment.
+                            Returns some data set of the body, extracted from
+                            the comment.
                             """
                             return self._body_
 
                         @body.setter
-                        def body(self, content):
-                            """Sets the body field of an object with the dataset."""
+                        def body(
+                            self,
+                            content,
+                        ):
+                            """Sets the body field of an object with
+                            the dataset."""
                             self._body_ = content
                             for enter in self._body_:
                                 if "content" in enter:
@@ -1694,7 +2457,10 @@ class Projects:
                                             for value in context["content"]:
                                                 if self._text_ is None:
                                                     if "text" in value:
-                                                        if value["type"] == "mention":
+                                                        if (
+                                                            value["type"]
+                                                            == "mention"
+                                                        ):
                                                             self.pull.append(
                                                                 {
                                                                     "mention": value[
@@ -1710,14 +2476,21 @@ class Projects:
                                                             )
                                                         self.pull.append(
                                                             {
-                                                                "text": value["text"],
-                                                                "type": value["type"],
+                                                                "text": value[
+                                                                    "text"
+                                                                ],
+                                                                "type": value[
+                                                                    "type"
+                                                                ],
                                                             }
                                                         )
 
                                                 if self._mention_ is None:
                                                     if "type" in value:
-                                                        if value["type"] == "mention":
+                                                        if (
+                                                            value["type"]
+                                                            == "mention"
+                                                        ):
                                                             self.pull.append(
                                                                 {
                                                                     "mention": value[
@@ -1731,7 +2504,10 @@ class Projects:
                             # will only show value on API v3.
                             self.text = [
                                 OrderedDict(
-                                    {"text": a.get("text"), "type": a.get("type")}
+                                    {
+                                        "text": a.get("text"),
+                                        "type": a.get("type"),
+                                    }
                                 )
                                 for a in self.pull
                                 if "text" in a
@@ -1739,36 +2515,53 @@ class Projects:
                             # will only show value on API v3.
                             self.mention = [
                                 OrderedDict(
-                                    {"mention": a.get("mention"), "type": a.get("type")}
+                                    {
+                                        "mention": a.get("mention"),
+                                        "type": a.get("type"),
+                                    }
                                 )
                                 for a in self.pull
                                 if "mention" in a
                             ]
 
                         @property
-                        def text(self):
+                        def text(
+                            self,
+                        ):
                             """Property of text field.
 
-                            Returns some data set of the body text, extracted from the comment.
+                            Returns some data set of the body text, extracted
+                            from the comment.
                             """
                             return self._text_
 
                         @text.setter
-                        def text(self, content):
-                            """Sets the text field of a body comment with the dataset."""
+                        def text(
+                            self,
+                            content,
+                        ):
+                            """Sets the text field of a body comment with
+                            the dataset."""
                             self._text_ = content
 
                         @property
-                        def mention(self):
+                        def mention(
+                            self,
+                        ):
                             """Property of mention field.
 
-                            Returns some data set of the body @mention of a user, extracted from the comment.
+                            Returns some data set of the body @mention of
+                            a user, extracted from the comment.
                             """
                             return self._mention_
 
                         @mention.setter
-                        def mention(self, content):
-                            """Sets the text field of a body comment with @mention user with the dataset."""
+                        def mention(
+                            self,
+                            content,
+                        ):
+                            """Sets the text field of a body comment
+                            with @mention user with the dataset."""
                             self._mention_ = content
 
                     comm = Text()
@@ -1782,8 +2575,14 @@ class Projects:
             text = None
             if block is not None:
                 if len(mention) > 0:
-                    text = replacement_placeholder(placer, block, mention, 0)
-            # change REST endpoint from 3 to latest, so we can easily post a comment.
+                    text = replacement_placeholder(
+                        placer,
+                        block,
+                        mention,
+                        0,
+                    )
+            # change REST endpoint from 3 to latest, so we
+            # can easily post a comment.
             LOGIN.api = kwargs["api"] if "api" in kwargs else False
             body_content = {
                 "body": {
@@ -1792,7 +2591,12 @@ class Projects:
                     "content": [
                         {
                             "type": "paragraph",
-                            "content": [{"text": text[0], "type": "text"}],
+                            "content": [
+                                {
+                                    "text": text[0],
+                                    "type": "text",
+                                }
+                            ],
                         }
                     ],
                 }
@@ -1802,41 +2606,52 @@ class Projects:
                 if visible is None and LOGIN.api is False
                 else body_content
                 if visible is None and LOGIN.api is True
-                else {"visibility": {"type": "role", "value": visible}, "body": text[0]}
+                else {
+                    "visibility": {
+                        "type": "role",
+                        "value": visible,
+                    },
+                    "body": text[0],
+                }
             )
             result = LOGIN.post(
-                endpoint.comment(key_or_id=key_or_id, event=event), payload=field_text
+                endpoint.comment(
+                    key_or_id=key_or_id,
+                    event=event,
+                ),
+                payload=field_text,
             )
             if result.status_code < 300:
                 print("Comment added to {}".format(key_or_id))
             else:
                 print(
                     "Comment not added to {}, error: {}".format(
-                        key_or_id, result.status_code
+                        key_or_id,
+                        result.status_code,
                     )
                 )
             block.clear()
 
     @staticmethod
     def export_issues(
-            *,
-            folder: Optional[str] = "EXPORT",
-            jql: str = None,
-            page: Optional[tuple] = None,
-            **kwargs: Any,
+        *,
+        folder: Optional[str] = "EXPORT",
+        jql: str = None,
+        page: Optional[tuple] = None,
+        **kwargs: Any,
     ) -> None:
         """
         Exports all Jira issue either in CSV or JSON format based on JQL
         search. If the number of issues returned is greater than 1K issues,
         all the issues are finally combined into a single file as output.
 
-        :param folder: The name of a folder
+        :param folder: The name of a folder, where files will be stored.
 
-        :param jql: A valid JQL (required) if ``merge_files`` args is not
-        provided
+        :param jql: A valid JQL (required) if ``merge_files``
+                    args is not provided
 
         :param page: An iterative counter for page index denoting the
-        pagination for JQL search
+                     pagination for JQL search
 
         :param kwargs: Additional arguments that can be supplied.
 
@@ -1846,7 +2661,9 @@ class Projects:
                   when combining the exported file.
 
                   * final_file: Datatype (str) Name of the final
-                  combined CSV file name.
+                  combined CSV or JSON file name.You do not need to add
+                  the extension as this is added automatically based on
+                  the ``extension`` argument.
 
                   * target: Datatype (str or dict) Ability to change or get
                   certain values from another instance. If and only if it
@@ -1923,9 +2740,9 @@ class Projects:
                      PROJECT.export_issues(jql=jql, exclude_fields=fields)
 
                   * include_fields: Datatype (list) Ability to include certain
-                  fields from the exported file. This field must be an exact string
-                  of the custom field name. This argument cannot be used when
-                  ``exclude_fields`` is not empty.
+                  fields from the exported file. This field must be an exact
+                  string of the custom field name. This argument cannot be
+                  used when ``exclude_fields`` is not empty.
 
                   Example::
 
@@ -2049,17 +2866,17 @@ class Projects:
                   is saved as an JSON object used as cache.
 
                   * is_cache_filename: Datatype (str) Ability to name the file
-                  used to store the cached data
+                  used to store the cached data.
 
                   * expires: Datatype (int) Ability to add an expiry timeframe
-                  to the ``is_cache`` argument expressed in seconds,
+                  to the ``is_cache`` argument expressed in days,
                   which allows caching to be recalled or valid over a period
-                  of time in seconds.
+                  of time in days.
 
                   Example::
 
                      # previous statements
-                     expiry_time = 3600 # number of seconds
+                     expiry_time = 30 # number of days
                      jql = "project in (ABC, IT)"
                      PROJECT.export_issues(jql=jql, extension="json",
                      expires=expiry_time, is_cache=True)
@@ -2085,9 +2902,9 @@ class Projects:
                      PROJECT.export_issues(jql=jql, extension="json",
                      project_type=template)
 
-                  * workflows - Datatype(dict) Ability to provide a map of project
-                  key to workflow scheme name that exist on your destination
-                  instance.
+                  * workflows - Datatype(dict) Ability to provide a map of
+                  project key to workflow scheme name that exist on your
+                  destination instance.
 
                   Example::
 
@@ -2101,138 +2918,139 @@ class Projects:
                   period required for running threads to shut down. Required
                   for history extraction.
 
+                  * delimit - Datatype(str) Ability to change the CSV file
+                  separator. The default is a comma.
+
+                  Example::
+
+                     # previous import
+                     PROJECT.export_issues(jql=jql, extension="csv",
+                     delimit=";")
+
+                  * show_export_link - Datatype(bool) Ability to print out
+                  the export file link after it completes. Defaults to True
+
 
         .. versionchanged:: 0.7.4
 
-        encoding: added keyword argument which helps determine how encoding
-             are handled
+        encoding: Helps determine how encoding are handled.
 
-        errors: added keyword argument which helps determine decoding
-             errors are handled
+        errors: Helps determine decoding errors are handled.
 
         .. versionchanged:: 0.7.6
 
-        extension: added keyword argument to determine file export format in
-        CSV or JSON format.
+        extension: Determines the file export format in CSV or JSON format.
 
-        field_type: added keyword argument to specify if export should contain
-        all fields or default fields
+        field_type: Specifies if export should contain all fields or
+        default fields.
 
-        exclude_fields: added keyword argument to exclude certain fields from
-        the exported data in CSV
+        exclude_fields: Exclude certain fields from the exported data in CSV.
 
-        workers: added keyword argument to indicate how many threads to use
-        at a go when making http request
+        workers: Indicates how many threads to use at a go when
+        making http request.
 
-        is_sd_internal: added keyword argument to add additional properties to
-        a comment field in JSON format. This argument expects that a comment
-        field must include an addition string attribute as "true" or "false"
-        specifically tailored for JSM projects.
+        is_sd_internal: Adds additional properties to a comment field in
+        JSON format. This argument expects that a comment field must include
+        an addition string attribute as "true" or "false" specifically
+        tailored for JSM projects.
 
-        merge_files: added keyword argument to merge series of CSV files into
-        one which are located in the same director fed as a list of file names
+        merge_files: Merge series of CSV files into one which are located in
+        the same director fed as a list of file names.
 
-        csv_to_json: added keyword argument when supplied a dir path to Jira CSV
-        file, auto converts to Jira JSON form
+        csv_to_json: When supplied a ``dir`` path to Jira CSV file, auto
+        converts to Jira JSON form.
 
-        timeout: added keyword argument, used in conjunction with the
-        ``workers`` argument for threads wait time.
+        timeout: Used in conjunction with the ``workers`` argument for
+        threads wait time.
 
-        json_properties: added keyword argument used in JSON export to include
-        other attributes to the exported file.
+        json_properties: Used in JSON export to include other attributes to
+        the exported file.
 
-        check_auth: added keyword argument used as a flag to turn on or
-        off Jira auth validation error
+        check_auth: Used as a flag to turn on or off Jira auth validation error.
 
-        include_fields: added keyword argument used to include only certain
-        Jira fields in a CSV export.
+        include_fields: Used to include only certain Jira fields in a
+        CSV export.
 
-        date_format: added keyword argument used to parse datetime custom
-        fields
+        date_format: Used to parse datetime custom fields.
 
-        json_custom_type: added keyword argument used to exclude certain
-        custom field type from being added to the export list in JSON
-        format.
+        json_custom_type: Used to exclude certain custom field type from
+        being added to the export list in JSON format.
 
-        is_cache: added keyword argument used to cache dict or list result
-        objects that have used some http request in the past for faster lookup.
+        is_cache: Used to cache dict or list result objects that have used
+        some http request in the past for faster lookup.
 
-        use_cache: added keyword argument used to allow the use of cached
-        objects.
+        use_cache: Allow the use of cached objects such as custom fields
+        and users objects.
 
-        is_cache_filename: added keyword argument to name the file used to
-         store cached data
+        is_cache_filename: The name of the file used to store cached data.
+        It should be in a ``.json`` format.
 
-        expires: added keyword argument used in conjunction to ``is_cache``
-        argument to allow the caching to be valid over a given period of time.
+        expires: Used in conjunction to ``is_cache`` argument to allow the
+        caching to be valid over a given period of time.
 
-        allow_media: added keyword argument for allowing auth to be added to
-        each media file.
+        allow_media: Allows auth to be added to each media file in a CSV export.
 
-        sub_tasks: added keyword argument for identify sub-task names
+        sub_tasks: Used to identify sub-task names in JSON export.
 
-        project_type: added keyword argument for project template types
+        project_type: Project template types.
 
-        workflows: added keyword argument for project workflow scheme names
+        workflows: Project workflow scheme names.
 
-        flush: added keyword argument for delay timing when threads are
-        still running prior.
+        flush: Delay timing when threads are still running for history
+        extraction.
+
+        .. versionchanged:: 0.7.9
+
+        delimit: Allows the ability to change the CSV file separator
+
+        show_export_link: Allows the ability to print out the exported file link
 
         :return: None
-        :raises: IndexError, AttributeError, KeyError, TypeError, ValueError
-        JiraOneErrors
+        :raises: IndexError, AttributeError, KeyError, TypeError, ValueError,
+                 JiraOneErrors
 
         """
-        from jiraone.exceptions import JiraOneErrors
-        from jiraone.utils import DotNotation, CUSTOM_FIELD_REGEX, \
-            process_executor, DateFormat as df, INWARD_ISSUE_LINK, \
-            OUTWARD_ISSUE_LINK
-        from copy import deepcopy
-        from jiraone import field
-        from datetime import datetime, timedelta
+        from jiraone.exceptions import (
+            JiraOneErrors,
+        )
+        from jiraone.utils import (
+            DotNotation,
+            CUSTOM_FIELD_REGEX,
+            process_executor,
+            DateFormat as Df,
+            INWARD_ISSUE_LINK,
+            OUTWARD_ISSUE_LINK,
+            validate_on_error,
+        )
+        from copy import (
+            deepcopy,
+        )
+        from jiraone import (
+            field,
+        )
+        from datetime import (
+            datetime,
+            timedelta,
+        )
         import shutil
         import random
-        from time import sleep
-
-        def validate_on_error(name_field: Any = None,
-                              data_type: tuple = None,
-                              err_message: str = None) -> None:
-            """
-            Validate an argument and prepares an error response
-
-            :param name_field: An argument field name
-
-            :param data_type: The data type of the argument, it expects
-            a datatype object, the name of the argument and a message
-            which explains the expected object of the argument
-
-            :param err_message: Expected error message
-
-            :return: None
-            """
-            if not isinstance(name_field, data_type[0]):
-                add_log(
-                    'The `{}` argument seems to be using the wrong '
-                    'data structure "{}" as value, '
-                    'expecting {}.'.format(data_type[1],
-                                           name_field, data_type[2]),
-                    "error",
-                )
-                raise JiraOneErrors(
-                    "wrong",
-                    "The `{}` argument should be "
-                    "{}."
-                    "Detected {} instead.".format(data_type[1], err_message,
-                                                  type(name_field)),
-                )
+        from time import (
+            sleep,
+        )
 
         check_auth: bool = (
             kwargs["check_auth"] if "check_auth" in kwargs else True
         )
-        validate_on_error(check_auth, (bool, "check_auth",
-                                       "a boolean to denote true or false"),
-                          "a boolean to denote true or "
-                          "false to check the initial authentication")
+        validate_on_error(
+            check_auth,
+            (
+                bool,
+                "check_auth",
+                "a boolean to denote true or false",
+            ),
+            "a boolean to denote true or "
+            "false to check the initial authentication",
+        )
 
         if check_auth is True:
             reason = LOGIN.get(endpoint.myself())
@@ -2241,7 +3059,8 @@ class Projects:
                     "Authentication failed.Please check your credential "
                     "data to determine "
                     "what went wrong with reason: {} & code {}".format(
-                        reason.reason, reason.status_code
+                        reason.reason,
+                        reason.status_code,
                     ),
                     "error",
                 )
@@ -2253,12 +3072,22 @@ class Projects:
                 )
         # check if the target instance is accessible
         source: str = LOGIN.base_url
-        target: Union[str, dict] = kwargs["target"] if "target" in kwargs else ""
+        target: Union[
+            str,
+            dict,
+        ] = (
+            kwargs["target"] if "target" in kwargs else ""
+        )
         active: bool = False
         _field_names_: list = (
             kwargs["fields"]
             if "fields" in kwargs
-            else ["Sprint", "Watchers", "Reporter", "Assignee"]
+            else [
+                "Sprint",
+                "Watchers",
+                "Reporter",
+                "Assignee",
+            ]
         )
         temp_file: str = (
             kwargs["temp_file"] if "temp_file" in kwargs else "temp_file.csv"
@@ -2266,15 +3095,9 @@ class Projects:
         final_file: str = (
             kwargs["final_file"] if "final_file" in kwargs else "final_file.csv"
         )
-        encoding: str = (
-            kwargs["encoding"] if "encoding" in kwargs else "utf-8"
-        )
-        errors: str = (
-            kwargs["errors"] if "errors" in kwargs else "replace"
-        )
-        extension: str = (
-            kwargs["extension"] if "extension" in kwargs else "csv"
-        )
+        encoding: str = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
+        errors: str = kwargs["errors"] if "errors" in kwargs else "replace"
+        extension: str = kwargs["extension"] if "extension" in kwargs else "csv"
         field_type: str = (
             kwargs["field_type"] if "field_type" in kwargs else "all"
         )
@@ -2282,9 +3105,7 @@ class Projects:
             kwargs["exclude_fields"] if "exclude_fields" in kwargs else []
         )
 
-        workers: int = (
-            kwargs["workers"] if "workers" in kwargs else 4
-        )
+        workers: int = kwargs["workers"] if "workers" in kwargs else 4
         is_sd_internal: bool = (
             kwargs["is_sd_internal"] if "is_sd_internal" in kwargs else False
         )
@@ -2298,7 +3119,10 @@ class Projects:
             kwargs["csv_to_json"] if "csv_to_json" in kwargs else ""
         )
 
-        timeout: Union[float, int] = (
+        timeout: Union[
+            float,
+            int,
+        ] = (
             kwargs["timeout"] if "timeout" in kwargs else 2.5
         )
 
@@ -2312,72 +3136,76 @@ class Projects:
         )
 
         date_format: str = (
-            kwargs["date_format"] if "date_format" in
-                                     kwargs else df.dd_MMM_yy_hh_MM_AM_PM
+            kwargs["date_format"]
+            if "date_format" in kwargs
+            else Df.dd_MMM_yy_hh_MM_AM_PM
         )
 
         json_custom_type: list = (
-            kwargs["json_custom_type"] if
-            "json_custom_type" in kwargs else
-            ["ari:cloud:ecosystem::extension",
-             "com.atlassian.plugins.atlassian-connect-plugin"]
+            kwargs["json_custom_type"]
+            if "json_custom_type" in kwargs
+            else [
+                "ari:cloud:ecosystem::extension",
+                "com.atlassian.plugins.atlassian-connect-plugin",
+            ]
         )
 
-        is_cache: bool = (
-            kwargs["is_cache"] if "is_cache" in
-                                  kwargs else True
-        )
+        is_cache: bool = kwargs["is_cache"] if "is_cache" in kwargs else True
 
         use_cache: bool = (
-            kwargs["use_cache"] if "use_cache" in
-                                   kwargs else False
+            kwargs["use_cache"] if "use_cache" in kwargs else False
         )
 
         is_cache_filename: str = (
-            kwargs["is_cache_filename"] if "is_cache_filename" in
-                                           kwargs else "j1_config.json"
+            kwargs["is_cache_filename"]
+            if "is_cache_filename" in kwargs
+            else "j1_config.json"
         )
 
-        expires: int = (
-            kwargs["expires"] if "expires" in
-                                 kwargs else 3600
-        )
+        expires: int = kwargs["expires"] if "expires" in kwargs else 30
 
         allow_media: bool = (
-            kwargs["allow_media"] if "allow_media" in
-                                     kwargs else False
+            kwargs["allow_media"] if "allow_media" in kwargs else False
         )
 
         sub_tasks: list = (
-            kwargs["sub_tasks"] if "sub_tasks" in
-                                   kwargs else ["Sub-task"]
+            kwargs["sub_tasks"] if "sub_tasks" in kwargs else ["Sub-task"]
         )
 
         project_type: dict = (
-            kwargs["project_type"] if "project_type" in
-                                      kwargs else {
+            kwargs["project_type"]
+            if "project_type" in kwargs
+            else {
                 "software": "com.pyxis.greenhopper.jira:gh-simplified-scrum-classic",
                 "service_desk": "com.atlassian.servicedesk:simplified-it-service-management",
-                "business": "com.atlassian.jira-core-project-templates:jira-core-simplified-procurement"}
+                "business": "com.atlassian.jira-core-project-templates:jira-core-simplified-procurement",
+            }
         )
 
-        workflows: dict = (
-            kwargs["workflows"] if "workflows" in
-                                   kwargs else {}
+        workflows: dict = kwargs["workflows"] if "workflows" in kwargs else {}
+
+        flush: Union[
+            float,
+            int,
+        ] = (
+            kwargs["flush"] if "flush" in kwargs else 5
         )
 
-        flush: Union[float, int] = (
-            kwargs["flush"] if "flush" in
-                               kwargs else 3
+        # default is always a comma except another character is
+        # specified for the CSV export
+        delimit: str = kwargs["delimit"] if "delimit" in kwargs else ""
+
+        show_export_link: bool = (
+            kwargs["show_export_link"] if "show_export_link" in kwargs else True
         )
         # stores most configuration data using a dictionary
         config = {}
 
         # Checking that the arguments are passing correct data structure.
         def field_value_check(
-                param_field: list = None,
-                attr: bool = False,
-                attr_plus: bool = False
+            param_field: list = None,
+            attr: bool = False,
+            attr_plus: bool = False,
         ) -> None:
             """
             Helps to perform validation check for ``fields``,
@@ -2392,21 +3220,31 @@ class Projects:
 
             :return: None
             """
-            validate_on_error(param_field, (list,
-                                            "fields" if attr is False
-                                                        and attr_plus is False
-                                            else "exclude_fields" if attr is True
-                                                                     and attr_plus is False
-                                            else "include_fields",
-                                            "a list of items"),
-                              "a list of field names in Jira")
+            validate_on_error(
+                param_field,
+                (
+                    list,
+                    "fields"
+                    if attr is False and attr_plus is False
+                    else "exclude_fields"
+                    if attr is True and attr_plus is False
+                    else "include_fields",
+                    "a list of items",
+                ),
+                "a list of field names in Jira",
+            )
 
             # validate each field name in the list provided
             if param_field:
-                if isinstance(param_field, list):
+                if isinstance(
+                    param_field,
+                    list,
+                ):
                     is_valid = []
 
-                    def map_field(fname: str) -> None:
+                    def map_field(
+                        fname: str,
+                    ) -> None:
                         """Processes an object of a field value
                         :param fname: A Jira field name
                         :return: None
@@ -2421,7 +3259,7 @@ class Projects:
                         process_executor(
                             map_field,
                             data=item_field,
-                            workers=1
+                            workers=1,
                         )
 
                     for check_field in param_field:
@@ -2430,7 +3268,8 @@ class Projects:
 
                     if len(is_valid) > 0:
                         add_log(
-                            'The following name(s) "{}" in the field value list '
+                            'The following name(s) "{}" in the '
+                            "field value list "
                             "doesn't seem to exist or cannot be found.".format(
                                 ",".join(is_valid)
                             ),
@@ -2439,36 +3278,98 @@ class Projects:
                         raise JiraOneErrors(
                             "value",
                             "Unable to find initial field, probably such field"
-                            ' "{}" doesn\'t exist for {} argument'.format(",".join(is_valid),
-                                                                          (
-                                                                              "fields" if attr is False and
-                                                                                          attr_plus is False
-                                                                              else "exclude_fields"
-                                                                              if attr is True and attr_plus is False
-                                                                              else "include_fields")
-                                                                          ))
+                            ' "{}" doesn\'t exist for {} argument'.format(
+                                ",".join(is_valid),
+                                (
+                                    "fields"
+                                    if attr is False and attr_plus is False
+                                    else "exclude_fields"
+                                    if attr is True and attr_plus is False
+                                    else "include_fields"
+                                ),
+                            ),
+                        )
 
             config["map_list"].clear()
 
         config["map_list"] = set()
         field_value_check(_field_names_)  # We'll always check this
-        field_value_check(exclude_fields, True)
-        field_value_check(include_fields, False, True)
-        validate_on_error(target, ((str, dict), "target",
-                                   "a dictionary or a string"),
-                          "a dictionary of auth items "
-                          "or a string of the url")
-        validate_on_error(temp_file, (str, "temp_file",
-                                      "a string"),
-                          "a string of the file name")
-        validate_on_error(final_file, (str, "final_file",
-                                       "a string"),
-                          "a string of the file name")
+        field_value_check(
+            exclude_fields,
+            True,
+        )
+        field_value_check(
+            include_fields,
+            False,
+            True,
+        )
+        validate_on_error(
+            target,
+            (
+                (
+                    str,
+                    dict,
+                ),
+                "target",
+                "a dictionary or a string",
+            ),
+            "a dictionary of auth items " "or a string of the url",
+        )
+        validate_on_error(
+            temp_file,
+            (
+                str,
+                "temp_file",
+                "a string",
+            ),
+            "a string of the file name",
+        )
+        validate_on_error(
+            final_file,
+            (
+                str,
+                "final_file",
+                "a string",
+            ),
+            "a string of the file name",
+        )
+
+        validate_on_error(
+            delimit,
+            (
+                str,
+                "delimit",
+                "a string",
+            ),
+            "a string for use as a CSV file separator",
+        )
+
+        validate_on_error(
+            show_export_link,
+            (
+                bool,
+                "show_export_link",
+                "a boolean",
+            ),
+            "a boolean to allow the export link printed on terminal",
+        )
+
+        if delimit:
+            if len(delimit) > 1:
+                raise JiraOneErrors(
+                    "errors",
+                    "The delimit argument accepts only a "
+                    "single string character.",
+                )
+        elif delimit == "":
+            print(
+                "Defaulting to comma as CSV separator."
+            ) if extension.lower() == "csv" else None
 
         def check_field_membership(
-                param_field: str = None,
-                attr: bool = False,
-                value_option: list = None
+            param_field: str = None,
+            attr: bool = False,
+            value_option: list = None,
         ) -> None:
             """
             Checks if an argument is passing the right
@@ -2479,23 +3380,30 @@ class Projects:
             :param value_option: A membership value to check
             :return: None
             """
-            validate_on_error(param_field, (str,
-                                            "field_type" if attr
-                                                            is False else "extension",
-                                            "a string"),
-                              "a string of the query field configuration")
-            if isinstance(param_field, str):
+            validate_on_error(
+                param_field,
+                (
+                    str,
+                    "field_type" if attr is False else "extension",
+                    "a string",
+                ),
+                "a string of the query field configuration",
+            )
+            if isinstance(
+                param_field,
+                str,
+            ):
                 if param_field.lower() not in value_option:
                     add_log(
-                        'The `{}` argument seems to be using the wrong '
+                        "The `{}` argument seems to be using the wrong "
                         'option value "{}"'
                         ' expecting either "{}" or "{}" as option.'.format(
                             "field_type" if attr is False else "extension",
                             param_field,
                             value_option[0],
-                            value_option[1]
+                            value_option[1],
                         ),
-                        'error',
+                        "error",
                     )
                     raise JiraOneErrors(
                         "wrong",
@@ -2503,140 +3411,284 @@ class Projects:
                         ' value, only "{}" or "{}" options allowed.'.format(
                             "field_type" if attr is False else "extension",
                             value_option[0],
-                            value_option[1]
-                        )
+                            value_option[1],
+                        ),
                     )
 
-        check_field_membership(field_type, value_option=["all", "current"])
-        validate_on_error(jql, (str, "jql",
-                                "a string"),
-                          "a string of a valid Jira query")
-        validate_on_error(encoding, (str, "encoding",
-                                     "a string"),
-                          "a string of a character "
-                          "encoding e.g utf-8")
-        validate_on_error(errors, (str, "errors",
-                                   "a string"),
-                          "a string of a character encoding "
-                          "exception e.g. replace")
-        validate_on_error(workers, (int, "workers",
-                                    "a number"),
-                          "a number to indicate the worker process")
-        validate_on_error(is_sd_internal, (bool, "is_sd_internal",
-                                           "a boolean"),
-                          "a boolean to indicate true or false")
-        validate_on_error(merge_files, (list, "merge_files",
-                                        "a list"),
-                          "a list of file names which can be merged")
-        validate_on_error(csv_to_json, (str, "csv_to_json",
-                                        "a string"),
-                          "a string of a Jira generated CSV file")
+        check_field_membership(
+            field_type,
+            value_option=[
+                "all",
+                "current",
+            ],
+        )
+        validate_on_error(
+            jql,
+            (
+                str,
+                "jql",
+                "a string",
+            ),
+            "a string of a valid Jira query",
+        )
+        validate_on_error(
+            encoding,
+            (
+                str,
+                "encoding",
+                "a string",
+            ),
+            "a string of a character " "encoding e.g utf-8",
+        )
+        validate_on_error(
+            errors,
+            (
+                str,
+                "errors",
+                "a string",
+            ),
+            "a string of a character encoding " "exception " "e.g. replace",
+        )
+        validate_on_error(
+            workers,
+            (
+                int,
+                "workers",
+                "a number",
+            ),
+            "a number to indicate the worker process",
+        )
+        validate_on_error(
+            is_sd_internal,
+            (
+                bool,
+                "is_sd_internal",
+                "a boolean",
+            ),
+            "a boolean to indicate true or false",
+        )
+        validate_on_error(
+            merge_files,
+            (
+                list,
+                "merge_files",
+                "a list",
+            ),
+            "a list of file names which can be merged",
+        )
+        validate_on_error(
+            csv_to_json,
+            (
+                str,
+                "csv_to_json",
+                "a string",
+            ),
+            "a string of a Jira generated CSV file",
+        )
 
-        validate_on_error(timeout, ((float, int), "timeout",
-                                    "a number as integer or "
-                                    "with a single decimal point"),
-                          "a number to denote the timeout period")
+        validate_on_error(
+            timeout,
+            (
+                (
+                    float,
+                    int,
+                ),
+                "timeout",
+                "a number as integer or " "with a single decimal point",
+            ),
+            "a number to denote the timeout period",
+        )
 
-        validate_on_error(json_properties, (list, "json_properties",
-                                            "a list of valid JSON properties"
-                                            " e.g. users, links or history"),
-                          "a list of valid JSON property for export")
+        validate_on_error(
+            json_properties,
+            (
+                list,
+                "json_properties",
+                "a list of valid JSON properties"
+                " e.g. users, links or history",
+            ),
+            "a list of valid JSON property for export",
+        )
 
-        allowed_props = ["users", "links", "history"]
+        allowed_props = [
+            "users",
+            "links",
+            "history",
+        ]
         for x_json_value in json_properties:
             if x_json_value.lower() not in allowed_props:
                 raise JiraOneErrors(
                     "wrong",
-                    f'Value "{x_json_value}" does not match the allowed options in'
-                    " the ``json_properties`` argument"
+                    f'Value "{x_json_value}" does not match '
+                    f"the allowed options in the ``json_properties`` argument",
                 )
 
-        validate_on_error(date_format, (str, "date_format",
-                                        "a str of a date format"
-                                        " e.g. %m/%d/%y %I:%M %p"
-                                        " which translates to "
-                                        " MM/dd/yy h:mm AM"),
-                          "a str of python's date format directive"
-                          " or you can import some common ones from"
-                          " the DateFormat class in jiraone.utils")
+        validate_on_error(
+            date_format,
+            (
+                str,
+                "date_format",
+                "a str of a date format"
+                " e.g. %m/%d/%y %I:%M %p"
+                " which translates to "
+                " MM/dd/yy h:mm AM",
+            ),
+            "a str of python's date format directive"
+            " or you can import some common ones from"
+            " the DateFormat class in jiraone.utils",
+        )
 
-        validate_on_error(json_custom_type, (list, "json_custom_type",
-                                             "a list of Jira custom field"
-                                             " type e.g. com.atlassian.xxx"),
-                          "a list of custom field type available in Jira")
+        validate_on_error(
+            json_custom_type,
+            (
+                list,
+                "json_custom_type",
+                "a list of Jira custom field" " type e.g. com.atlassian.xxx",
+            ),
+            "a list of custom field type available in Jira",
+        )
 
-        validate_on_error(is_cache, (bool, "is_cache",
-                                     "a boolean of the caching"
-                                     " mechanism"),
-                          "a true or false value to the cache mechanism")
+        validate_on_error(
+            is_cache,
+            (
+                bool,
+                "is_cache",
+                "a boolean of the caching" " mechanism",
+            ),
+            "a true or false value to the cache mechanism",
+        )
 
-        validate_on_error(use_cache, (bool, "use_cache",
-                                      "a boolean of the caching"
-                                      " mechanism"),
-                          "a true or false value to use the cache mechanism")
+        validate_on_error(
+            use_cache,
+            (
+                bool,
+                "use_cache",
+                "a boolean of the caching" " mechanism",
+            ),
+            "a true or false value to use the cache mechanism",
+        )
 
-        validate_on_error(is_cache_filename, (str, "is_cache_filename",
-                                              "a string of the file"
-                                              " used for caching"),
-                          "a string used to name the cache file")
+        validate_on_error(
+            is_cache_filename,
+            (
+                str,
+                "is_cache_filename",
+                "a string of the file" " used for caching",
+            ),
+            "a string used to name the cache file",
+        )
 
-        validate_on_error(expires, (int, "expires",
-                                    "an integer of the expiry"
-                                    " period required for caching"),
-                          "an integer in seconds for the period of "
-                          "caching time")
+        validate_on_error(
+            expires,
+            (
+                int,
+                "expires",
+                "an integer of the expiry" " period required for caching",
+            ),
+            "an integer in seconds for the period of " "caching time",
+        )
 
-        validate_on_error(allow_media, (bool, "allow_media",
-                                        "an boolean to indicate "
-                                        " whether the user's auth should"
-                                        " be added to an attachment uri"),
-                          "a boolean to indicate true or false to "
-                          "allow a user's auth to media uri")
+        validate_on_error(
+            allow_media,
+            (
+                bool,
+                "allow_media",
+                "an boolean to indicate "
+                " whether the user's auth should"
+                " be added to an attachment uri",
+            ),
+            "a boolean to indicate true or false to "
+            "allow a user's auth to media uri",
+        )
 
-        validate_on_error(sub_tasks, (list, "sub_tasks",
-                                      "a list of Sub-task issue "
-                                      " type name to identify them"),
-                          "a list of names denoting the issue types "
-                          " available within an export")
+        validate_on_error(
+            sub_tasks,
+            (
+                list,
+                "sub_tasks",
+                "a list of Sub-task issue " " type name to identify them",
+            ),
+            "a list of names denoting the issue types "
+            " available within an export",
+        )
 
-        validate_on_error(project_type, (dict, "project_type",
-                                         "a dictionary of Jira's project "
-                                         " type template name"),
-                          "a dict of project type template denoting "
-                          " the name of the project type")
+        validate_on_error(
+            project_type,
+            (
+                dict,
+                "project_type",
+                "a dictionary of Jira's project " " type template name",
+            ),
+            "a dict of project type template denoting "
+            " the name of the project type",
+        )
 
-        validate_on_error(workflows, (dict, "workflows",
-                                      "a dictionary of Jira's project "
-                                      " workflow scheme names"),
-                          "a dict of a workflow scheme name used in "
-                          " Jira")
+        validate_on_error(
+            workflows,
+            (
+                dict,
+                "workflows",
+                "a dictionary of Jira's project " " workflow scheme names",
+            ),
+            "a dict of a workflow scheme name used in " " Jira",
+        )
 
-        validate_on_error(flush, ((float, int), "flush",
-                                  "a number to indicate delay "
-                                  " timeout period required for running"
-                                  " threads to shutdown"),
-                          "a number to indicate what wait time is "
-                          " required for running threads to shutdown")
+        validate_on_error(
+            flush,
+            (
+                (
+                    float,
+                    int,
+                ),
+                "flush",
+                "a number to indicate delay "
+                " timeout period required for running"
+                " threads to shutdown",
+            ),
+            "a number to indicate what wait time is "
+            " required for running threads to shutdown",
+        )
 
-        check_field_membership(extension, attr=True,
-                               value_option=["csv", "json"])
+        check_field_membership(
+            extension,
+            attr=True,
+            value_option=[
+                "csv",
+                "json",
+            ],
+        )
         if page is None:
             pass
         elif page is not None:
-            validate_on_error(page, (tuple, "page",
-                                     "a tuple"),
-                              "a tuple to determine valid page index")
-            if isinstance(page, tuple):
+            validate_on_error(
+                page,
+                (
+                    tuple,
+                    "page",
+                    "a tuple",
+                ),
+                "a tuple to determine valid page index",
+            )
+            if isinstance(
+                page,
+                tuple,
+            ):
                 fix_point = 0
                 for index_item in page:
                     answer = "first" if fix_point == 0 else "second"
-                    if not isinstance(index_item, int):
+                    if not isinstance(
+                        index_item,
+                        int,
+                    ):
                         add_log(
                             "The {} `page` argument value seems to be "
                             "using the wrong "
                             "data "
                             "structure {}"
-                            "expecting an integer.".format(answer, page),
+                            "expecting an integer.".format(
+                                answer,
+                                page,
+                            ),
                             "error",
                         )
                         raise JiraOneErrors(
@@ -2645,8 +3697,10 @@ class Projects:
                             "value"
                             " should be an integer "
                             "to loop page records. "
-                            "Detected {} instead.".format(answer,
-                                                          type(index_item)),
+                            "Detected {} instead.".format(
+                                answer,
+                                type(index_item),
+                            ),
                         )
                     if fix_point > 1:
                         add_log(
@@ -2675,7 +3729,10 @@ class Projects:
                 "password": target.get("password"),
                 "url": target.get("url"),
             }
-            if isinstance(target, dict)
+            if isinstance(
+                target,
+                dict,
+            )
             else target
         )
         source_option = {
@@ -2684,10 +3741,18 @@ class Projects:
             "url": LOGIN.base_url,
         }
         LOGIN.base_url = (
-            target_option.get("url") if isinstance(target, dict) else target
+            target_option.get("url")
+            if isinstance(
+                target,
+                dict,
+            )
+            else target
         )
         if target != "":
-            if isinstance(target, dict):
+            if isinstance(
+                target,
+                dict,
+            ):
                 LOGIN(**target_option)
             locate = LOGIN.get(endpoint.myself())
             if locate.status_code > 300:
@@ -2710,10 +3775,22 @@ class Projects:
                 active = True
         source_option["url"] = source
         LOGIN(**source_option)
-        rows, total, validate_query = 0, 0, LOGIN.get(
-            endpoint.search_issues_jql(jql)
+        (
+            rows,
+            total,
+            validate_query,
+        ) = (
+            0,
+            0,
+            LOGIN.get(endpoint.search_issues_jql(jql)),
         )
-        init, limiter = 0, 0
+        (
+            init,
+            limiter,
+        ) = (
+            0,
+            0,
+        )
         if csv_to_json != "":
             merge_files.append(csv_to_json)
 
@@ -2732,11 +3809,18 @@ class Projects:
                 )
                 raise JiraOneErrors(
                     "value",
-                    "Your JQL query seems to be invalid" " as no issues were returned.",
+                    "Your JQL query seems to be invalid"
+                    " as no issues were returned.",
                 )
             calc = int(total / 1000)
             # We assume each page is 1K that's downloaded.
-            limiter, init = total, rows
+            (
+                limiter,
+                init,
+            ) = (
+                total,
+                rows,
+            )
             if page is not None:
                 assert page[0] > -1, (
                     "The `page` argument first "
@@ -2762,35 +3846,45 @@ class Projects:
                 init = page[0] * 1000
 
         if exclude_fields and include_fields:
-            raise JiraOneErrors("wrong",
-                                "The ``exclude_fields`` and ``include_fields`` arguments "
-                                "cannot be used at the same time.")
+            raise JiraOneErrors(
+                "wrong",
+                "The ``exclude_fields`` and ``include_fields`` "
+                "arguments "
+                "cannot be used at the same time.",
+            )
 
         if extension.lower() == "json":
             if exclude_fields:
                 raise JiraOneErrors(
                     "wrong",
-                    'You cannot use the JSON export function if Jira'
-                    ' fields are being excluded. Please remove the '
-                    ' `exclude_fields` argument.'
+                    "You cannot use the JSON export function if Jira"
+                    " fields are being excluded. Please remove the "
+                    " `exclude_fields` argument.",
                 )
             elif include_fields:
                 raise JiraOneErrors(
                     "wrong",
-                    'You cannot use the JSON export function if Jira'
-                    ' fields are being included. Please remove the '
-                    ' `include_fields` argument.'
+                    "You cannot use the JSON export function if Jira"
+                    " fields are being included. Please remove the "
+                    " `include_fields` argument.",
                 )
             elif field_type.lower() != "all":
                 raise JiraOneErrors(
                     "wrong",
-                    'You cannot use the JSON export function, if Jira'
-                    ' fields are not exported properly. Please use the "all" option '
-                    'in the `field_type` argument or remove it completely.'
+                    "You cannot use the JSON export function, if Jira"
+                    " fields are not exported properly. "
+                    'Please use the "all" option '
+                    "in the `field_type` argument or remove it completely.",
                 )
-        print("Downloading issue export in {} format.".format(
-            extension.upper()
-        )
+
+        (
+            print(
+                "Downloading issue export in {} format.".format(
+                    extension.upper()
+                )
+            )
+            if show_export_link
+            else ""
         )
         file_deposit = []
 
@@ -2801,22 +3895,35 @@ class Projects:
                 if init >= limiter:
                     break
                 file_name = temp_file.split(".")[0] + f"_{init}.csv"
-                issues = (LOGIN.get(endpoint.issue_export(jql, init))
-                          if field_type.lower() == "all" else
-                          LOGIN.get(endpoint.issue_export(
-                              jql, init, fields="current"
-                          )
-                          ))
+                issues = (
+                    LOGIN.get(
+                        endpoint.issue_export(
+                            jql,
+                            init,
+                        )
+                    )
+                    if field_type.lower() == "all"
+                    else LOGIN.get(
+                        endpoint.issue_export(
+                            jql,
+                            init,
+                            fields="current",
+                        )
+                    )
+                )
                 print(
                     issues,
                     issues.reason,
-                    f"::downloading issues at page: " f"{int(init / 1000)}",
+                    "::downloading issues at page: " f"{int(init / 1000)}",
                     "of {}".format(int((limiter - 1) / 1000)),
-                )
+                ) if show_export_link is True else ""
                 file_writer(
                     folder,
                     file_name,
-                    content=issues.content.decode(encoding, errors=errors),
+                    content=issues.content.decode(
+                        encoding,
+                        errors=errors,
+                    ),
                     mark="file",
                     mode="w+",
                 )
@@ -2827,7 +3934,9 @@ class Projects:
                 config.update({"exports": file_deposit})
                 init += 1000
 
-        download_csv() if not merge_files else config.update({"exports": merge_files})
+        download_csv() if not merge_files else config.update(
+            {"exports": merge_files}
+        )
 
         (
             config["prev_list"],
@@ -2835,11 +3944,28 @@ class Projects:
             config["set_headers_main"],
             config["make_file"],
             config["set_file"],
-        ) = ([], [], [], [], [])
+        ) = (
+            [],
+            [],
+            [],
+            [],
+            [],
+        )
 
         config["is_valid"] = False
+        (
+            sprint_custom_id,
+            config["sprint_cf"],
+        ) = (
+            field.search_field("Sprint"),
+            None,
+        )
+        config["json_props_options"] = [x.lower() for x in json_properties]
+        config["user_data_group"] = {}
 
-        def parse_media(uri: str) -> str:
+        def parse_media(
+            uri: str,
+        ) -> str:
             """
             Parse a URL string to include the
             credential of the URI
@@ -2849,17 +3975,24 @@ class Projects:
             """
             if uri.startswith("http") or uri.startswith("https"):
                 rem_http = uri.split("://")
-                user_id = LOGIN.user.split("@") if LOGIN.api is True else \
-                    LOGIN.user
-                auth_uri = f"{rem_http[0]}://{user_id[0]}%40{user_id[1]}:" \
-                           f"{LOGIN.password}@{rem_http[-1]}" if LOGIN.api is True \
-                    else f"{rem_http[0]}://{user_id[0]}:" \
-                         f"{LOGIN.password}@{rem_http[-1]}"
+                user_id = (
+                    LOGIN.user.split("@") if LOGIN.api is True else LOGIN.user
+                )
+                auth_uri = (
+                    f"{rem_http[0]}://{user_id[0]}%40{user_id[1]}:"
+                    f"{LOGIN.password}@{rem_http[-1]}"
+                    if LOGIN.api is True
+                    else f"{rem_http[0]}://{user_id[0]}:"
+                    f"{LOGIN.password}@{rem_http[-1]}"
+                )
                 return auth_uri
 
-        def get_pkey_index(pkey: list, key: str,
-                           key_search: list,
-                           attr: bool = False) -> int:
+        def get_pkey_index(
+            pkey: list,
+            key: str,
+            key_search: list,
+            attr: bool = False,
+        ) -> int:
             """
             Return the index of the column key
 
@@ -2878,16 +4011,21 @@ class Projects:
                         )
                 else:
                     if item.get("column_name") == key:
-                        config[key_search[0]][key_search[1]] = item.get("column_index")
+                        config[key_search[0]][key_search[1]] = item.get(
+                            "column_index"
+                        )
                         config["is_valid"] = True
                         return config[key_search[0]][key_search[1]]
             return config[key_search[0]][key_search[1]]
 
         # Get an index of all columns within the first file
         # Then use it across other files in the list
-        def data_frame(files_: str = None,
-                       activate: bool = True,
-                       poll: list = None, **kwargs) -> None:
+        def data_frame(
+            files_: str = None,
+            activate: bool = True,
+            poll: list = None,
+            **kwargs,
+        ) -> None:
             """Check each column width of each CSV file,
             get the name of the column and index number
             which can be called with `config["headers"]`.
@@ -2903,14 +4041,29 @@ class Projects:
             :return: None
             """
             columns = (
-                file_reader(folder, files_, **kwargs) if activate is True else poll
+                file_reader(
+                    folder,
+                    files_,
+                    **kwargs,
+                )
+                if activate is True
+                else poll
             )
-            column_count, config["headers"] = 0, []
+            (
+                column_count,
+                config["headers"],
+            ) = (
+                0,
+                [],
+            )
             for column_ in columns:
                 each_col_count = 0
                 for each_col in column_:
                     # define the name and index of each column
-                    value = {"column_name": each_col, "column_index": each_col_count}
+                    value = {
+                        "column_name": each_col,
+                        "column_index": each_col_count,
+                    }
                     config["headers"].append(value)
                     each_col_count += 1
                 column_count += 1
@@ -2919,9 +4072,20 @@ class Projects:
 
         file_path_directory = config["exports"]
         # build headers
-        column_headers, headers, max_col_length = [], {}, 0
+        (
+            column_headers,
+            headers,
+            max_col_length,
+        ) = (
+            [],
+            {},
+            0,
+        )
 
-        def write_files(files_: str, push: list = None) -> None:
+        def write_files(
+            files_: str,
+            push: list = None,
+        ) -> None:
             """Creates the header file.
 
             :param files_: The name to the file
@@ -2934,7 +4098,9 @@ class Projects:
 
             # create a temp csv file with the header of the export
 
-            def create_file(**kwargs) -> None:
+            def create_file(
+                **kwargs,
+            ) -> None:
                 """
                 Create multiple files or data points.
 
@@ -2944,7 +4110,11 @@ class Projects:
 
                 nonlocal max_col_length, headers, column_headers
                 data_frame(**kwargs) if push is not None else data_frame(files_)
-                column_headers, headers, max_col_length = (
+                (
+                    column_headers,
+                    headers,
+                    max_col_length,
+                ) = (
                     [],
                     DotNotation(value=config["headers"]),
                     0,
@@ -2953,7 +4123,10 @@ class Projects:
                     column_headers.append(header.column_name)
                     max_col_length += 1
 
-            def make_file(modes: str, data: list) -> None:
+            def make_file(
+                modes: str,
+                data: list,
+            ) -> None:
                 """Writes a list into a File<->like object.
 
                 :param modes: A writing mode indicator
@@ -2962,7 +4135,13 @@ class Projects:
 
                 :return: None
                 """
-                file_writer(folder, temp_file, data=data, mark="many", mode=modes)
+                file_writer(
+                    folder,
+                    temp_file,
+                    data=data,
+                    mark="many",
+                    mode=modes,
+                )
 
             def make_headers_mark() -> None:
                 """Make and compare headers then recreate a new header.
@@ -2972,13 +4151,18 @@ class Projects:
                 """
                 # This should contain the data of the next column
                 config["next_list"] = column_headers
-                create_file(activate=False, poll=copy_temp_read)
+                create_file(
+                    activate=False,
+                    poll=copy_temp_read,
+                )
                 # Because of the above, the column_headers should differ
                 # It should contain the previous data and header
                 config["prev_list"] = column_headers
 
                 def column_check(
-                        first_list: list, second_list: list, _count_: int = 0
+                    first_list: list,
+                    second_list: list,
+                    _count_: int = 0,
                 ) -> None:
                     """Determine and defines the column headers.
 
@@ -2992,7 +4176,8 @@ class Projects:
                     """
 
                     def column_populate(
-                            name_of_field: str = None, ticker: int = None
+                        name_of_field: str = None,
+                        ticker: int = None,
                     ) -> None:
                         """Receives a column count list with index.
                         which are inserted and arranged properly
@@ -3005,9 +4190,14 @@ class Projects:
 
                         :return: None
                         """
-                        config["set_headers_main"].insert(ticker, name_of_field)
+                        config["set_headers_main"].insert(
+                            ticker,
+                            name_of_field,
+                        )
 
-                    def determine_value(value: str) -> int:
+                    def determine_value(
+                        value: str,
+                    ) -> int:
                         """Determines how the headers of two files
                         are merged. By taking which ever file has
                         more element in the headers.
@@ -3029,11 +4219,14 @@ class Projects:
                         else:
                             _plus_value = prior_occurrence
                         _main_value = (
-                                int(abs(next_occurrence - prior_occurrence)) + _plus_value
+                            int(abs(next_occurrence - prior_occurrence))
+                            + _plus_value
                         )
                         return _main_value
 
-                    def call_column(items: list) -> None:
+                    def call_column(
+                        items: list,
+                    ) -> None:
                         """Populate a new column to the list
                         by determining how many exist from the
                         previous and next headers.
@@ -3051,9 +4244,15 @@ class Projects:
                             check = config["set_headers_main"].count(col_list)
 
                             if col_list not in check_value:
-                                column_populate(col_list, _count_)
+                                column_populate(
+                                    col_list,
+                                    _count_,
+                                )
                             elif col_list in check_value and check < value_id:
-                                column_populate(col_list, _count_)
+                                column_populate(
+                                    col_list,
+                                    _count_,
+                                )
                             _count_ += 1
                         _count_ = 0
 
@@ -3065,9 +4264,15 @@ class Projects:
                     # - That would mean creating more variables with 2-3
                     # - lines of additional codes. It's simpler this way.
 
-                column_check(config["prev_list"], config["next_list"])
+                column_check(
+                    config["prev_list"],
+                    config["next_list"],
+                )
 
-                def populate_column_data(column_data: list, attr: bool = False) -> list:
+                def populate_column_data(
+                    column_data: list,
+                    attr: bool = False,
+                ) -> list:
                     """Tries and populate each rows
                     By first getting the headers and the rows beneath it
                     then adding the value of the column by rows.
@@ -3086,10 +4291,15 @@ class Projects:
                     """
 
                     header_choice = (
-                        config["prev_list"] if attr is False else config["next_list"]
+                        config["prev_list"]
+                        if attr is False
+                        else config["next_list"]
                     )
 
-                    def load_count(my_list: list, conf: list) -> list:
+                    def load_count(
+                        my_list: list,
+                        conf: list,
+                    ) -> list:
                         """Loads a list into a dictionary of
                         values arranged by their column name.
 
@@ -3118,20 +4328,38 @@ class Projects:
                         [],
                         [],
                     )
-                    my_value = load_count(config["set_headers_main"], pre_config)
-                    other_value = load_count(header_choice, after_config)
+                    my_value = load_count(
+                        config["set_headers_main"],
+                        pre_config,
+                    )
+                    other_value = load_count(
+                        header_choice,
+                        after_config,
+                    )
                     # run a loop through the data and assign each value
                     # to their appropriate header
 
                     locking = deepcopy(header_choice)
                     read_lock = len(locking)
-                    box_item, box_count = 0, deepcopy(column_data)
+                    (
+                        box_item,
+                        box_count,
+                    ) = (
+                        0,
+                        deepcopy(column_data),
+                    )
                     iter_count = len(box_count)
                     for items in column_data:
                         if box_item >= iter_count:
                             break
                         my_item = 0
-                        for that_row, inner_item in zip(other_value, items):
+                        for (
+                            that_row,
+                            inner_item,
+                        ) in zip(
+                            other_value,
+                            items,
+                        ):
                             if my_item >= read_lock:
                                 break
                             # select everything from first row to last row
@@ -3157,18 +4385,25 @@ class Projects:
                             for this_row in my_value:
                                 if check_name == 1:
                                     if (
-                                            this_row["column_name"]
-                                            == new_row["column_name"]
+                                        this_row["column_name"]
+                                        == new_row["column_name"]
                                     ):
-                                        this_row["column_data"] = new_row["column_data"]
+                                        this_row["column_data"] = new_row[
+                                            "column_data"
+                                        ]
                                         break
                                 elif check_name > 1:
                                     if (
-                                            this_row["column_name"]
-                                            == new_row["column_name"]
+                                        this_row["column_name"]
+                                        == new_row["column_name"]
                                     ):
-                                        if this_row["column_index"] not in keep_track:
-                                            keep_track.add(this_row["column_index"])
+                                        if (
+                                            this_row["column_index"]
+                                            not in keep_track
+                                        ):
+                                            keep_track.add(
+                                                this_row["column_index"]
+                                            )
                                             this_row["column_data"] = new_row[
                                                 "column_data"
                                             ]
@@ -3180,7 +4415,13 @@ class Projects:
 
                     bind_us()
                     lock = deepcopy(my_value)
-                    get_range, index = 0, 0
+                    (
+                        get_range,
+                        index,
+                    ) = (
+                        0,
+                        0,
+                    )
                     for i in lock:
                         # Use the first index field as a basis to determine
                         # The length of the dataset.
@@ -3203,7 +4444,10 @@ class Projects:
 
                     return my_value
 
-                def data_provision(make_item: list, attr: bool = False) -> None:
+                def data_provision(
+                    make_item: list,
+                    attr: bool = False,
+                ) -> None:
                     """Add the column data into a list.
                     Here we split the header and the data into
                     columns for [headers] -> vertical view
@@ -3223,7 +4467,7 @@ class Projects:
                     next item in the iteration.
                     While the next item is assumed as next column
                     The same step is repeated in the loop until the
-                    steps are exhausted.
+                    steps, are exhausted.
 
                     :param make_item: A list of element containing the
                     CSV data items
@@ -3234,14 +4478,20 @@ class Projects:
                     """
                     # checks the headers and maps the data
                     # to the headers
-                    cook_item = populate_column_data(make_item, attr)
+                    cook_item = populate_column_data(
+                        make_item,
+                        attr,
+                    )
                     look_up = DotNotation(value=cook_item)
                     stop_loop = 0
                     _limit_copy = deepcopy(config["set_headers_main"])
                     _limit = len(_limit_copy)
-                    inner_stop, finish_loop = {"num": 0}, len(
-                        [row for row in make_item]
-                    )
+                    (
+                        inner_stop,
+                        finish_loop,
+                    ) = {
+                        "num": 0
+                    }, len([row for row in make_item])
                     # The below adds the values as they are gotten
                     # from a dictionary object
                     while True:
@@ -3255,10 +4505,14 @@ class Projects:
                                 if inner_stop["num"] >= _limit:
                                     break
                                 for _names in [
-                                    config["set_headers_main"][inner_stop["num"]]
+                                    config["set_headers_main"][
+                                        inner_stop["num"]
+                                    ]
                                 ]:
                                     if find_item.column_name == _names:
-                                        data_brick = find_item.column_data[stop_loop]
+                                        data_brick = find_item.column_data[
+                                            stop_loop
+                                        ]
                                         config["set_file"].append(data_brick)
                                         inner_stop["num"] += 1
                                         break
@@ -3272,10 +4526,16 @@ class Projects:
 
                 # populate the first list with prev data
                 del copy_temp_read[0]  # remove the headers
-                data_provision(copy_temp_read, attr=False)
+                data_provision(
+                    copy_temp_read,
+                    attr=False,
+                )
                 # populate the second list with current data
                 del push[0]  # remove the headers
-                data_provision(push, attr=True)
+                data_provision(
+                    push,
+                    attr=True,
+                )
                 # Why call `data_provision` twice instead of recursion?
                 # - That would mean creating more variables and 2-3 lines of
                 # - additional codes. It's simpler this way.
@@ -3283,12 +4543,21 @@ class Projects:
             create_file(files_=files_)
             if push is not None:
                 # This denotes the current temp_file
-                copy_temp_read = file_reader(folder, temp_file)
+                copy_temp_read = file_reader(
+                    folder,
+                    temp_file,
+                )
                 make_headers_mark()
                 # This should construct the next CSV file headers
-                make_file("w+", [config["set_headers_main"]])
+                make_file(
+                    "w+",
+                    [config["set_headers_main"]],
+                )
                 # `push` contains the next data_list to be written
-                make_file("a+", config["make_file"])
+                make_file(
+                    "a+",
+                    config["make_file"],
+                )
             # clear all the previous values stored in memory
             column_headers.clear()
             config["set_headers_main"].clear()
@@ -3297,15 +4566,30 @@ class Projects:
         payload = []
         length = max_col_length  # keep track of the column width
 
-        def merge_files() -> None:
+        def merging_files() -> None:
             """Merge each files and populate it into one file.
 
             :return: None
             """
-            iteration, progress = 0, 0
+            (
+                iteration,
+                progress,
+            ) = (
+                0,
+                0,
+            )
             for files in file_path_directory:
                 current_value = len(file_path_directory)
-                read_original, start_ = file_reader(folder, files), 0
+                (
+                    read_original,
+                    start_,
+                ) = (
+                    file_reader(
+                        folder,
+                        files,
+                    ),
+                    0,
+                )
                 copy_read = deepcopy(read_original)
                 table_length = len([row for row in copy_read])
                 for column in read_original:
@@ -3319,39 +4603,88 @@ class Projects:
                     write_files(files_=files)
                     # add the content into the temp file and populate the rows
                     file_writer(
-                        folder, temp_file, data=payload, mark="many", mode="a+"
+                        folder,
+                        temp_file,
+                        data=payload,
+                        mark="many",
+                        mode="a+",
                     )
                 else:
                     # process the next list of files here
-                    write_files(files_=files, push=payload)
+                    write_files(
+                        files_=files,
+                        push=payload,
+                    )
                 payload.clear()
                 iteration += 1
                 progress += 1
                 current_progress = 100 * progress / current_value
                 print(
-                    "Processing. " "Current progress: {}%".format(
-                        int(current_progress)
-                    )
+                    "Processing. "
+                    "Current progress: {}%".format(int(current_progress))
                 )
 
-        merge_files()  # loop through each file and attempt combination
+        merging_files()  # loop through each file and attempt combination
 
         if active is True:
+            # TODO: Remove this block of code in future or refactor it
+            """The solution here is
+            # TODO: get the export file and rewrite those field name values
+            # TODO: get the users from target environment, get all sprint names
+            # TODO: in the current export, translate to sprint id,
+            # TODO: username to accountId
+            """
             # Change the field name to field id
             # If the field is supported such as sprint or user_picker fields
             field_name = _field_names_
-            if isinstance(target, dict):
+            if isinstance(
+                target,
+                dict,
+            ):
                 LOGIN(**target_option)
             else:
                 LOGIN.base_url = target
-            read_file, start = file_reader(folder, temp_file, **kwargs), 0
+            (
+                read_file,
+                start,
+            ) = (
+                file_reader(
+                    folder,
+                    temp_file,
+                    **kwargs,
+                ),
+                0,
+            )
             copy_total = deepcopy(read_file)
             total_ = len([row for row in copy_total])
             # get all the field value in the csv file
-            field_list, config["fields"], config["saves"] = [], [], []
-            field_data, cycle, field_column = set(), 0, []
-            data_frame(activate=False, poll=read_file)
-            column_headers, max_col_length, headers = (
+            (
+                field_list,
+                config["fields"],
+                config["saves"],
+            ) = (
+                [],
+                [],
+                [],
+            )
+            (
+                field_data,
+                cycle,
+                field_column,
+            ) = (
+                set(),
+                0,
+                [],
+            )
+            data_frame(
+                activate=False,
+                poll=read_file,
+            )
+            (
+                column_headers,
+                max_col_length,
+                headers,
+            ) = (
                 [],
                 0,
                 DotNotation(value=config["headers"]),
@@ -3360,7 +4693,9 @@ class Projects:
                 column_headers.append(header.column_name)
                 max_col_length += 1
 
-            def populate(name: str) -> None:
+            def populate(
+                name: str,
+            ) -> None:
                 """Creates a field name column index
                 :param name: A field name
                 :return: None
@@ -3375,17 +4710,45 @@ class Projects:
                 :return: None
                 """
 
-                nonlocal read_file, start, copy_total, total_, field_list, \
-                    field_data, cycle, field_column
+                nonlocal read_file, start, copy_total, total_, field_list, field_data, cycle, field_column
 
-                read_file, start = file_reader(folder, temp_file, **kwargs), 0
+                (
+                    read_file,
+                    start,
+                ) = (
+                    file_reader(
+                        folder,
+                        temp_file,
+                        **kwargs,
+                    ),
+                    0,
+                )
                 copy_total = deepcopy(read_file)
                 total_ = len([row for row in copy_total])
                 # get all the field value in the csv file
-                field_list, config["fields"], config["saves"] = [], [], []
-                field_data, cycle, field_column = set(), 0, []
+                (
+                    field_list,
+                    config["fields"],
+                    config["saves"],
+                ) = (
+                    [],
+                    [],
+                    [],
+                )
+                (
+                    field_data,
+                    cycle,
+                    field_column,
+                ) = (
+                    set(),
+                    0,
+                    [],
+                )
 
-            def check_id(_id: int, _iter: list) -> bool:
+            def check_id(
+                _id: int,
+                _iter: list,
+            ) -> bool:
                 """Return true if item exist in list.
                 :param _id: An id in a list
                 :param _iter: An iterable data
@@ -3396,18 +4759,32 @@ class Projects:
                     return True
                 return False
 
-            def check_payload(data: Union[dict, list]) -> Union[dict, list]:
+            def check_payload(
+                data: Union[
+                    dict,
+                    list,
+                ]
+            ) -> Union[dict, list,]:
                 """Return the value of a field.
                 :param data: A data field
 
                 :return: dict or list
                 """
-                if isinstance(data, list):
+                if isinstance(
+                    data,
+                    list,
+                ):
                     # used for sprint fields
                     _data = data[0]
-                    _result = {"field_name": _data["name"], "field_id": _data["id"]}
+                    _result = {
+                        "field_name": _data["name"],
+                        "field_id": _data["id"],
+                    }
                     return _result
-                if isinstance(data, dict):
+                if isinstance(
+                    data,
+                    dict,
+                ):
                     # used to extract watchers' list
                     my_watch = []
                     if names == "Watchers":
@@ -3432,14 +4809,23 @@ class Projects:
                         }
                         return _result_
 
-            def get_watchers(name: str, key: Union[str, int]) -> list:
+            def get_watchers(
+                name: str,
+                key: Union[
+                    str,
+                    int,
+                ],
+            ) -> list:
                 """
                 Return a list of watchers
                 :param name: A watcher field
                 :param key: An issue key
                 :return: dict
                 """
-                get_issue = field.get_field_value(name, key)
+                get_issue = field.get_field_value(
+                    name,
+                    key,
+                )
                 get_watch = LOGIN.get(get_issue["self"]).json()
                 return get_watch
 
@@ -3455,8 +4841,11 @@ class Projects:
                         :return: None
                         """
                         print(
-                            "Converting {} name to {} id on outfile from {}".format(
-                                names, names, LOGIN.base_url
+                            "Converting {} name to {} id on outfile "
+                            "from {}".format(
+                                names,
+                                names,
+                                LOGIN.base_url,
                             )
                         )
                         for _field_item in field_list:
@@ -3471,9 +4860,15 @@ class Projects:
                                     if "key" in keys:
                                         key = keys["key"]
                                         get_id = (
-                                            field.get_field_value(names, key)
+                                            field.get_field_value(
+                                                names,
+                                                key,
+                                            )
                                             if names != "Watchers"
-                                            else get_watchers(names, key)
+                                            else get_watchers(
+                                                names,
+                                                key,
+                                            )
                                         )
                                         value_ = check_payload(get_id)
                                         config["fields"].append(value_)
@@ -3481,10 +4876,15 @@ class Projects:
                             else:
                                 print(
                                     "It seems like the {} name: {} "
-                                    "doesn't exist here".format(names, _field_item)
+                                    "doesn't exist here".format(
+                                        names,
+                                        _field_item,
+                                    )
                                 )
 
-                    def check_columns(_max_length: int) -> None:
+                    def check_columns(
+                        _max_length: int,
+                    ) -> None:
                         """
                         Determines the columns of the CSV file
 
@@ -3496,23 +4896,29 @@ class Projects:
                                 break
                             if start > 0:
                                 if (
-                                        check_id(_max_length, field_column)
-                                        and rows_ != ""
-                                        and cycle == 0
+                                    check_id(
+                                        _max_length,
+                                        field_column,
+                                    )
+                                    and rows_ != ""
+                                    and cycle == 0
                                 ):
                                     values = columns_[_max_length]
                                     field_data.add(values)
                                 if (
-                                        check_id(_max_length, field_column)
-                                        and rows_ != ""
-                                        and cycle == 1
+                                    check_id(
+                                        _max_length,
+                                        field_column,
+                                    )
+                                    and rows_ != ""
+                                    and cycle == 1
                                 ):
                                     get_value = (
                                         [
                                             name.get("field_id")
                                             for name in config["fields"]
                                             if name.get("field_name")
-                                               == columns_[_max_length]
+                                            == columns_[_max_length]
                                         ]
                                         if names != "Watchers"
                                         else [
@@ -3520,7 +4926,7 @@ class Projects:
                                             for data_field in config["fields"]
                                             for name in data_field
                                             if name.get("field_name")
-                                               == columns_[_max_length]
+                                            == columns_[_max_length]
                                         ]
                                     )
                                     if len(get_value) != 0:
@@ -3541,7 +4947,11 @@ class Projects:
                             field_change()
                         break
                 file_writer(
-                    folder, temp_file, data=config["saves"], mark="many", mode="w+"
+                    folder,
+                    temp_file,
+                    data=config["saves"],
+                    mark="many",
+                    mode="w+",
                 )
 
             for names in field_name:
@@ -3556,11 +4966,16 @@ class Projects:
                 except AttributeError as error:
                     sys.stderr.write(f"{error}")
 
-        def caching(name_field: str,
-                    obj_type: Union[dict, list]) -> None:
+        def caching(
+            name_field: str,
+            obj_type: Union[
+                dict,
+                list,
+            ],
+        ) -> None:
             """
             Creates a caching check by depositing the time,
-            instance and jql query that was used during the
+            and instance that was used during the
             last check along with the object data.
             Works specifically for JSON export
 
@@ -3570,33 +4985,61 @@ class Projects:
             :return: None
             """
             if os.path.isdir(folder):
-                file_path = path_builder(folder, is_cache_filename)
+                file_path = path_builder(
+                    folder,
+                    is_cache_filename,
+                )
                 data_dump = {name_field: {}}
                 if os.path.isfile(file_path):
-                    read_json = json.load(open(
-                        file_path, encoding=encoding
-                    ))
+                    read_json = json.load(
+                        open(
+                            file_path,
+                            encoding=encoding,
+                        )
+                    )
                     if read_json:
                         data_dump.update(read_json)
-                    data_dump[name_field].update({
-                        "name": LOGIN.base_url,
-                        "jql": jql,
-                        "value": obj_type,
-                        "time": datetime.strftime(
-                            datetime.astimezone(
-                                datetime.now() + timedelta(seconds=expires)
-                            ), df.YYYY_MM_dd_HH_MM_SS_MS)
-                    })
-                    json.dump(data_dump, open(
-                        file_path, mode="w+", encoding=encoding),
-                              indent=4, sort_keys=True)
+                    data_dump.get(name_field).update(
+                        {
+                            "name": LOGIN.base_url,
+                            "value": obj_type,
+                            "time": datetime.strftime(
+                                datetime.astimezone(
+                                    datetime.now() + timedelta(days=expires)
+                                ),
+                                Df.YYYY_MM_dd_HH_MM_SS_MS,
+                            ),
+                        }
+                    )
+                    json.dump(
+                        data_dump,
+                        open(
+                            file_path,
+                            mode="w+",
+                            encoding=encoding,
+                        ),
+                        indent=4,
+                        sort_keys=True,
+                    )
                 else:
-                    descriptor = os.open(file_path, flags=os.O_CREAT)
+                    descriptor = os.open(
+                        file_path,
+                        flags=os.O_CREAT,
+                    )
                     os.close(descriptor)
                     _data_ = {}
-                    json.dump(_data_, open(file_path, mode="w+"))
+                    json.dump(
+                        _data_,
+                        open(
+                            file_path,
+                            mode="w+",
+                            encoding=encoding,
+                        ),
+                    )
 
-        def is_file_exist(cache_file: str = None) -> bool:
+        def is_file_exist(
+            cache_file: str = None,
+        ) -> bool:
             """
             Checks and updates the object from cache based
             on the name it was saved. If found updates
@@ -3610,30 +5053,29 @@ class Projects:
             """
 
             if os.path.isdir(folder):
-                file_path = path_builder(folder, is_cache_filename)
+                file_path = path_builder(
+                    folder,
+                    is_cache_filename,
+                )
                 if os.path.isfile(file_path):
-                    load_file = json.load(open(
-                        file_path, encoding=encoding))
+                    load_file = json.load(
+                        open(
+                            file_path,
+                            encoding=encoding,
+                        )
+                    )
                     if cache_file in load_file:
                         get_cache_name = load_file[cache_file]
                         current_time = datetime.today()
                         parse_time = datetime.strptime(
-                            get_cache_name["time"], df.YYYY_MM_dd_HH_MM_SS_MS
+                            get_cache_name["time"],
+                            Df.YYYY_MM_dd_HH_MM_SS_MS,
                         )
-                        if get_cache_name["name"] == LOGIN.base_url and \
-                                get_cache_name["jql"] == jql and \
-                                current_time < parse_time:
-                            if cache_file == "sprint":
-                                config["sprint_data"].update(
-                                    get_cache_name["value"]
-                                )
-                                return True
-                            elif cache_file == "sprint_container":
-                                config["sprint_object_container"].update(
-                                    get_cache_name["value"]
-                                )
-                                return True
-                            elif cache_file == "custom_fields":
+                        if (
+                            get_cache_name["name"] == LOGIN.base_url
+                            and current_time < parse_time
+                        ):
+                            if cache_file == "custom_fields":
                                 config["headers"] = get_cache_name["value"]
                                 return True
                             elif cache_file == "users":
@@ -3644,8 +5086,10 @@ class Projects:
 
         # Verify each field exist in Jira
         # Then rewrite the name to be suitable in JSON format
-        def float_fields(field_names: dict,
-                         regex_pattern: str) -> None:
+        def float_fields(
+            field_names: dict,
+            regex_pattern: str,
+        ) -> None:
             """
             Submit some Jira field data for a search
             and get the field's properties.
@@ -3658,48 +5102,54 @@ class Projects:
             """
             field_copy = deepcopy(field_names["column_name"])
             config["headers"][field_names["column_index"]][
-                "field_column_name"] = field_copy
+                "field_column_name"
+            ] = field_copy
             if field_names["column_name"].startswith("Custom field"):
-                search_name = re.compile(regex_pattern, re.I)
-                find_name = search_name.search(
-                    field_names["column_name"]
+                search_name = re.compile(
+                    regex_pattern,
+                    re.I,
                 )
+                find_name = search_name.search(field_names["column_name"])
                 name_found = None
                 if find_name is not None:
                     name_found = find_name.group(2)
 
                 if name_found is not None:
                     jira_field_name = name_found.lstrip("(").rstrip(")")
-                    map_name = field.get_field(
-                        jira_field_name
-                    )
+                    map_name = field.get_field(jira_field_name)
 
                     if map_name is None:
                         pass
                     else:
                         config["headers"][field_names["column_index"]][
-                            "column_name"] = map_name.get("id")
+                            "column_name"
+                        ] = map_name.get("id")
                         config["headers"][field_names["column_index"]][
-                            "original_name"] = map_name.get("name")
+                            "original_name"
+                        ] = map_name.get("name")
                         config["headers"][field_names["column_index"]][
-                            "customType"] = map_name.get("customType")
+                            "customType"
+                        ] = map_name.get("customType")
 
             else:
-                map_name = field.get_field(
-                    field_names["column_name"]
-                )
+                map_name = field.get_field(field_names["column_name"])
                 if map_name is None:
                     map_name = {}
 
                 if "system" in map_name:
                     config["headers"][field_names["column_index"]][
-                        "column_name"] = map_name.get("key")
+                        "column_name"
+                    ] = map_name.get("key")
                     config["headers"][field_names["column_index"]][
-                        "original_name"] = map_name.get("name")
+                        "original_name"
+                    ] = map_name.get("name")
                     config["headers"][field_names["column_index"]][
-                        "customType"] = map_name.get("custom")
+                        "customType"
+                    ] = map_name.get("custom")
 
-        def fetch_field_ids(header_names: list) -> None:
+        def fetch_field_ids(
+            header_names: list,
+        ) -> None:
             """
             Mutate the field names of Jira to JSON compatible names
 
@@ -3708,85 +5158,219 @@ class Projects:
             """
 
             for our_field_name in header_names:
-                process_executor(float_fields, data=our_field_name,
-                                 workers=workers, timeout=timeout,
-                                 regex_pattern=CUSTOM_FIELD_REGEX)
+                process_executor(
+                    float_fields,
+                    data=our_field_name,
+                    workers=workers,
+                    timeout=timeout,
+                    regex_pattern=CUSTOM_FIELD_REGEX,
+                )
 
             if is_cache is True:
-                caching("custom_fields", config["headers"])
+                caching(
+                    "custom_fields",
+                    config["headers"],
+                )
 
-        def field_exclude() -> None:
+        def csv_field_change(
+            operation: str = None,
+        ) -> None:
             """
-            Exclude certain field column from the Jira
-            CSV export and it's data prior to export
-            completion
+            Exclude certain fields or include certain fields from Jira
+            CSV export. In addition, change the delimiter used on the CSV
+            file before export is completed.
+
+            :param operation: A decision trigger for CSV file manipulation
+                              changes
 
             :return: None
             """
             data_frame(files_=temp_file)
-            exclude_read = file_reader(folder,
-                                       temp_file,
-                                       skip=True)
+            field_read = file_reader(
+                folder,
+                temp_file,
+                skip=True,
+            )
             file_headers = []
-            print("Validating Jira field names")
+            print(
+                "Validating Jira field names"
+                if operation == "exclude" or operation == "include"
+                else "Changing CSV file delimiter"
+            )
             fetch_field_ids(config["headers"])
-            exclude_list, first_run = [], False
-            for exclude_column in exclude_read:
-                exclude_data = []
-                for ex_header, ex_row in zip(config["headers"],
-                                             exclude_column):
-                    if ex_header.get("original_name") not in exclude_fields:
-                        exclude_data.append(ex_row)
+            (
+                _field_list,
+                first_run,
+            ) = (
+                [],
+                False,
+            )
+
+            for field_column_ in field_read:
+                _field_data = []
+                for (
+                    field_header,
+                    field_row,
+                ) in zip(
+                    config["headers"],
+                    field_column_,
+                ):
+                    if operation == "exclude":
+                        if (
+                            field_header.get("original_name")
+                            not in exclude_fields
+                        ):
+                            _field_data.append(field_row)
+                            if first_run is False:
+                                file_headers.append(
+                                    field_header.get("field_column_name")
+                                )
+                    elif operation == "include":
+                        if field_header.get("original_name") in include_fields:
+                            _field_data.append(field_row)
+                            if first_run is False:
+                                file_headers.append(
+                                    field_header.get("field_column_name")
+                                )
+                    else:
+                        _field_data.append(field_row)
                         if first_run is False:
                             file_headers.append(
-                                ex_header.get("field_column_name"))
-                first_run = True
-                exclude_list.append(exclude_data)
-
-            print("Reconstructing file headers")
-            file_writer(folder, temp_file, data=[file_headers],
-                        mark="many", mode="w+")
-            print("Excluding declared field columns into the CSV file")
-            file_writer(folder, temp_file, data=exclude_list,
-                        mark="many")
-
-        def field_include() -> None:
-            """
-            Include certain field column from the Jira
-            CSV export and it's data prior to export
-            completion
-
-            :return: None
-            """
-            data_frame(files_=temp_file)
-            include_read = file_reader(folder,
-                                       temp_file,
-                                       skip=True)
-            file_headers = []
-            print("Validating Jira field names")
-            fetch_field_ids(config["headers"])
-            include_list, first_run = [], False
-            for include_column in include_read:
-                include_data = []
-                for in_header, in_row in zip(config["headers"],
-                                             include_column):
-                    if in_header.get("original_name") in include_fields:
-                        include_data.append(in_row)
-                        if first_run is False:
-                            file_headers.append(
-                                in_header.get("field_column_name")
+                                field_header.get("field_column_name")
                             )
+
                 first_run = True
-                include_list.append(include_data)
+                _field_list.append(_field_data)
 
-            print("Reconstructing file headers")
-            file_writer(folder, temp_file, data=[file_headers],
-                        mark="many", mode="w+")
-            print("Including declared field columns into the CSV file")
-            file_writer(folder, temp_file, data=include_list,
-                        mark="many")
+            print(
+                "Reconstructing file headers"
+                if operation == "exclude" or operation == "include"
+                else "Recreating file headers"
+            )
+            (
+                file_writer(
+                    folder,
+                    temp_file,
+                    data=[file_headers],
+                    mark="many",
+                    mode="w+",
+                )
+                if operation == "exclude" or operation == "include"
+                else file_writer(
+                    folder,
+                    temp_file,
+                    data=[file_headers],
+                    mark="many",
+                    mode="w+",
+                    delimiter=delimit,
+                )
+            )
+            print(
+                "Excluding declared field columns into the CSV file"
+                if operation == "exclude"
+                else "Including declared field columns into the CSV file"
+                if operation == "include"
+                else 'Rewriting file separator to use "{}" as delimiter'.format(
+                    delimit
+                )
+            )
+            (
+                file_writer(
+                    folder,
+                    temp_file,
+                    data=_field_list,
+                    mark="many",
+                )
+                if operation == "exclude" or operation == "include"
+                else file_writer(
+                    folder,
+                    temp_file,
+                    data=_field_list,
+                    mark="many",
+                    delimiter=delimit,
+                )
+            )
 
-        def extend_format(ext: str = None) -> None:
+        def export_groups(
+            user_account: str,
+        ) -> list:
+            """
+            Exports a list of group a user is in.
+            :param user_account: The username or account id of a user
+            :return:
+            """
+            _group_holder_ = []
+            if not user_account.startswith("qm:"):
+                _user_group_ = LOGIN.get(endpoint.get_user_group(user_account))
+                if _user_group_.status_code < 300:
+                    _group_data_ = _user_group_.json()
+                    for user_group in _group_data_:
+                        _group_holder_.append(user_group.get("name"))
+
+            return _group_holder_
+
+        def search_sprints(
+            sprint_value: str,
+        ) -> None:
+            """
+            Search for sprint id from Jira issues
+
+            :param sprint_value: A Sprint value
+
+            :return: None
+            """
+            _search_ = LOGIN.get(
+                endpoint.search_issues_jql(
+                    f'{config["sprint_cf"]} = "{sprint_value}"'
+                )
+            )
+            if _search_.status_code < 300:
+                _search_results_ = _search_.json()["issues"]
+                for keys in _search_results_:
+                    if "key" in keys:
+                        key_ = keys["key"]
+                        _search_issue = LOGIN.get(endpoint.issues(key_))
+                        if _search_issue.status_code < 300:
+                            _issue_results_ = _search_issue.json()["fields"]
+                            sprint_field = _issue_results_[
+                                sprint_custom_id["id"]
+                            ]
+                            if sprint_field:
+                                for sprint_item_ in sprint_field:
+                                    if (
+                                        sprint_item_.get("name")
+                                        in config["sprint_object_container"]
+                                    ):
+                                        sprint_data = {
+                                            "name": sprint_item_.get("name"),
+                                            "state": sprint_item_.get("state"),
+                                            "startDate": sprint_item_.get(
+                                                "startDate"
+                                            ),
+                                            "endDate": sprint_item_.get(
+                                                "endDate"
+                                            ),
+                                            "completeDate": sprint_item_.get(
+                                                "completeDate"
+                                            ),
+                                            "rapidViewId": sprint_item_.get(
+                                                "boardId"
+                                            ),
+                                        }
+                                        if (
+                                            sprint_item_.get("name")
+                                            not in config[
+                                                "sprint_object_container"
+                                            ][sprint_item_.get("name")]
+                                        ):
+                                            config["sprint_object_container"][
+                                                sprint_item_.get("name")
+                                            ].append(sprint_data)
+                                        break
+
+        def extend_format(
+            ext: str = None,
+        ) -> None:
             """
             Differentiate between the format file to render
 
@@ -3806,16 +5390,38 @@ class Projects:
                 if ext.lower() == "csv":
                     if not final_file.endswith(".csv"):
                         final_file = final_file + ".csv"
-                    shutil.copy(path_builder(folder, temp_file),
-                                path_builder(folder, final_file))
+                    shutil.copy(
+                        path_builder(
+                            folder,
+                            temp_file,
+                        ),
+                        path_builder(
+                            folder,
+                            final_file,
+                        ),
+                    )
                 elif ext.lower() == "json":
                     if not final_file.endswith(".json"):
                         final_file = final_file + ".json"
-                    json.dump(config["json_build"],
-                              open(path_builder(folder, final_file),
-                                   mode="w+", encoding=encoding),
-                              indent=4, sort_keys=True)
-                os.remove(path_builder(folder, temp_file))
+                    json.dump(
+                        config["json_build"],
+                        open(
+                            path_builder(
+                                folder,
+                                final_file,
+                            ),
+                            mode="w+",
+                            encoding=encoding,
+                        ),
+                        indent=4,
+                        sort_keys=True,
+                    )
+                os.remove(
+                    path_builder(
+                        folder,
+                        temp_file,
+                    )
+                )
 
             def user_extraction() -> None:
                 """
@@ -3825,7 +5431,9 @@ class Projects:
                 :return: list
                 """
 
-                def export_users(_export_data_: dict) -> None:
+                def export_users(
+                    _export_data_: dict,
+                ) -> None:
                     """
                     Perform an export of users
                     :param _export_data_: An iterable item of data
@@ -3833,76 +5441,78 @@ class Projects:
                     """
                     nonlocal _start
 
-                    def export_groups(user_account: str) -> list:
-                        """
-                        Exports a list of group a user is in.
-                        :param user_account:
-                        :return:
-                        """
-                        _group_holder_ = []
-                        _user_group_ = LOGIN.get(endpoint.get_user_group(user_account))
-                        if _user_group_.status_code < 300:
-                            _group_data_ = _user_group_.json()
-                            for user_group in _group_data_:
-                                _group_holder_.append(user_group.get("name"))
-
-                        return _group_holder_
-
                     _data_ = {
-                        "display_name": _export_data_["displayName"],
-                        "account_id": _export_data_["accountId"] if LOGIN.api is True else
-                        _export_data_["name"],
-                        "active": _export_data_["active"],
+                        "display_name": _export_data_.get("displayName"),
+                        "account_id": _export_data_.get("accountId")
+                        if LOGIN.api is True
+                        else _export_data_.get("name"),
+                        "active": _export_data_.get("active"),
                         "account_type": _export_data_.get("accountType"),
-                        "groups": export_groups(_export_data_["accountId"]),
-                        "email": _export_data_.get("emailAddress")
+                        "groups": [],
+                        "email": _export_data_.get("emailAddress"),
                     }
-                    config["json_userlist"].append(
-                        _data_
-                    )
+                    config["json_userlist"].append(_data_)
 
-                _start, _max_result_ = 0, 1000
+                print("Searching for user data.")
+                (
+                    _start,
+                    _max_result_,
+                ) = (
+                    0,
+                    1000,
+                )
 
                 while True:
-                    user_export = LOGIN.get(endpoint.search_users(
-                        _start, _max_result_)
+                    user_export = LOGIN.get(
+                        endpoint.search_users(
+                            _start,
+                            _max_result_,
+                        )
                     )
                     if user_export.status_code < 300:
                         _user_data_ = user_export.json()
+                        if not _user_data_:
+                            break
                         for _user_item_ in _user_data_:
                             process_executor(
                                 export_users,
                                 data=_user_item_,
                                 workers=workers,
-                                timeout=timeout
+                                timeout=timeout,
                             )
-                        if not _user_data_:
-                            break
+                    else:
+                        break
                     _start += _max_result_
 
                 if is_cache is True:
-                    caching("users", config["json_userlist"])
+                    caching(
+                        "users",
+                        config["json_userlist"],
+                    )
 
-            def link_issue_extraction(linked_object: dict,
-                                      regex_pattern_in: str,
-                                      regex_pattern_out: str) -> None:
+            def link_issue_extraction(
+                linked_object: dict,
+                regex_pattern_in: str,
+                regex_pattern_out: str,
+            ) -> None:
                 """
                 Extracts the linked issues according to
-                issue key data in the export
+                issue key data in the export.
 
                 :param linked_object: A dict of the column header
                 :param regex_pattern_in: A regular expression pattern
-                for issue links inwards
+                                        for issue links inwards
                 :param regex_pattern_out: A regular expression pattern
-                for issue links outwards
+                                          for issue links outwards
 
                 :return: None
                 """
                 if linked_object["column_name"].startswith("Inward issue link"):
-                    search_name = re.compile(regex_pattern_in, re.I)
-                    find_name = search_name.search(
-                        linked_object["column_name"]
+                    search_name = re.compile(
+                        regex_pattern_in,
+                        re.I,
                     )
+                    find_name = search_name.search(linked_object["column_name"])
                     name_found = None
                     if find_name is not None:
                         name_found = find_name.group(2)
@@ -3912,12 +5522,16 @@ class Projects:
                         map_name = jira_field_name
 
                         config["headers"][linked_object["column_index"]][
-                            "linked_name"] = map_name
-                elif linked_object["column_name"].startswith("Outward issue link"):
-                    search_name = re.compile(regex_pattern_out, re.I)
-                    find_name = search_name.search(
-                        linked_object["column_name"]
+                            "linked_name"
+                        ] = map_name
+                elif linked_object["column_name"].startswith(
+                    "Outward issue link"
+                ):
+                    search_name = re.compile(
+                        regex_pattern_out,
+                        re.I,
                     )
+                    find_name = search_name.search(linked_object["column_name"])
                     name_found = None
                     if find_name is not None:
                         name_found = find_name.group(2)
@@ -3927,7 +5541,8 @@ class Projects:
                         map_name = jira_field_name
 
                         config["headers"][linked_object["column_index"]][
-                            "linked_name"] = map_name
+                            "linked_name"
+                        ] = map_name
 
             def json_field_builder() -> None:
                 """Builds a JSON representation of fields in Jira
@@ -3940,12 +5555,30 @@ class Projects:
                 json_user_template = {"users": []}
                 json_history_template = {"history": []}
                 # declare the base template of the Jira JSON structure
-                config["json_build"], config["save_point"], \
-                    config["sprint_data"], config["issuekey_data"] = {}, {}, {}, {}
-                (config["projecttype_data"], config["projecturl_data"],
-                 config["projectdescription_data"],
-                 config["projectlead_data"],
-                 config["projectname_data"]) = ({}, {}, {}, {}, {})
+                (
+                    config["json_build"],
+                    config["save_point"],
+                    config["sprint_data"],
+                    config["issuekey_data"],
+                ) = (
+                    {},
+                    {},
+                    {},
+                    {},
+                )
+                (
+                    config["projecttype_data"],
+                    config["projecturl_data"],
+                    config["projectdescription_data"],
+                    config["projectlead_data"],
+                    config["projectname_data"],
+                ) = (
+                    {},
+                    {},
+                    {},
+                    {},
+                    {},
+                )
                 config["sprint_data"]["col_name_index"] = []
                 # Start the first project save point
                 config["save_point"]["col_name_index"] = 0
@@ -3955,27 +5588,51 @@ class Projects:
                 config["projecturl_data"]["col_name_index"] = 0
                 config["projectlead_data"]["col_name_index"] = 0
                 config["projectname_data"]["col_name_index"] = 0
-                (config["sprint_object_container"],
-                 config["json_userlist"]) = ({}, [])
+                (
+                    config["sprint_object_container"],
+                    config["json_userlist"],
+                ) = (
+                    {},
+                    [],
+                )
+                # begin data extraction from issue exported
                 data_frame(files_=temp_file)
 
                 try:
-                    get_pkey_index(config["headers"], "Project key",
-                                   ["save_point", "col_name_index"])
-                    assert config["is_valid"] is True, "Unable to find required field " \
-                                                       "in header column e.g. Project key"
+                    # locate the project key and use it across
+                    # the JSON structure
+                    get_pkey_index(
+                        config["headers"],
+                        "Project key",
+                        [
+                            "save_point",
+                            "col_name_index",
+                        ],
+                    )
+                    assert config["is_valid"] is True, (
+                        "Unable to find required field "
+                        "in header column e.g. Project key"
+                    )
                 except AssertionError as err:
-                    os.remove(path_builder(folder, temp_file))
+                    os.remove(
+                        path_builder(
+                            folder,
+                            temp_file,
+                        )
+                    )
                     add_log(
                         f"{err} on line {err.__traceback__.tb_lineno}"
                         f"{sys.__excepthook__(Exception, err, err.__traceback__)}",
-                        "error")
+                        "error",
+                    )
                     exit(err)
 
-                print("Converting Jira custom field names to Jira JSON compatible names.")
+                print(
+                    "Converting Jira custom field names to "
+                    "Jira JSON compatible names."
+                )
 
                 try:
-
                     if use_cache is True:
                         if is_file_exist("custom_fields"):
                             print("Using cached data of custom fields")
@@ -3983,92 +5640,147 @@ class Projects:
                             fetch_field_ids(config["headers"])
                     else:
                         fetch_field_ids(config["headers"])
-                except (KeyError, AttributeError, ValueError, IndexError,
-                        TypeError) as err:
-                    os.remove(path_builder(folder, temp_file))
+                except (
+                    KeyError,
+                    AttributeError,
+                    ValueError,
+                    IndexError,
+                    TypeError,
+                ) as err:
+                    os.remove(
+                        path_builder(
+                            folder,
+                            temp_file,
+                        )
+                    )
                     add_log(
                         f"{err} on line {err.__traceback__.tb_lineno} "
                         f"{sys.__excepthook__(Exception, err, err.__traceback__)}",
-                        "error")
+                        "error",
+                    )
                     exit(f"An error has occurred: {err}")
 
-                # caching sprints
-                if use_cache is True:
-                    if is_file_exist("sprint"):
-                        print("Using cached data for sprint values")
-                    else:
-                        get_pkey_index(config["headers"], "Sprint",
-                                       ["sprint_data", "col_name_index"],
-                                       attr=True)
-                        if is_cache is True:
-                            caching("sprint", config["sprint_data"])
-                else:
-                    get_pkey_index(config["headers"], "Sprint",
-                                   ["sprint_data", "col_name_index"],
-                                   attr=True)
-                    if is_cache is True:
-                        caching("sprint", config["sprint_data"])
-
-                get_pkey_index(config["headers"], "Issue key",
-                               ["issuekey_data", "col_name_index"])
-                get_pkey_index(config["headers"], "Project type",
-                               ["projecttype_data", "col_name_index"])
-                get_pkey_index(config["headers"], "Project description",
-                               ["projectdescription_data", "col_name_index"])
-                get_pkey_index(config["headers"], "Project url",
-                               ["projecturl_data", "col_name_index"])
-                get_pkey_index(config["headers"], "Project lead id" if
-                LOGIN.api is True else "Project lead",
-                               ["projectlead_data", "col_name_index"])
-                get_pkey_index(config["headers"], "Project name",
-                               ["projectname_data", "col_name_index"])
-                read_csv_file = file_reader(folder, temp_file, skip=True)
-                # generate user list
-                print("Verifying users and group membership") if use_cache is False \
-                    else print("Looking up users and group from cache")
+                # Fetching sprints if exist
+                get_pkey_index(
+                    config["headers"],
+                    "Sprint",
+                    [
+                        "sprint_data",
+                        "col_name_index",
+                    ],
+                    attr=True,
+                )
+                # Search other fields below if they exist
+                get_pkey_index(
+                    config["headers"],
+                    "Issue key",
+                    [
+                        "issuekey_data",
+                        "col_name_index",
+                    ],
+                )
+                get_pkey_index(
+                    config["headers"],
+                    "Project type",
+                    [
+                        "projecttype_data",
+                        "col_name_index",
+                    ],
+                )
+                get_pkey_index(
+                    config["headers"],
+                    "Project description",
+                    [
+                        "projectdescription_data",
+                        "col_name_index",
+                    ],
+                )
+                get_pkey_index(
+                    config["headers"],
+                    "Project url",
+                    [
+                        "projecturl_data",
+                        "col_name_index",
+                    ],
+                )
+                get_pkey_index(
+                    config["headers"],
+                    "Project lead id" if LOGIN.api is True else "Project lead",
+                    [
+                        "projectlead_data",
+                        "col_name_index",
+                    ],
+                )
+                get_pkey_index(
+                    config["headers"],
+                    "Project name",
+                    [
+                        "projectname_data",
+                        "col_name_index",
+                    ],
+                )
+                read_csv_file = file_reader(
+                    folder,
+                    temp_file,
+                    skip=True,
+                )
+                # generate a user list
+                print(
+                    "Verifying users membership"
+                ) if use_cache is False else print(
+                    "Looking up users from cache"
+                )
                 if use_cache is True:
                     if is_file_exist("users"):
-                        print("Using cache to verify users and groups")
+                        print("Using cache to verify users")
                     else:
-                        print("Cached expired, defaulting to live search.")
                         user_extraction()
                 else:
                     user_extraction()
 
-                if "links" in [x.lower() for x in json_properties]:
+                if "links" in config["json_props_options"]:
                     print("Verifying linked issues from issuelink types")
                     for links in config["headers"]:
-                        link_issue_extraction(links,
-                                              INWARD_ISSUE_LINK,
-                                              OUTWARD_ISSUE_LINK)
+                        link_issue_extraction(
+                            links,
+                            INWARD_ISSUE_LINK,
+                            OUTWARD_ISSUE_LINK,
+                        )
 
                 print("Verifying Sprint values.")
                 get_sprint_obj = deepcopy(read_csv_file)
-                sprint_custom_id, sprint_cf = field.search_field("Sprint"), None
+
                 for sprint_item in get_sprint_obj:
                     for sub_sprint in config["sprint_data"]["col_name_index"]:
                         if sprint_item[sub_sprint]:
-                            config["sprint_object_container"].update({
-                                f"{sprint_item[sub_sprint]}": []
-
-                            })
+                            config["sprint_object_container"].update(
+                                {f"{sprint_item[sub_sprint]}": []}
+                            )
 
                 if "customType" in sprint_custom_id:
                     if sprint_custom_id["customType"].endswith("gh-sprint"):
                         extract = sprint_custom_id["id"].split("_")
-                        sprint_cf = f"cf[{extract[1]}]"
+                        config["sprint_cf"] = "cf[{}]".format(extract[1])
 
-                def name_to_user_id(user_value: str) -> dict:
+                def name_to_user_id(
+                    user_value: str,
+                ) -> dict:
                     """
                     Returns an account_id or userid of a User object
 
                     :param user_value: Convert a display name to acceptable
-                    username or accountId
+                                        username or accountId
 
                     :return: dict
                     """
 
-                    _user_value_list, _profile_data_ = [], None
+                    (
+                        _user_value_list,
+                        _profile_data_,
+                    ) = (
+                        [],
+                        None,
+                    )
                     for _user_names_ in config["json_userlist"]:
                         if user_value == _user_names_["display_name"]:
                             _profile_data_ = {
@@ -4087,84 +5799,37 @@ class Projects:
                     elif len(_user_value_list) > 1:
                         # Since we're finding these users by display name
                         # if multiple users with the same name exist, we want to
-                        # take a calculated guess but this is not accurate as its probability
+                        # take a calculated guess but this is not accurate
+                        # as it's a probability
                         guess = random.choices(
-                            _user_value_list, [float(_user_value_list.index(
-                                each_user) + 0.5) for each_user in _user_value_list])
+                            _user_value_list,
+                            [
+                                float(_user_value_list.index(each_user) + 0.5)
+                                for each_user in _user_value_list
+                            ],
+                        )
                         return guess[0]
 
-                def search_sprints(sprint_value: str) -> None:
-                    """
-                    Search for sprint id from Jira issues
-
-                    :param sprint_value: A Sprint value
-
-                    :return: None
-                    """
-                    _search_ = LOGIN.get(
-                        endpoint.search_issues_jql(f'{sprint_cf} = "{sprint_value}"')
+                print("Extracting Sprint Ids from values.")
+                print("Searching for Sprint data")
+                for (
+                    sprint_key,
+                    sprint_val,
+                ) in config["sprint_object_container"].items():
+                    process_executor(
+                        search_sprints,
+                        data=sprint_key,
+                        workers=2,
+                        timeout=timeout,
                     )
-                    if _search_.status_code < 300:
-                        _search_results_ = _search_.json()["issues"]
-                        for keys in _search_results_:
-                            if "key" in keys:
-                                key_ = keys["key"]
-                                _search_issue = LOGIN.get(
-                                    endpoint.issues(key_)
-                                )
-                                if _search_issue.status_code < 300:
-                                    _issue_results_ = _search_issue.json()["fields"]
-                                    sprint_field = _issue_results_[sprint_custom_id["id"]]
-                                    if sprint_field:
-                                        for sprint_item_ in sprint_field:
-                                            if sprint_item_.get("name") in config["sprint_object_container"]:
-                                                sprint_data = {
-                                                    "name": sprint_item_.get("name"),
-                                                    "state": sprint_item_.get("state"),
-                                                    "startDate": sprint_item_.get("startDate"),
-                                                    "endDate": sprint_item_.get("endDate"),
-                                                    "completeDate": sprint_item_.get("completeDate"),
-                                                    "rapidViewId": sprint_item_.get("boardId")
-                                                }
-                                                if sprint_item_.get("name") not in config[
-                                                    "sprint_object_container"][
-                                                    sprint_item_.get("name")
-                                                ]:
-                                                    config["sprint_object_container"][sprint_item_.get(
-                                                        "name")].append(
-                                                        sprint_data
-                                                    )
-                                            break
-
-                    if is_cache is True:
-                        caching("sprint_container", config["sprint_object_container"])
-
-                print("Extracting Sprint Ids from values.") if use_cache is False \
-                    else print("Looking up Sprint values from cache.")
-                if use_cache is True:
-                    if is_file_exist("sprint_container"):
-                        print("Using Sprint Ids from cached values")
-                    else:
-                        print("Cached expired, defaulting to live search.")
-                        for sprint_key, sprint_val in config["sprint_object_container"].items():
-                            search_sprints(sprint_key)
-                            process_executor(search_sprints,
-                                             data=sprint_key,
-                                             workers=2, timeout=timeout)
-
-                else:
-                    for sprint_key, sprint_val in config["sprint_object_container"].items():
-                        search_sprints(sprint_key)
-                        process_executor(search_sprints,
-                                         data=sprint_key,
-                                         workers=2, timeout=timeout)
 
                 project_settings = {}
                 project_config = {}
 
-                def field_builder(bundle: list = None,
-                                  col_name: list = None,
-                                  ) -> None:
+                def field_builder(
+                    bundle: list = None,
+                    col_name: list = None,
+                ) -> None:
                     """Takes a bundle which is a list and extracts values
 
                     :param bundle: A data list to process
@@ -4191,10 +5856,26 @@ class Projects:
                         json_component_template = {"components": []}
                         json_fixversion_template = {"fixedVersions": []}
                         json_affectversion_template = {"affectedVersions": []}
-                        data, issue_data, issue_temp = {}, {}, {"issues": []}
-                        sprint_issue_data, cf_multi_field = [], {}
+                        (
+                            data,
+                            issue_data,
+                            issue_temp,
+                        ) = (
+                            {},
+                            {},
+                            {"issues": []},
+                        )
+                        (
+                            sprint_issue_data,
+                            cf_multi_field,
+                        ) = (
+                            [],
+                            {},
+                        )
 
-                        def parse_sla_fields(time_value: str) -> Union[str, None]:
+                        def parse_sla_fields(
+                            time_value: str,
+                        ) -> Union[str, None,]:
                             """
                             Convert the datetime string into compatible
                             d/MMM/yy
@@ -4207,12 +5888,15 @@ class Projects:
                                 pass
                             else:
                                 time_val = datetime.strptime(
-                                    time_value, df.YYYY_MM_dd_HH_MM_SS_MS
+                                    time_value,
+                                    Df.YYYY_MM_dd_HH_MM_SS_MS,
                                 )
-                                return time_val.strftime(df.dd_MMM_yy)
+                                return time_val.strftime(Df.dd_MMM_yy)
                             return time_val
 
-                        def parse_duration(time_value: int = 0) -> str:
+                        def parse_duration(
+                            time_value: int = 0,
+                        ) -> str:
                             """
                             Parse time value into ISO_8601 durations
                             source: https://en.wikipedia.org/wiki/ISO_8601#Durations
@@ -4228,11 +5912,12 @@ class Projects:
                                 time_val = f"PT{time_value}S"
                             return time_val
 
-                        def parse_dates(date_value: str,
-                                        date_pattern: str = date_format,
-                                        index_level: int = 0,
-                                        end_format: str = None
-                                        ) -> Union[str, None]:
+                        def parse_dates(
+                            date_value: str,
+                            date_pattern: str = date_format,
+                            index_level: int = 0,
+                            end_format: str = None,
+                        ) -> Union[str, None,]:
                             """
                             Parse date format into Jira JSON acceptable format
 
@@ -4249,26 +5934,33 @@ class Projects:
                                 pass
                             else:
                                 try:
-                                    new_date = datetime.strptime(date_value, date_pattern)
+                                    new_date = datetime.strptime(
+                                        date_value,
+                                        date_pattern,
+                                    )
                                     return new_date.strftime(
-                                        df.YYYY_MM_dd_HH_MM_SS_MS_TZ if end_format is None \
-                                            else end_format
+                                        Df.YYYY_MM_dd_HH_MM_SS_MS_TZ
+                                        if end_format is None
+                                        else end_format
                                     )
                                 except ValueError:
-                                    guess_format = [
-                                        df.dd_MMM_yy_hh_MM_AM_PM,
-                                        df.dd_MM_yy_hh_MM_AM_PM,
-                                        df.dd_MMM_YYYY_hh_MM_SS_AM_PM,
-                                        df.YYYY_MM_dd_T_HH_MM_SS_MS,
-                                        df.MM_dd_yy_space_hh_MM_AM_PM,
-                                        df.dd_MM_YYYY_space_hh_MM_AM_PM,
-                                        df.MM_dd_yy_hh_MM_AM_PM,
-                                        df.MMM_dd_YYYY_hh_MM_SS_AM_PM,
-                                        df.YYYY_MM_dd_hh_MM_SS_AM_PM,
-                                        df.dd_MM_YYYY_hh_MM_SS_AM_PM,
-                                        df.MM_dd_YYYY_hh_MM_AM_PM,
-                                        "Invalid format"
+                                    default_format = [
+                                        Df.dd_MMM_yy_hh_MM_AM_PM,
+                                        Df.dd_MM_yy_hh_MM_AM_PM,
+                                        Df.dd_MMM_YYYY_hh_MM_SS_AM_PM,
+                                        Df.dd_space_MMM_space_YYYY_space_HH_MM,
+                                        Df.YYYY_MM_dd_T_HH_MM_SS_MS,
+                                        Df.dd_space_MMM_space_YYYY_space_hh_MM,
+                                        Df.MM_dd_yy_space_hh_MM_AM_PM,
+                                        Df.dd_MM_YYYY_space_hh_MM_AM_PM,
+                                        Df.MM_dd_yy_hh_MM_AM_PM,
+                                        Df.MMM_dd_YYYY_hh_MM_SS_AM_PM,
+                                        Df.YYYY_MM_dd_hh_MM_SS_AM_PM,
+                                        Df.dd_MM_YYYY_hh_MM_SS_AM_PM,
+                                        Df.MM_dd_YYYY_hh_MM_AM_PM,
+                                        "Invalid format",
                                     ]
+                                    guess_format = default_format.copy()
                                     limit = len(guess_format)
                                     count = index_level
                                     current_value = date_value
@@ -4277,19 +5969,32 @@ class Projects:
                                         if count >= limit:
                                             raise JiraOneErrors(
                                                 "wrong",
-                                                "Unable to determine date_format for"
-                                                f" value {current_value}"
+                                                "Unable to determine "
+                                                "date_format for"
+                                                f" value {current_value}",
                                             )
-                                        parse_dates(current_value, _pattern_, count)
+                                        parse_dates(
+                                            current_value,
+                                            _pattern_,
+                                            count,
+                                        )
 
                             return new_date
 
-                        for obj_value, obj_name in zip(bundle, col_name):
+                        for (
+                            obj_value,
+                            obj_name,
+                        ) in zip(
+                            bundle,
+                            col_name,
+                        ):
                             # Establish an updated reference of the project list
                             # and their object configurations above
 
-                            def check_customtype(custom: list,
-                                                 type_obj: dict) -> bool:
+                            def check_customtype(
+                                custom: list,
+                                type_obj: dict,
+                            ) -> bool:
                                 """
                                 Return true or false for valid custom type
 
@@ -4298,151 +6003,266 @@ class Projects:
                                 :return: bool
                                 """
                                 for custom_type in custom:
-                                    if type_obj.get("customType").startswith(custom_type):
+                                    if type_obj.get("customType").startswith(
+                                        custom_type
+                                    ):
                                         return True
                                 return False
 
-                            def produce_custom_type(type_object: dict,
-                                                    type_value: Any) -> dict:
-                                """"
+                            def produce_custom_type(
+                                type_object: dict,
+                                type_value: Any,
+                            ) -> dict:
+                                """
                                 Determine object type for custom field based
                                 on custom field type
                                 :param type_object: A dict representation of
-                                the custom field
+                                                    the custom field
                                 :param type_value: A value of the custom field
-                                type
+                                                    type
                                 :return: dict
                                 """
                                 _data_ = None
 
-                                def multi_drop_data(type_obj: dict) -> dict:
+                                def multi_drop_data(
+                                    type_obj: dict,
+                                ) -> dict:
                                     """
                                     Mutate data to avoid object duplication
-                                    :param type_obj: An object data
+                                    :param type_obj: An object data, typically
+                                                     a custom field
 
                                     :return: dict
                                     """
                                     _cf_data_ = {
-                                        "fieldName": type_obj.get("original_name"),
+                                        "fieldName": type_obj.get(
+                                            "original_name"
+                                        ),
                                         "fieldType": type_obj.get("customType"),
                                         "value": cf_multi_field.get(
-                                            type_obj.get("original_name")).get("value")
+                                            type_obj.get("original_name")
+                                        ).get("value"),
                                     }
                                     return _cf_data_
 
-                                def multi_drop_check(_value_data_: Any,
-                                                     type_obj: dict) -> None:
+                                def multi_drop_check(
+                                    _value_data_: Any,
+                                    type_obj: dict,
+                                ) -> None:
                                     """Mutates data into multiple list value
                                     :param _value_data_: A data value
                                     :param type_obj: An object data
                                     :return: None
                                     """
-                                    for _items_ in json_customfield_template["customFieldValues"
+                                    for _items_ in json_customfield_template[
+                                        "customFieldValues"
                                     ]:
-                                        if _items_.get("fieldName") == type_obj.get(
-                                                "original_name"):
-                                            if _value_data_ is None or _value_data_ == "":
+                                        if _items_.get(
+                                            "fieldName"
+                                        ) == type_obj.get("original_name"):
+                                            if (
+                                                _value_data_ is None
+                                                or _value_data_ == ""
+                                            ):
                                                 pass
                                             else:
                                                 _items_.get("value").append(
-                                                    _value_data_ if not type_obj.get(
-                                                        "customType").endswith(
+                                                    _value_data_
+                                                    if not type_obj.get(
+                                                        "customType"
+                                                    ).endswith(
                                                         "multiuserpicker"
-                                                    ) else name_to_user_id(
+                                                    )
+                                                    else name_to_user_id(
                                                         _value_data_
                                                     ).get("account_id")
                                                 )
 
-                                if type_object.get("customType").endswith("multicheckboxes") \
-                                        or type_object.get("customType").endswith("multiuserpicker") \
-                                        or type_object.get("customType").endswith("labels"):
-
+                                if (
+                                    type_object.get("customType").endswith(
+                                        "multicheckboxes"
+                                    )
+                                    or type_object.get("customType").endswith(
+                                        "multiuserpicker"
+                                    )
+                                    or type_object.get("customType").endswith(
+                                        "labels"
+                                    )
+                                ):
                                     if type_object.get("original_name") not in [
-                                        d.get("fieldName") for d in json_customfield_template[
-                                            "customFieldValues"]]:
-
-                                        if not hasattr(cf_multi_field, type_object.get("original_name")):
-                                            if type_value is None or type_value == "":
+                                        d.get("fieldName")
+                                        for d in json_customfield_template[
+                                            "customFieldValues"
+                                        ]
+                                    ]:
+                                        if not hasattr(
+                                            cf_multi_field,
+                                            type_object.get("original_name"),
+                                        ):
+                                            if (
+                                                type_value is None
+                                                or type_value == ""
+                                            ):
                                                 cf_multi_field.update(
-                                                    {type_object.get("original_name"): {
-                                                        "fieldName": type_object.get("original_name"),
-                                                        "fieldType": type_object.get("customType"),
-                                                        "value": []
-                                                    }
+                                                    {
+                                                        type_object.get(
+                                                            "original_name"
+                                                        ): {
+                                                            "fieldName": type_object.get(
+                                                                "original_name"
+                                                            ),
+                                                            "fieldType": type_object.get(
+                                                                "customType"
+                                                            ),
+                                                            "value": [],
+                                                        }
                                                     }
                                                 )
                                             else:
                                                 cf_multi_field.update(
-                                                    {type_object.get("original_name"): {
-                                                        "fieldName": type_object.get("original_name"),
-                                                        "fieldType": type_object.get("customType"),
-                                                        "value": [type_value] if not type_object.get(
-                                                            "customType").endswith(
-                                                            "multiuserpicker") else [
-                                                            name_to_user_id(
+                                                    {
+                                                        type_object.get(
+                                                            "original_name"
+                                                        ): {
+                                                            "fieldName": type_object.get(
+                                                                "original_name"
+                                                            ),
+                                                            "fieldType": type_object.get(
+                                                                "customType"
+                                                            ),
+                                                            "value": [
                                                                 type_value
-                                                            ).get("account_id")]
-                                                    }
+                                                            ]
+                                                            if not type_object.get(
+                                                                "customType"
+                                                            ).endswith(
+                                                                "multiuserpicker"
+                                                            )
+                                                            else [
+                                                                name_to_user_id(
+                                                                    type_value
+                                                                ).get(
+                                                                    "account_id"
+                                                                )
+                                                            ],
+                                                        }
                                                     }
                                                 )
-                                            _data_ = multi_drop_data(type_object)
+                                            _data_ = multi_drop_data(
+                                                type_object
+                                            )
 
                                     else:
-                                        if type_value is None or type_value == "":
-                                            multi_drop_check(type_value, type_object)
+                                        if (
+                                            type_value is None
+                                            or type_value == ""
+                                        ):
+                                            multi_drop_check(
+                                                type_value,
+                                                type_object,
+                                            )
                                         else:
-                                            multi_drop_check(type_value, type_object)
+                                            multi_drop_check(
+                                                type_value,
+                                                type_object,
+                                            )
 
-                                elif type_object.get("customType").endswith("datetime"):
+                                elif type_object.get("customType").endswith(
+                                    "datetime"
+                                ):
                                     _data_ = {
-                                        "fieldName": type_object.get("original_name"),
-                                        "fieldType": type_object.get("customType"),
-                                        "value": parse_dates(type_value, df.dd_MMM_yy_hh_MM_AM_PM,
-                                                             end_format=df.dd_MMM_yy_hh_MM_AM_PM)
+                                        "fieldName": type_object.get(
+                                            "original_name"
+                                        ),
+                                        "fieldType": type_object.get(
+                                            "customType"
+                                        ),
+                                        "value": parse_dates(
+                                            type_value,
+                                            Df.dd_MMM_yy_hh_MM_AM_PM,
+                                            end_format=Df.dd_MMM_yy_hh_MM_AM_PM,
+                                        ),
                                     }
-                                elif type_object.get("customType").endswith("userpicker"):
+                                elif type_object.get("customType").endswith(
+                                    "userpicker"
+                                ):
                                     _data_ = {
-                                        "fieldName": type_object.get("original_name"),
-                                        "fieldType": type_object.get("customType"),
-                                        "value": name_to_user_id(type_value).get("account_id")
+                                        "fieldName": type_object.get(
+                                            "original_name"
+                                        ),
+                                        "fieldType": type_object.get(
+                                            "customType"
+                                        ),
+                                        "value": name_to_user_id(
+                                            type_value
+                                        ).get("account_id"),
                                     }
-                                elif type_object.get("customType").endswith("firstresponsedate"):
+                                elif type_object.get("customType").endswith(
+                                    "firstresponsedate"
+                                ):
                                     _data_ = {
-                                        "fieldName": type_object.get("original_name"),
-                                        "fieldType": type_object.get("customType"),
-                                        "value": parse_sla_fields(type_value)
+                                        "fieldName": type_object.get(
+                                            "original_name"
+                                        ),
+                                        "fieldType": type_object.get(
+                                            "customType"
+                                        ),
+                                        "value": parse_sla_fields(type_value),
                                     }
-                                elif type_object.get("customType").endswith("cascadingselect"):
+                                elif type_object.get("customType").endswith(
+                                    "cascadingselect"
+                                ):
                                     cascade = type_value.split("->")
                                     cascade_obj = {}
                                     if len(cascade) > 1:
-                                        cascade_obj.update({"": cascade[0].strip(" "),
-                                                            "1": cascade[1].strip(" ")})
+                                        cascade_obj.update(
+                                            {
+                                                "": cascade[0].strip(" "),
+                                                "1": cascade[1].strip(" "),
+                                            }
+                                        )
                                         sub_cf_copy = deepcopy(cascade_obj)
                                         _data_ = {
-                                            "fieldName": type_object.get("original_name"),
-                                            "fieldType": type_object.get("customType"),
-                                            "value": sub_cf_copy
+                                            "fieldName": type_object.get(
+                                                "original_name"
+                                            ),
+                                            "fieldType": type_object.get(
+                                                "customType"
+                                            ),
+                                            "value": sub_cf_copy,
                                         }
                                     else:
                                         _data_ = {
-                                            "fieldName": type_object.get("original_name"),
-                                            "fieldType": type_object.get("customType"),
-                                            "value": type_value
+                                            "fieldName": type_object.get(
+                                                "original_name"
+                                            ),
+                                            "fieldType": type_object.get(
+                                                "customType"
+                                            ),
+                                            "value": type_value,
                                         }
                                 else:
-                                    if check_customtype(json_custom_type, type_object):
+                                    if check_customtype(
+                                        json_custom_type,
+                                        type_object,
+                                    ):
                                         pass
                                     else:
                                         _data_ = {
-                                            "fieldName": type_object.get("original_name"),
-                                            "fieldType": type_object.get("customType"),
-                                            "value": type_value
+                                            "fieldName": type_object.get(
+                                                "original_name"
+                                            ),
+                                            "fieldType": type_object.get(
+                                                "customType"
+                                            ),
+                                            "value": type_value,
                                         }
 
                                 return _data_
 
-                            def sprint_extract(type_value: Any) -> None:
+                            def sprint_extract(
+                                type_value: Any,
+                            ) -> None:
                                 """
                                 Extracts a sprint object
                                 :param type_value: A value of an object
@@ -4450,97 +6270,234 @@ class Projects:
                                 :return: None
                                 """
 
-                                if type_value in config["sprint_object_container"]:
-                                    if config["sprint_object_container"][type_value]:
-                                        prep_obj = config["sprint_object_container"][type_value][-1]
+                                if (
+                                    type_value
+                                    in config["sprint_object_container"]
+                                ):
+                                    if config["sprint_object_container"][
+                                        type_value
+                                    ]:
+                                        prep_obj = config[
+                                            "sprint_object_container"
+                                        ][type_value][-1]
                                         sprint_issue_data.append(prep_obj)
 
                             # Keep track of each project key and their objects
-                            if bundle[config["save_point"]["col_name_index"]] \
-                                    not in project_settings:
+                            if (
+                                bundle[config["save_point"]["col_name_index"]]
+                                not in project_settings
+                            ):
                                 my_index += 1
 
-                                my_bundle = {bundle[config["save_point"]["col_name_index"]]:
-                                                 bundle[config["save_point"]["col_name_index"]]}
+                                my_bundle = {
+                                    bundle[
+                                        config["save_point"]["col_name_index"]
+                                    ]: bundle[
+                                        config["save_point"]["col_name_index"]
+                                    ]
+                                }
                                 my_bundle_index = {
-                                    bundle[config["save_point"]["col_name_index"]]: my_index}
-                                project_name = bundle[config["projectname_data"]["col_name_index"]] if \
-                                    config["projectname_data"]["col_name_index"] > 0 else None
+                                    bundle[
+                                        config["save_point"]["col_name_index"]
+                                    ]: my_index
+                                }
+                                project_name = (
+                                    bundle[
+                                        config["projectname_data"][
+                                            "col_name_index"
+                                        ]
+                                    ]
+                                    if config["projectname_data"][
+                                        "col_name_index"
+                                    ]
+                                    > 0
+                                    else None
+                                )
                                 project_settings.update(my_bundle)
                                 project_config.update(my_bundle_index)
-                                cf_versions, cf_components = {"versions": []}, {"components": []}
-                                _project_keys_ = bundle[config["save_point"]["col_name_index"]]
-                                get_versions = LOGIN.get(endpoint.get_project_versions(
-                                    id_or_key=_project_keys_)
+                                (
+                                    cf_versions,
+                                    cf_components,
+                                ) = {
+                                    "versions": []
+                                }, {"components": []}
+                                _project_keys_ = bundle[
+                                    config["save_point"]["col_name_index"]
+                                ]
+                                get_versions = LOGIN.get(
+                                    endpoint.get_project_versions(
+                                        id_or_key=_project_keys_
+                                    )
                                 )
-                                get_components = LOGIN.get(endpoint.get_project_component(
-                                    id_or_key=_project_keys_)
+                                get_components = LOGIN.get(
+                                    endpoint.get_project_component(
+                                        id_or_key=_project_keys_
+                                    )
                                 )
                                 if get_versions.status_code < 300:
                                     for version in get_versions.json():
                                         _data = {
-                                            "name": version.get("name", ""),
-                                            "released": version.get("released", ""),
-                                            "releaseDate": version.get("releaseDate", "")
+                                            "name": version.get(
+                                                "name",
+                                                "",
+                                            ),
+                                            "released": version.get(
+                                                "released",
+                                                "",
+                                            ),
+                                            "releaseDate": version.get(
+                                                "releaseDate",
+                                                "",
+                                            ),
                                         }
                                         cf_versions["versions"].append(_data)
                                 if get_components.status_code < 300:
                                     for component in get_components.json():
                                         lead = None
                                         if "lead" in component:
-                                            lead = component.get("lead").get("accountId")
-                                        _data = {
-                                            "name": component.get("name", ""),
-                                            "description": component.get("description", "")
-                                        } if lead is None else {
-                                            "name": component.get("name", ""),
-                                            "description": component.get("description", ""),
-                                            "lead": lead
-                                        }
-                                        cf_components["components"].append(_data)
+                                            lead = component.get("lead").get(
+                                                "accountId"
+                                            )
+                                        _data = (
+                                            {
+                                                "name": component.get(
+                                                    "name",
+                                                    "",
+                                                ),
+                                                "description": component.get(
+                                                    "description",
+                                                    "",
+                                                ),
+                                            }
+                                            if lead is None
+                                            else {
+                                                "name": component.get(
+                                                    "name",
+                                                    "",
+                                                ),
+                                                "description": component.get(
+                                                    "description",
+                                                    "",
+                                                ),
+                                                "lead": lead,
+                                            }
+                                        )
+                                        cf_components["components"].append(
+                                            _data
+                                        )
 
-                                issue_temp.update({"key": bundle[
-                                    config["save_point"]["col_name_index"]]})
+                                issue_temp.update(
+                                    {
+                                        "key": bundle[
+                                            config["save_point"][
+                                                "col_name_index"
+                                            ]
+                                        ]
+                                    }
+                                )
                                 issue_temp.update({"name": project_name})
                                 issue_temp.update(cf_versions)
                                 issue_temp.update(cf_components)
-                                issue_temp.update({"type": bundle[
-                                    config["projecttype_data"]["col_name_index"]] if
-                                config["projecttype_data"]["col_name_index"] > 0 else None})
                                 issue_temp.update(
-                                    {"template": project_type.get("software") if issue_temp["type"] == "software" \
-                                        else project_type.get("service_desk") if issue_temp["type"] == \
-                                                                                 "service_desk" else project_type.get(
-                                        "business")}
+                                    {
+                                        "type": bundle[
+                                            config["projecttype_data"][
+                                                "col_name_index"
+                                            ]
+                                        ]
+                                        if config["projecttype_data"][
+                                            "col_name_index"
+                                        ]
+                                        > 0
+                                        else None
+                                    }
                                 )
                                 issue_temp.update(
-                                    {"url": bundle[config["projecturl_data"]["col_name_index"]] if
-                                    config["projecturl_data"]["col_name_index"] > 0 else None})
+                                    {
+                                        "template": project_type.get("software")
+                                        if issue_temp["type"] == "software"
+                                        else project_type.get("service_desk")
+                                        if issue_temp["type"] == "service_desk"
+                                        else project_type.get("business")
+                                    }
+                                )
                                 issue_temp.update(
-                                    {"description": bundle[
-                                        config["projectdescription_data"]["col_name_index"]] if
-                                    config["projectdescription_data"]["col_name_index"] > 0 else None})
+                                    {
+                                        "url": bundle[
+                                            config["projecturl_data"][
+                                                "col_name_index"
+                                            ]
+                                        ]
+                                        if config["projecturl_data"][
+                                            "col_name_index"
+                                        ]
+                                        > 0
+                                        else None
+                                    }
+                                )
                                 issue_temp.update(
-                                    {"lead": bundle[config["projectlead_data"]["col_name_index"]] if
-                                    config["projectlead_data"]["col_name_index"] > 0 else None})
+                                    {
+                                        "description": bundle[
+                                            config["projectdescription_data"][
+                                                "col_name_index"
+                                            ]
+                                        ]
+                                        if config["projectdescription_data"][
+                                            "col_name_index"
+                                        ]
+                                        > 0
+                                        else None
+                                    }
+                                )
+                                issue_temp.update(
+                                    {
+                                        "lead": bundle[
+                                            config["projectlead_data"][
+                                                "col_name_index"
+                                            ]
+                                        ]
+                                        if config["projectlead_data"][
+                                            "col_name_index"
+                                        ]
+                                        > 0
+                                        else None
+                                    }
+                                )
                                 if workflows:
-                                    issue_temp.update({
-                                        "workflowSchemeName": workflows[
-                                            _project_keys_] if _project_keys_ in
-                                                               workflows else "Sample project workflow"
-                                    })
-                                issue_temp.update({"externalName": project_name})
+                                    issue_temp.update(
+                                        {
+                                            "workflowSchemeName": workflows[
+                                                _project_keys_
+                                            ]
+                                            if _project_keys_ in workflows
+                                            else "Sample project workflow"
+                                        }
+                                    )
+                                issue_temp.update(
+                                    {"externalName": project_name}
+                                )
                                 json_project_template["projects"].append(
-                                    issue_temp)
+                                    issue_temp
+                                )
 
-                            # Dynamically get a sub-item into custom field values
-                            # Below condition for arranging field values
-                            if not obj_name.get("column_name").startswith("custom"):
-                                if obj_name.get("column_name").lower().startswith("comment"):
+                            # Dynamically get a sub-item into custom field
+                            # values
+                            # Below are the conditions for arranging field
+                            # values
+                            if not obj_name.get("column_name").startswith(
+                                "custom"
+                            ):
+                                if (
+                                    obj_name.get("column_name")
+                                    .lower()
+                                    .startswith("comment")
+                                ):
                                     issue_comment = obj_value.split(";")
                                     if len(issue_comment) > 1:
                                         _data = {
-                                            "created": parse_dates(issue_comment[0]),
+                                            "created": parse_dates(
+                                                issue_comment[0]
+                                            ),
                                             "author": issue_comment[1],
                                             "body": issue_comment[2],
                                         }
@@ -4548,13 +6505,26 @@ class Projects:
                                             _data.update(
                                                 {
                                                     "properties": [
-                                                        {"key": "sd.public.comment", "value":
-                                                            {"internal": issue_comment[3]}}]
+                                                        {
+                                                            "key": "sd.public.comment",
+                                                            "value": {
+                                                                "internal": issue_comment[
+                                                                    3
+                                                                ]
+                                                            },
+                                                        }
+                                                    ]
                                                 }
                                             )
-                                        json_comment_template["comments"].append(_data)
+                                        json_comment_template[
+                                            "comments"
+                                        ].append(_data)
 
-                                elif obj_name.get("column_name").lower().startswith("attachment"):
+                                elif (
+                                    obj_name.get("column_name")
+                                    .lower()
+                                    .startswith("attachment")
+                                ):
                                     attacher = obj_value.split(";")
                                     if len(attacher) > 1:
                                         _data = {
@@ -4563,71 +6533,125 @@ class Projects:
                                             "name": attacher[2],
                                             "uri": attacher[3],
                                         }
-                                        json_attachment_template["attachments"].append(_data)
-                                elif obj_name.get("column_name").startswith("worklog"):
+                                        json_attachment_template[
+                                            "attachments"
+                                        ].append(_data)
+                                elif obj_name.get("column_name").startswith(
+                                    "worklog"
+                                ):
                                     worklog = obj_value.split(";")
                                     if len(worklog) > 1:
                                         _data = {
-                                            "startDate": parse_dates(worklog[1]),
+                                            "startDate": parse_dates(
+                                                worklog[1]
+                                            ),
                                             "author": worklog[2],
-                                            "timeSpent": parse_duration(worklog[3]),
+                                            "timeSpent": parse_duration(
+                                                worklog[3]
+                                            ),
                                         }
-                                        json_worklog_template["worklogs"].append(_data)
+                                        json_worklog_template[
+                                            "worklogs"
+                                        ].append(_data)
 
-                                elif obj_name.get("column_name").startswith("labels"):
+                                elif obj_name.get("column_name").startswith(
+                                    "labels"
+                                ):
                                     if obj_value == "" or obj_value is None:
                                         pass
                                     else:
-                                        json_labels_template["labels"].append(obj_value)
+                                        json_labels_template["labels"].append(
+                                            obj_value
+                                        )
 
-                                elif obj_name.get("column_name").startswith("Inward issue link"):
+                                elif obj_name.get("column_name").startswith(
+                                    "Inward issue link"
+                                ):
                                     if obj_value == "" or obj_value is None:
                                         pass
                                     else:
-                                        json_linked_issues_template["links"].append(
+                                        json_linked_issues_template[
+                                            "links"
+                                        ].append(
                                             {
-                                                "name": obj_name.get("linked_name"),
+                                                "name": obj_name.get(
+                                                    "linked_name"
+                                                ),
                                                 "sourceId": obj_value,
-                                                "destinationId": bundle[config["issuekey_data"]["col_name_index"]]
+                                                "destinationId": bundle[
+                                                    config["issuekey_data"][
+                                                        "col_name_index"
+                                                    ]
+                                                ],
                                             }
                                         )
-                                elif obj_name.get("column_name").startswith("Outward issue link"):
+                                elif obj_name.get("column_name").startswith(
+                                    "Outward issue link"
+                                ):
                                     if obj_value == "" or obj_value is None:
                                         pass
                                     else:
-                                        json_linked_issues_template["links"].append(
+                                        json_linked_issues_template[
+                                            "links"
+                                        ].append(
                                             {
-                                                "name": obj_name.get("linked_name"),
+                                                "name": obj_name.get(
+                                                    "linked_name"
+                                                ),
                                                 "destinationId": obj_value,
-                                                "sourceId": bundle[config["issuekey_data"]["col_name_index"]]
+                                                "sourceId": bundle[
+                                                    config["issuekey_data"][
+                                                        "col_name_index"
+                                                    ]
+                                                ],
                                             }
                                         )
-                                elif obj_name.get("column_name").startswith("Watchers Id" if
-                                                                            LOGIN.api is True else
-                                                                            "Watchers"):
+                                elif obj_name.get("column_name").startswith(
+                                    "Watchers Id"
+                                    if LOGIN.api is True
+                                    else "Watchers"
+                                ):
                                     if obj_value == "" or obj_value is None:
                                         pass
                                     else:
-                                        json_watchers_template["watchers"].append(obj_value)
-                                elif obj_name.get("column_name").startswith("components"):
+                                        json_watchers_template[
+                                            "watchers"
+                                        ].append(obj_value)
+                                elif obj_name.get("column_name").startswith(
+                                    "components"
+                                ):
                                     if obj_value == "" or obj_value is None:
                                         pass
                                     else:
-                                        json_component_template["components"].append(obj_value)
-                                elif obj_name.get("column_name").startswith("fixVersions"):
+                                        json_component_template[
+                                            "components"
+                                        ].append(obj_value)
+                                elif obj_name.get("column_name").startswith(
+                                    "fixVersions"
+                                ):
                                     if obj_value == "" or obj_value is None:
                                         pass
                                     else:
-                                        json_fixversion_template["fixedVersions"].append(obj_value)
-                                elif obj_name.get("column_name").startswith("affectedVersions"):
+                                        json_fixversion_template[
+                                            "fixedVersions"
+                                        ].append(obj_value)
+                                elif obj_name.get("column_name").startswith(
+                                    "affectedVersions"
+                                ):
                                     if obj_value == "" or obj_value is None:
                                         pass
                                     else:
-                                        json_affectversion_template["affectedVersions"].append(obj_value)
-                                elif obj_name.get("column_name").startswith("Issue id"):
+                                        json_affectversion_template[
+                                            "affectedVersions"
+                                        ].append(obj_value)
+                                elif obj_name.get("column_name").startswith(
+                                    "Issue id"
+                                ):
                                     issue_id = obj_value
                                     issue_data.update({"externalId": issue_id})
-                                elif obj_name.get("column_name").startswith("Sprint"):
+                                elif obj_name.get("column_name").startswith(
+                                    "Sprint"
+                                ):
                                     if obj_value == "" or obj_value is None:
                                         pass
                                     else:
@@ -4637,35 +6661,50 @@ class Projects:
                                     if obj_value is None or obj_value == "":
                                         pass
                                     else:
-                                        data.update({
-                                            obj_name.get("column_name"): obj_value
-                                        })
+                                        data.update(
+                                            {
+                                                obj_name.get(
+                                                    "column_name"
+                                                ): obj_value
+                                            }
+                                        )
                                         issue_data.update(data)
                             else:
-                                _data = produce_custom_type(obj_name, obj_value)
+                                _data = produce_custom_type(
+                                    obj_name,
+                                    obj_value,
+                                )
                                 if _data is not None:
                                     if "value" in _data:
-                                        if _data["value"] is None or _data["value"] == "":
+                                        if (
+                                            _data["value"] is None
+                                            or _data["value"] == ""
+                                        ):
                                             pass
                                         else:
-                                            json_customfield_template["customFieldValues"].append(
-                                                _data
-                                            )
+                                            json_customfield_template[
+                                                "customFieldValues"
+                                            ].append(_data)
                                 json_customfield_sub_template["value"].clear()
 
                         # Only include sprint data if not empty
                         if sprint_issue_data:
-                            json_customfield_template["customFieldValues"].append(
+                            json_customfield_template[
+                                "customFieldValues"
+                            ].append(
                                 {
                                     "fieldName": "Sprint",
                                     "fieldType": field.field_type.get("sprint"),
-                                    "value": sprint_issue_data
+                                    "value": sprint_issue_data,
                                 }
                             )
 
                         # remove custom field id generated and issue links
                         value_to_delete = []
-                        for _issue_key, _issue_value in issue_data.items():
+                        for (
+                            _issue_key,
+                            _issue_value,
+                        ) in issue_data.items():
                             if _issue_key.startswith("Custom field"):
                                 value_to_delete.append(_issue_key)
                             if _issue_key.startswith("Inward issue link"):
@@ -4687,52 +6726,101 @@ class Projects:
                         issue_data.update(json_fixversion_template)
                         issue_data.update(json_affectversion_template)
 
-                        # perform field copy and rewrites for system known fields
-                        issue_data["timeSpent"] = parse_duration(issue_data.get("timespent"))
+                        # perform field copy and rewrites for
+                        # system known fields
+                        issue_data["timeSpent"] = parse_duration(
+                            issue_data.get("timespent")
+                        )
                         issue_data["originalEstimate"] = parse_duration(
                             issue_data.get("timeoriginalestimate")
                         )
-                        issue_data["estimate"] = parse_duration(issue_data.get("timeestimate"))
-                        issue_data["issueType"] = issue_data["issuetype"]
-                        issue_data["resolutionDate"] = parse_dates(issue_data.get("resolutiondate"))
+                        issue_data["estimate"] = parse_duration(
+                            issue_data.get("timeestimate")
+                        )
+                        if "issuetype" in issue_data:
+                            issue_data["issueType"] = issue_data["issuetype"]
+                        issue_data["resolutionDate"] = parse_dates(
+                            issue_data.get("resolutiondate")
+                        )
                         if LOGIN.api is True:
-                            issue_data["assignee"] = issue_data.get("Assignee Id")
-                            issue_data["reporter"] = issue_data.get("Reporter Id")
+                            issue_data["assignee"] = issue_data.get(
+                                "Assignee Id"
+                            )
+                            issue_data["reporter"] = issue_data.get(
+                                "Reporter Id"
+                            )
                             issue_data["creator"] = issue_data.get("Creator Id")
                         if "created" in issue_data:
-                            issue_data["created"] = parse_dates(issue_data.get("created"))
+                            issue_data["created"] = parse_dates(
+                                issue_data.get("created")
+                            )
                         if "Created" in issue_data:
-                            issue_data["created"] = parse_dates(issue_data.get("Created"))
-                        issue_data["updated"] = parse_dates(issue_data.get("updated"))
-                        issue_data["duedate"] = parse_dates(issue_data.get("duedate"))
+                            issue_data["created"] = parse_dates(
+                                issue_data.get("Created")
+                            )
+                        issue_data["updated"] = parse_dates(
+                            issue_data.get("updated")
+                        )
+                        issue_data["duedate"] = parse_dates(
+                            issue_data.get("duedate")
+                        )
 
                         # project configuration data
                         issue_data["projectDescription"] = issue_data.get(
-                            "Project description")
+                            "Project description"
+                        )
                         issue_data["projectKey"] = issue_data.get("Project key")
-                        issue_data["projectLead"] = issue_data.get("Project lead id" if LOGIN.api is True
-                                                                   else "Project lead")
-                        issue_data["projectName"] = issue_data.get("Project name")
-                        issue_data["projectType"] = issue_data.get("Project type")
+                        issue_data["projectLead"] = issue_data.get(
+                            "Project lead id"
+                            if LOGIN.api is True
+                            else "Project lead"
+                        )
+                        issue_data["projectName"] = issue_data.get(
+                            "Project name"
+                        )
+                        issue_data["projectType"] = issue_data.get(
+                            "Project type"
+                        )
                         issue_data["projectUrl"] = issue_data.get("Project url")
                         issue_data["id"] = issue_data.get("externalId")
                         issue_data["parent"] = issue_data.get("Parent")
                         issue_data["key"] = issue_data.get("Issue key")
-                        issue_data["epicLinkSummary"] = issue_data.get("Epic Link Summary")
-                        issue_data["statusCategory"] = issue_data.get("Status Category")
-                        issue_data["parentSummary"] = issue_data.get("Parent summary")
+                        issue_data["epicLinkSummary"] = issue_data.get(
+                            "Epic Link Summary"
+                        )
+                        issue_data["statusCategory"] = issue_data.get(
+                            "Status Category"
+                        )
+                        issue_data["parentSummary"] = issue_data.get(
+                            "Parent summary"
+                        )
                         # perform deletion of unused fields
-                        items_to_delete = ["Project lead id", "Project lead",
-                                           "Project description",
-                                           "Project key", "Project name",
-                                           "Project type", "Status Category",
-                                           "Project url", "Issue id", "watches",
-                                           "workratio", "versions",
-                                           "Created", "Creator", "timeestimate",
-                                           "issuetype", "resolutiondate",
-                                           "timeoriginalestimate", "timespent",
-                                           "Parent", "Parent id", "Epic Link Summary",
-                                           "Parent summary", "Issue key"]
+                        items_to_delete = [
+                            "Project lead id",
+                            "Project lead",
+                            "Project description",
+                            "Project key",
+                            "Project name",
+                            "Project type",
+                            "Status Category",
+                            "Project url",
+                            "Issue id",
+                            "watches",
+                            "workratio",
+                            "versions",
+                            "Created",
+                            "Creator",
+                            "timeestimate",
+                            "issuetype",
+                            "resolutiondate",
+                            "timeoriginalestimate",
+                            "timespent",
+                            "Parent",
+                            "Parent id",
+                            "Epic Link Summary",
+                            "Parent summary",
+                            "Issue key",
+                        ]
                         for del_item in items_to_delete:
                             if del_item in issue_data:
                                 del issue_data[del_item]
@@ -4741,30 +6829,43 @@ class Projects:
                             del issue_data["timeSpent"]
                         if issue_data["originalEstimate"] == "":
                             del issue_data["originalEstimate"]
-                        if issue_data["duedate"] == "" or \
-                                issue_data["duedate"] is None:
+                        if (
+                            issue_data["duedate"] == ""
+                            or issue_data["duedate"] is None
+                        ):
                             del issue_data["duedate"]
-                        if issue_data["estimate"] == "" or \
-                                issue_data["estimate"] is None:
+                        if (
+                            issue_data["estimate"] == ""
+                            or issue_data["estimate"] is None
+                        ):
                             del issue_data["estimate"]
-                        if issue_data["resolutionDate"] == "" or \
-                                issue_data["resolutionDate"] is None:
+                        if (
+                            issue_data["resolutionDate"] == ""
+                            or issue_data["resolutionDate"] is None
+                        ):
                             del issue_data["resolutionDate"]
                         if LOGIN.api is True:
-                            user_attr = ["Assignee Id", "Reporter Id",
-                                         "Creator Id"]
+                            user_attr = [
+                                "Assignee Id",
+                                "Reporter Id",
+                                "Creator Id",
+                            ]
                             for attr in user_attr:
                                 if attr in issue_data:
                                     del issue_data[attr]
+                        if issue_data["worklogs"]:
+                            del issue_data["timeSpent"]
                         if not issue_data["worklogs"]:
                             del issue_data["worklogs"]
 
                         # appending all issues data to each issue list per
                         # project key
                         project_index = project_config[
-                            bundle[config["save_point"]["col_name_index"]]]
-                        json_project_template["projects"][
-                            project_index]["issues"].append(issue_data)
+                            bundle[config["save_point"]["col_name_index"]]
+                        ]
+                        json_project_template["projects"][project_index][
+                            "issues"
+                        ].append(issue_data)
 
                     start_process()
 
@@ -4775,21 +6876,35 @@ class Projects:
                     for name_of_fields in read_csv_file:
                         field_builder(
                             name_of_fields,
-                            config["headers"]
+                            config["headers"],
                         )
-                except (IndexError, KeyError, TypeError,
-                        AttributeError, ValueError, JiraOneErrors) as err:
-                    os.remove(path_builder(folder, temp_file))
+                except (
+                    IndexError,
+                    KeyError,
+                    TypeError,
+                    AttributeError,
+                    ValueError,
+                    JiraOneErrors,
+                ) as err:
+                    os.remove(
+                        path_builder(
+                            folder,
+                            temp_file,
+                        )
+                    )
                     add_log(
                         f"{err} on line {err.__traceback__.tb_lineno}"
                         f" with {err.__traceback__} "
                         f"{sys.__excepthook__(Exception, err, err.__traceback__)}",
-                        "error")
+                        "error",
+                    )
                     exit(f"An error has occurred: {err}")
 
                 config["json_build"].update(json_project_template)
 
-                def parse_history_data(history_key: str) -> None:
+                def parse_history_data(
+                    history_key: str,
+                ) -> None:
                     """
                     Parse some history payload and process
                     some object with list of items about the
@@ -4801,46 +6916,38 @@ class Projects:
                     query = f"key = {history_key}"
                     history_folder = f"{folder}/history"
                     history_file = f"history_{history_key}.csv"
-                    PROJECT.change_log(folder=history_folder, allow_cp=False,
-                                       file=history_file,
-                                       jql=query, show_output=False)
-                    read_history = file_reader(history_folder,
-                                               history_file,
-                                               skip=True)
+                    PROJECT.change_log(
+                        folder=history_folder,
+                        allow_cp=False,
+                        file=history_file,
+                        jql=query,
+                        show_output=False,
+                    )
+                    read_history = file_reader(
+                        history_folder,
+                        history_file,
+                        skip=True,
+                    )
                     history_data = []
                     for _history_ in read_history:
-                        name_mapper = ({
-                                           "issueKey": _history_[0],
-                                           "summary": _history_[1],
-                                           "author": _history_[2],
-                                           "created": _history_[3],
-                                           "fieldType": _history_[4],
-                                           "field": _history_[5],
-                                           "fieldId": _history_[6],
-                                           "from_": _history_[7],
-                                           "fromString": _history_[8],
-                                           "to_": _history_[9],
-                                           "toString": _history_[10],
-                                           "fromAccountId": _history_[11],
-                                           "toAccountId": _history_[12]
-                                       } if LOGIN.api is True else
-                                       {
-                                           "issueKey": _history_[0],
-                                           "summary": _history_[1],
-                                           "author": _history_[2],
-                                           "created": _history_[3],
-                                           "fieldType": _history_[4],
-                                           "field": _history_[5],
-                                           "fieldId": _history_[6],
-                                           "from_": _history_[7],
-                                           "fromString": _history_[8],
-                                           "to_": _history_[9],
-                                           "toString": _history_[10]
-                                       })
+                        name_mapper = {
+                            "issueKey": _history_[0],
+                            "summary": _history_[1],
+                            "author": _history_[2],
+                            "created": _history_[3],
+                            "fieldType": _history_[4],
+                            "field": _history_[5],
+                            "fieldId": _history_[6],
+                            "from_": _history_[7],
+                            "fromString": _history_[8],
+                            "to_": _history_[9],
+                            "toString": _history_[10],
+                        }
                         mapped = DotNotation(name_mapper)
                         _history_data_ = {
-                            "author": name_to_user_id(
-                                mapped.author).get("account_id"),
+                            "author": name_to_user_id(mapped.author).get(
+                                "account_id"
+                            ),
                             "created": mapped.created,
                             "items": [
                                 {
@@ -4849,23 +6956,30 @@ class Projects:
                                     "from": mapped.from_ or None,
                                     "fromString": mapped.fromString or None,
                                     "to": mapped.to_ or None,
-                                    "toString": mapped.toString or None
+                                    "toString": mapped.toString or None,
                                 }
-                            ]
+                            ],
                         }
                         history_data.append(_history_data_)
 
                     json_history_template["history"].append(
                         {
                             "key": history_key,
-                            "value": history_data
+                            "value": history_data,
                         }
                     )
 
-                    os.remove(path_builder(history_folder, history_file))
+                    os.remove(
+                        path_builder(
+                            history_folder,
+                            history_file,
+                        )
+                    )
 
                 # adjust sub-task link
-                def run_multi_check(parent_key: str) -> str:
+                def run_multi_check(
+                    parent_key: str,
+                ) -> str:
                     """
                     Run a search on the json build object until
                     you can find a parent issue, if not return
@@ -4894,38 +7008,48 @@ class Projects:
                                 {
                                     "name": "jira_subtask_link",
                                     "destinationId": get_sub_task_key,
-                                    "sourceId": linked_parent
+                                    "sourceId": linked_parent,
                                 }
                             )
 
                 if json_properties:
-                    if "links" in [x.lower() for x in json_properties]:
+                    if "links" in config["json_props_options"]:
                         print("Adding linked issues to the export")
 
-                        config["json_build"].update(
-                            json_linked_issues_template
-                        )
+                        config["json_build"].update(json_linked_issues_template)
 
-                    if "users" in [x.lower() for x in json_properties]:
+                    if "users" in config["json_props_options"]:
                         print("Updating users and group to the export")
-                        for names_of_users in config["json_userlist"]:
+
+                        def get_groups(
+                            user_data: dict,
+                        ) -> None:
+                            """Process the group extraction"""
                             usernames = {
-                                "name": names_of_users.get("account_id"),
-                                "fullname": names_of_users.get("display_name"),
-                                "active": names_of_users.get("active"),
-                                "groups": names_of_users.get("groups"),
-                                "email": names_of_users.get("email")
+                                "name": user_data.get("account_id"),
+                                "fullname": user_data.get("display_name"),
+                                "active": user_data.get("active"),
+                                "groups": export_groups(
+                                    user_data.get("account_id")
+                                ),
+                                "email": user_data.get("email"),
                             }
                             json_user_template["users"].append(usernames)
 
-                        _user_data = {
-                            "users": json_user_template["users"]
-                        }
-                        config["json_build"].update(
-                            _user_data
-                        )
+                        for names_of_users in config["json_userlist"]:
+                            process_executor(
+                                get_groups,
+                                data=names_of_users,
+                                workers=workers,
+                                timeout=timeout,
+                            )
 
-                    if "history" in [x.lower() for x in json_properties]:
+                        config["user_data_group"].update(
+                            {"users": json_user_template["users"]}
+                        )
+                        config["json_build"].update(config["user_data_group"])
+
+                    if "history" in config["json_props_options"]:
                         print("Extracting change history from issues")
 
                         for search_history in config["json_build"]["projects"]:
@@ -4936,7 +7060,7 @@ class Projects:
                                     parse_history_data,
                                     data=key,
                                     workers=workers,
-                                    timeout=timeout
+                                    timeout=timeout,
                                 )
 
                         print("Appending historic data into JSON structure")
@@ -4948,7 +7072,9 @@ class Projects:
                             issue_history = search_history["issues"]
                             for history in issue_history:
                                 key = history.get("key")
-                                for sub_history in json_history_template["history"]:
+                                for sub_history in json_history_template[
+                                    "history"
+                                ]:
                                     sub_key = sub_history.get("key")
                                     sub_value = sub_history.get("value")
                                     if key == sub_key:
@@ -4963,19 +7089,29 @@ class Projects:
                 json_field_builder()
             extend_file_type()
             for file in config["exports"]:
-                path = path_builder(folder, file)
+                path = path_builder(
+                    folder,
+                    file,
+                )
                 os.remove(path)
 
         if allow_media is True:
             data_frame(files_=temp_file)
-            attach_read = file_reader(folder,
-                                      temp_file,
-                                      skip=True)
+            attach_read = file_reader(
+                folder,
+                temp_file,
+                skip=True,
+            )
 
             _change_flag_ = False
             for _attach_column_ in attach_read:
-                for allow_row, attach_header in zip(_attach_column_,
-                                                    config["headers"]):
+                for (
+                    allow_row,
+                    attach_header,
+                ) in zip(
+                    _attach_column_,
+                    config["headers"],
+                ):
                     if attach_header.get("column_name") == "Attachment":
                         if allow_row is None or allow_row == "":
                             pass
@@ -4992,29 +7128,78 @@ class Projects:
 
             _file_headers_ = [x.get("column_name") for x in config["headers"]]
             print("Reconstructing file headers")
-            file_writer(folder, temp_file, data=[_file_headers_],
-                        mark="many", mode="w+")
-            print("Applying updated data into the CSV file") if _change_flag_ \
-                                                                is True else print(
-                "No change for attachment done to CSV file")
-            file_writer(folder, temp_file, data=attach_read,
-                        mark="many")
+            file_writer(
+                folder,
+                temp_file,
+                data=[_file_headers_],
+                mark="many",
+                mode="w+",
+            )
+            print(
+                "Applying updated data into the CSV file"
+            ) if _change_flag_ is True else print(
+                "No change for attachment done to CSV file"
+            )
+            file_writer(
+                folder,
+                temp_file,
+                data=attach_read,
+                mark="many",
+            )
 
         if exclude_fields:
-            field_exclude()
+            csv_field_change("exclude")
         elif include_fields:
-            field_include()
+            csv_field_change("include")
 
-        extend_format(extension)
+        if delimit:
+            if delimit == ",":
+                sys.stderr.write(
+                    "The default CSV separator is a comma for the"
+                    " delimit argument, no action taken."
+                )
+            else:
+                csv_field_change()
+
+        try:
+            extend_format(extension)
+        except (
+            IndexError,
+            KeyError,
+            TypeError,
+            AttributeError,
+            ValueError,
+            JiraOneErrors,
+        ) as err:
+            os.remove(
+                path_builder(
+                    folder,
+                    temp_file,
+                )
+            )
+            add_log(
+                f"{err} on line {err.__traceback__.tb_lineno}"
+                f" with {err.__traceback__} "
+                f"{sys.__excepthook__(Exception, err, err.__traceback__)}",
+                "error",
+            )
+            exit(f"An error has occurred: {err}")
 
         print(
             "Export Completed.File located at {}".format(
-                path_builder(folder, final_file)
+                path_builder(
+                    folder,
+                    final_file,
+                )
             )
+            if show_export_link is True
+            else ""
         )
 
     @staticmethod
-    def issue_count(jql: str) -> dict:
+    def issue_count(
+        jql: str,
+    ) -> dict:
         """Returns the total count of issues within a
         JQL search phrase.
 
@@ -5032,17 +7217,31 @@ class Projects:
 
         :return: a dictionary, containing issue count & max_page
         """
-        from jiraone.utils import DotNotation
-        from jiraone.exceptions import JiraOneErrors
+        from jiraone.utils import (
+            DotNotation,
+        )
+        from jiraone.exceptions import (
+            JiraOneErrors,
+        )
 
         if jql is None:
             raise JiraOneErrors("value")
         elif jql is not None:
-            if not isinstance(jql, str):
+            if not isinstance(
+                jql,
+                str,
+            ):
                 raise JiraOneErrors(
-                    "wrong", "Invalid data structure " "received. Expected a string."
+                    "wrong",
+                    "Invalid data structure " "received. " "Expected a string.",
                 )
-        total, validate_query = 0, LOGIN.get(endpoint.search_issues_jql(jql))
+        (
+            total,
+            validate_query,
+        ) = (
+            0,
+            LOGIN.get(endpoint.search_issues_jql(jql)),
+        )
         if validate_query.status_code < 300:
             total = validate_query.json()["total"]
         else:
@@ -5057,11 +7256,15 @@ class Projects:
             )
             raise JiraOneErrors(
                 "value",
-                "Your JQL query seems to be invalid" " as no issues were returned.",
+                "Your JQL query seems to be invalid"
+                " as no issues were returned.",
             )
 
         calc = int(total / 1000)
-        value = {"count": total, "max_page": calc if total > 1000 else 0}
+        value = {
+            "count": total,
+            "max_page": calc if total > 1000 else 0,
+        }
         return DotNotation(value)
 
 
@@ -5079,12 +7282,12 @@ class Users:
     user_list = deque()
 
     def get_all_users(
-            self,
-            pull: str = "both",
-            user_type: str = "atlassian",
-            file: str = None,
-            folder: str = Any,
-            **kwargs,
+        self,
+        pull: str = "both",
+        user_type: str = "atlassian",
+        file: str = None,
+        folder: str = Any,
+        **kwargs,
     ) -> None:
         """Generates a list of users.
 
@@ -5104,7 +7307,7 @@ class Users:
 
              * app: this will be the bot users for any Cloud App
 
-             * unknown: as the name suggest unknown user type probably from oAuth
+             * unknown: As the name suggest unknown user type
 
         :param file: String of the filename
 
@@ -5118,41 +7321,77 @@ class Users:
         validate = LOGIN.get(endpoint.myself())
 
         while validate.status_code == 200:
-            extract = LOGIN.get(endpoint.search_users(count_start_at, 1000))
+            extract = LOGIN.get(
+                endpoint.search_users(
+                    count_start_at,
+                    1000,
+                )
+            )
             results = json.loads(extract.content)
-            self.user_activity(pull, user_type, results)
+            self.user_activity(
+                pull,
+                user_type,
+                results,
+            )
             count_start_at += 1000
-            print("Current Record - At Row", count_start_at)
-            add_log(f"Current Record - At Row {count_start_at}", "info")
+            print(
+                "Current Record - At Row",
+                count_start_at,
+            )
+            add_log(
+                f"Current Record - At Row {count_start_at}",
+                "info",
+            )
 
             if not results:
                 break
         else:
             sys.stderr.write(
-                "Unable to connect to {} - Login Failed...".format(LOGIN.base_url)
+                "Unable to connect to {} - Login Failed...".format(
+                    LOGIN.base_url
+                )
             )
             add_log(
-                f"Login Failure on {LOGIN.base_url}, due to {validate.reason}", "error"
+                f"Login Failure on {LOGIN.base_url}, "
+                f"due to {validate.reason}",
+                "error",
             )
             sys.exit(1)
 
         if file is not None:
-            self.report(category=folder, filename=file, **kwargs)
+            self.report(
+                category=folder,
+                filename=file,
+                **kwargs,
+            )
 
     def report(
-            self, category: str = Any, filename: str = "users_report.csv", **kwargs
+        self,
+        category: str = Any,
+        filename: str = "users_report.csv",
+        **kwargs,
     ) -> None:
         """Creates a user report file in CSV format.
         :return: None
         """
         read = [d for d in self.user_list]
         file_writer(
-            folder=category, file_name=filename, data=read, mark="many", **kwargs
+            folder=category,
+            file_name=filename,
+            data=read,
+            mark="many",
+            **kwargs,
         )
-        add_log(f"Generating report file on {filename}", "info")
+        add_log(
+            f"Generating report file on {filename}",
+            "info",
+        )
 
     def user_activity(
-            self, status: str = Any, account_type: str = Any, results: List = Any
+        self,
+        status: str = Any,
+        account_type: str = Any,
+        results: List = Any,
     ) -> None:
         """Determines users activity.
 
@@ -5160,7 +7399,11 @@ class Users:
         """
 
         # get both active and inactive users
-        def stack(c: Any, f: List, s: Any) -> None:
+        def stack(
+            c: Any,
+            f: List,
+            s: Any,
+        ) -> None:
             if status == "both":
                 if s["accountType"] == account_type:
                     return c.user_list.append(f)
@@ -5178,25 +7421,45 @@ class Users:
                 each_user["displayName"],
                 each_user["active"],
             ]
-            stack(self, list_user, each_user)
+            stack(
+                self,
+                list_user,
+                each_user,
+            )
 
     def get_all_users_group(
-            self,
-            group_folder: str = "Groups",
-            group_file_name: str = "group_file.csv",
-            user_extraction_file: str = "group_extraction.csv",
-            **kwargs,
+        self,
+        group_folder: str = "Groups",
+        group_file_name: str = "group_file.csv",
+        user_extraction_file: str = "group_extraction.csv",
+        **kwargs,
     ) -> None:
         """Get all users and the groups associated to them on the Instance.
         :return: None
         """
-        headers = ["Name", "AccountId", "Groups", "User status"]
+        headers = [
+            "Name",
+            "AccountId",
+            "Groups",
+            "User status",
+        ]
         file_writer(
-            folder=group_folder, file_name=group_file_name, data=headers, **kwargs
+            folder=group_folder,
+            file_name=group_file_name,
+            data=headers,
+            **kwargs,
         )
         file_name = user_extraction_file
-        self.get_all_users(file=file_name, folder=group_folder, **kwargs)
-        reader = file_reader(file_name=file_name, folder=group_folder, **kwargs)
+        self.get_all_users(
+            file=file_name,
+            folder=group_folder,
+            **kwargs,
+        )
+        reader = file_reader(
+            file_name=file_name,
+            folder=group_folder,
+            **kwargs,
+        )
         for user in reader:
             account_id = user[0]
             display_name = user[2]
@@ -5204,22 +7467,45 @@ class Users:
             load = LOGIN.get(endpoint.get_user_group(account_id))
             results = json.loads(load.content)
             get_all = [d["name"] for d in results]
-            raw = [display_name, account_id, get_all, active_status]
-            file_writer(folder=group_folder, file_name=group_file_name, data=raw)
+            raw = [
+                display_name,
+                account_id,
+                get_all,
+                active_status,
+            ]
+            file_writer(
+                folder=group_folder,
+                file_name=group_file_name,
+                data=raw,
+            )
 
         print(
             "File extraction completed. Your file is located at {}".format(
-                path_builder(path=group_folder, file_name=group_file_name)
+                path_builder(
+                    path=group_folder,
+                    file_name=group_file_name,
+                )
             )
         )
-        add_log("Get Users group Completed", "info")
+        add_log(
+            "Get Users group Completed",
+            "info",
+        )
 
     def search_user(
-            self, find_user: Union[str, list] = None, folder: str = "Users", **kwargs
-    ) -> Union[list, int]:
-        """Get a list of all cloud users and search for them by using the displayName.
+        self,
+        find_user: Union[
+            str,
+            list,
+        ] = None,
+        folder: str = "Users",
+        **kwargs,
+    ) -> Union[list, int,]:
+        """Get a list of all cloud users and search for them by using the
+        displayName.
 
-        :param find_user: A list of user's displayName or a string of the displayName
+        :param find_user: A list of user's displayName or a string of the
+                          displayName
 
         :param folder: A name to the folder
 
@@ -5227,49 +7513,86 @@ class Users:
 
                    **options**
 
-                   * skip (bool) - allows you to skip the header of ``file_reader``
+                   * skip (bool) - allows you to skip the header
+                   of ``file_reader``
 
-                   * delimiter (str) - allows a delimiter to the ``file_reader`` function
+                   * delimiter (str) - allows a delimiter to the
+                    ``file_reader`` function
 
-                   * pull (str) - determines which user is available e.g. "active", "inactive"
+                   * pull (str) - determines which user is available
+                    e.g. "active", "inactive"
 
-                   * user_type (str) - searches for user type e.g "atlassian", "customer"
+                   * user_type (str) - searches for user type
+                    e.g "atlassian", "customer"
 
                    * file (str) - Name of the file
 
         """
         pull = kwargs["pull"] if "pull" in kwargs else "both"
-        user_type = kwargs["user_type"] if "user_type" in kwargs else "atlassian"
+        user_type = (
+            kwargs["user_type"] if "user_type" in kwargs else "atlassian"
+        )
         file = kwargs["file"] if "file" in kwargs else "user_file.csv"
-        build = path_builder(folder, file)
+        build = path_builder(
+            folder,
+            file,
+        )
 
         if not os.path.isfile(build):
-            open(build, mode="a").close()
+            open(
+                build,
+                mode="a",
+            ).close()
 
         def get_users():
             if os.stat(build).st_size != 0:
-                print(f'The file "{file}" exist...', end="")
+                print(
+                    f'The file "{file}" exist...',
+                    end="",
+                )
                 os.remove(build)
-                print("Updating extracted user...\n", end="")
+                print(
+                    "Updating extracted user...\n",
+                    end="",
+                )
                 self.get_all_users(
-                    pull=pull, user_type=user_type, file=file, folder=folder
+                    pull=pull,
+                    user_type=user_type,
+                    file=file,
+                    folder=folder,
                 )
             else:
                 print("Extracting users...")
                 self.get_all_users(
-                    pull=pull, user_type=user_type, file=file, folder=folder
+                    pull=pull,
+                    user_type=user_type,
+                    file=file,
+                    folder=folder,
                 )
 
         if not self.user_list:
             get_users()
         CheckUser = namedtuple(
-            "CheckUser", ["accountId", "account_type", "display_name", "active"]
+            "CheckUser",
+            [
+                "accountId",
+                "account_type",
+                "display_name",
+                "active",
+            ],
         )
-        list_user = file_reader(file_name=file, folder=folder, **kwargs)
+        list_user = file_reader(
+            file_name=file,
+            folder=folder,
+            **kwargs,
+        )
         checker = []
         for _ in list_user:
             f = CheckUser._make(_)
-            if isinstance(find_user, str):
+            if isinstance(
+                find_user,
+                str,
+            ):
                 if find_user in f._asdict().values():
                     get_user = f.accountId
                     display_name = f.display_name
@@ -5283,7 +7606,10 @@ class Users:
                             }
                         )
                     )
-            if isinstance(find_user, list):
+            if isinstance(
+                find_user,
+                list,
+            ):
                 for i in find_user:
                     if i in f._asdict().values():
                         get_user = f.accountId
@@ -5301,7 +7627,10 @@ class Users:
 
         return checker if checker else 0
 
-    def mention_user(self, name) -> List[str]:
+    def mention_user(
+        self,
+        name,
+    ) -> List[str]:
         """Return a format that you can use to mention users on cloud.
         :param name: The name of a user.
 
@@ -5318,7 +7647,11 @@ class Users:
         return data
 
 
-def path_builder(path: str = "Report", file_name: str = Any, **kwargs) -> str:
+def path_builder(
+    path: str = "Report",
+    file_name: str = Any,
+    **kwargs,
+) -> str:
     """Builds a dir path and file path in a directory.
 
     :param path: A path to declare absolute to where the script is executed.
@@ -5327,38 +7660,53 @@ def path_builder(path: str = "Report", file_name: str = Any, **kwargs) -> str:
 
     :return: A string of the directory path or file path
     """
-    base_dir = os.path.join(WORK_PATH, path)
+    base_dir = os.path.join(
+        WORK_PATH,
+        path,
+    )
     if not os.path.exists(base_dir):
         os.mkdir(base_dir)
-        add_log(f"Building Path {path}", "info")
-    base_file = os.path.join(base_dir, file_name)
+        add_log(
+            f"Building Path {path}",
+            "info",
+        )
+    base_file = os.path.join(
+        base_dir,
+        file_name,
+    )
     return base_file
 
 
 def file_writer(
-        folder: str = WORK_PATH,
-        file_name: str = None,
-        data: Iterable = object,
-        mark: str = "single",
-        mode: str = "a+",
-        content: Union[str, bytes] = None,
-        **kwargs,
+    folder: str = WORK_PATH,
+    file_name: str = None,
+    data: Iterable = object,
+    mark: str = "single",
+    mode: str = "a+",
+    content: Union[
+        str,
+        bytes,
+    ] = None,
+    **kwargs,
 ) -> None:
-    """Reads and writes to a file, single or multiple rows or write as byte files.
+    """Reads and writes to a file, single or multiple rows or write
+    as byte files.
 
     :param folder: A path to the name of the folder
 
     :param file_name: The name of the file being created.
 
-    :param data: Iterable - an iterable data, usually in form of a list.
+    :param data: An iterable data, usually in form of a list.
 
-    :param mark:  Helps evaluate how data is created, available options [“single”, “many”, “file”],
-              by default mark is set to “single”
+    :param mark: Helps evaluate how data is created,
+               available options [“single”, “many”, “file”],
+               by default mark is set to “single”
 
     :param mode: File mode, available options [“a”, “w”, “a+”, “w+”, “wb”],
                    by default the mode is set to “a+”.
 
-    :param content: string - outputs the file in bytes if mode is in bytes.
+    :param content: Outputs the file in bytes if mode is in bytes else in
+                  strings
 
     :param kwargs: Additional parameters
 
@@ -5372,60 +7720,92 @@ def file_writer(
 
     .. versionchanged:: 0.7.3
 
-    errors - added keyword argument which helps determine how encoding and decoding
-             errors are handled
+    errors - added keyword argument which helps determine how
+    encoding and decoding errors are handled
 
     .. versionchanged:: 0.6.3
 
-    encoding - added keyword argument encoding to handle encoding issues on Windows
-    like device.
+    encoding - added keyword argument encoding to handle encoding
+    issues on Windows like device.
 
     :return: Any
     """
-    from platform import system
+    from platform import (
+        system,
+    )
 
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
-    file = path_builder(path=folder, file_name=file_name)
+    file = path_builder(
+        path=folder,
+        file_name=file_name,
+    )
     encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
     errors = kwargs["errors"] if "errors" in kwargs else "replace"
     # Bug:fix:JIR-8 on https://github.com/princenyeche/jiraone/issues/89
     windows = (
-        open(file, mode, encoding=encoding, newline="", errors=errors)
+        open(
+            file,
+            mode,
+            encoding=encoding,
+            newline="",
+            errors=errors,
+        )
         if system() == "Windows" and mark != "file"
-        else open(file, mode) if isinstance(content, bytes) else
-        open(file, mode, encoding=encoding, errors=errors)
+        else open(
+            file,
+            mode,
+        )
+        if isinstance(
+            content,
+            bytes,
+        )
+        else open(
+            file,
+            mode,
+            encoding=encoding,
+            errors=errors,
+        )
     )
     if mode:
         with windows as f:
-            write = csv.writer(f, delimiter=delimiter)
+            write = csv.writer(
+                f,
+                delimiter=delimiter,
+            )
             if mark == "single":
                 write.writerow(data)
             if mark == "many":
                 write.writerows(data)
             if mark == "file":
                 f.write(content)
-            add_log(f"Writing to file {file_name}", "info")
+            add_log(
+                f"Writing to file {file_name}",
+                "info",
+            )
 
 
 def file_reader(
-        folder: str = WORK_PATH,
-        file_name: str = None,
-        mode: str = "r",
-        skip: bool = False,
-        content: bool = False,
-        **kwargs,
-) -> Union[List[List[str]], str]:
-    """Reads a CSV file and returns a list comprehension of the data or reads a byte into strings.
+    folder: str = WORK_PATH,
+    file_name: str = None,
+    mode: str = "r",
+    skip: bool = False,
+    content: bool = False,
+    **kwargs,
+) -> Union[List[List[str]], str,]:
+    """Reads a CSV file and returns a list comprehension of the data or
+    reads a byte into strings.
 
-    :param folder: string - a path to the name of the folder
+    :param folder: A path to the name of the folder
 
-    :param file_name: string - the name of the file being created
+    :param file_name: The name of the file being created
 
-    :param mode: string - file mode, available options [“r”, “rb”]
+    :param mode: File mode, available options [“r”, “rb”]
 
-    :param skip: bool - True allows you to skip the header if the file has any. Otherwise, defaults to False
+    :param skip: True allows you to skip the header if the file has any.
+                 Otherwise, defaults to False
 
-    :param content: bool - True allows you to read a byte file. By default, it is set to False
+    :param content: True allows you to read a byte file. By default,
+                    it is set to False
 
     :param kwargs: Additional parameters
 
@@ -5440,39 +7820,67 @@ def file_reader(
 
     .. versionchanged:: 0.7.3
 
-    errors - added keyword argument which helps determine how encoding and decoding
-             errors are handled
+    errors - added keyword argument which helps determine how
+    encoding and decoding errors are handled
 
 
     :return: A list comprehension data or binary data
     """
-    from platform import system
+    from platform import (
+        system,
+    )
 
-    file = path_builder(path=folder, file_name=file_name)
+    file = path_builder(
+        path=folder,
+        file_name=file_name,
+    )
     encoding = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
     errors = kwargs["errors"] if "errors" in kwargs else "replace"
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
     windows = (
-        open(file, mode, encoding=encoding, newline="", errors=errors)
+        open(
+            file,
+            mode,
+            encoding=encoding,
+            newline="",
+            errors=errors,
+        )
         if system() == "Windows" and content is False
-        else open(file, mode)
+        else open(
+            file,
+            mode,
+        )
     )
     if mode:
         with windows as f:
-            read = csv.reader(f, delimiter=delimiter)
+            read = csv.reader(
+                f,
+                delimiter=delimiter,
+            )
             if skip is True:
-                next(read, None)
+                next(
+                    read,
+                    None,
+                )
             if content is True:
                 feed = (
-                    f.read() if "encoding" not in kwargs else f.read().encode(encoding)
+                    f.read()
+                    if "encoding" not in kwargs
+                    else f.read().encode(encoding)
                 )
             load = [d for d in read]
-            add_log(f"Read file {file_name}", "info")
+            add_log(
+                f"Read file {file_name}",
+                "info",
+            )
             return load if content is False else feed
 
 
 def replacement_placeholder(
-        string: str = None, data: List = None, iterable: List = None, row: int = 2
+    string: str = None,
+    data: List = None,
+    iterable: List = None,
+    row: int = 2,
 ) -> Any:
     """Return multiple string replacement.
 
@@ -5499,10 +7907,24 @@ def replacement_placeholder(
     for _ in iterable:
         if count == 0:
             if string in data[row]:
-                result = [lines.replace(string, iterable[count], 1) for lines in data]
+                result = [
+                    lines.replace(
+                        string,
+                        iterable[count],
+                        1,
+                    )
+                    for lines in data
+                ]
         if count > 0:
             if string in result[row]:
-                result = [lines.replace(string, iterable[count], 1) for lines in result]
+                result = [
+                    lines.replace(
+                        string,
+                        iterable[count],
+                        1,
+                    )
+                    for lines in result
+                ]
         count += 1
         if count > length:
             break
@@ -5510,14 +7932,25 @@ def replacement_placeholder(
 
 
 def delete_attachments(
-        file: Optional[str] = None,
-        search: Union[str, Dict, List, int] = None,
-        delete: bool = True,
-        extension: Union[str, List] = None,
-        by_user: Optional[List] = None,
-        by_size: Optional[str] = None,
-        by_date: Optional[str] = None,
-        **kwargs: Union[str, bool],
+    file: Optional[str] = None,
+    search: Union[
+        str,
+        Dict,
+        List,
+        int,
+    ] = None,
+    delete: bool = True,
+    extension: Union[
+        str,
+        List,
+    ] = None,
+    by_user: Optional[List] = None,
+    by_size: Optional[str] = None,
+    by_date: Optional[str] = None,
+    **kwargs: Union[
+        str,
+        bool,
+    ],
 ) -> None:
     """
     A function that helps to delete attachments on Jira issues.
@@ -5551,61 +7984,87 @@ def delete_attachments(
        users = ["557058:5bcedf04-xxxx-4c40-b707-xxxxxd8bd8d", "5bcedf04-XXXXXX"]
        delete_attachments(search=jql, extension=ext, by_user=users)
 
-    :param file: A file export of issues from Jira which includes the ``attachment columns``
+    :param file: A file export of issues from Jira which includes
+                 the ``attachment columns``
 
     :param search: A search parameter for issues e.g. issue key or JQL query
 
     :param extension: A file extension to focus on while deleting.
 
-    :param by_user: Search by user accountId and delete attachments. You can also combine the extension parameter.
+    :param by_user: Search by user accountId and delete attachments.
+                    You can also combine the extension parameter.
                     This will only work when using the ``search`` parameter.
 
-    :param by_size: Search by allocated file size and delete the attachment. You can combine the extension and by_user
+    :param by_size: Search by allocated file size and delete the attachment.
+                    You can combine the extension and by_user
                     parameter with this argument.
 
 
-    :param by_date: Search by date_range from when the attachment was created until the initiator's current time.
-                    Then delete the attachment. You can combine this argument with all
+    :param by_date: Search by date_range from when the attachment was created
+                    until the initiator's current time.
+                    Then delete the attachment.
+                    You can combine this argument with all
                     other arguments provided with the search parameter.
 
-    :param delete: A decision to delete or not delete the attachments. defaults to ``True``
+    :param delete: A decision to delete or not delete the attachments.
+                   Defaults to ``True``
 
     :param kwargs: Additional arguments
 
                  **Available options**
 
-                 * allow_cp: Allows the ability to trigger and save a checkpoint.
+                 * allow_cp: Allows the ability to trigger and save a
+                  checkpoint.
 
-                 * saved_file: Provides a generic name for the checkpoint save file.
+                 * saved_file: Provides a generic name for the checkpoint
+                 save file.
 
-                 * delimiter: Allows you to change the delimiter used to read the file used by ``file`` parameter.
+                 * delimiter: Allows you to change the delimiter used to
+                 read the file used by ``file`` parameter.
 
     :return: None
     """
-    from jiraone.exceptions import JiraOneErrors
-    from datetime import datetime, timedelta
+    from jiraone.exceptions import (
+        JiraOneErrors,
+    )
+    from datetime import (
+        datetime,
+        timedelta,
+    )
+    from jiraone.utils import DateFormat
 
     if LOGIN.get(endpoint.myself()).status_code > 300:
         add_log(
-            "Authentication failed. Please check your credential data to determine what went wrong.",
+            "Authentication failed. Please check your "
+            "credential data to determine what went wrong.",
             "error",
         )
         raise JiraOneErrors(
-            "login", "Authentication failed. Please check your credentials."
+            "login",
+            "Authentication failed. Please check your credentials.",
         )
     search_path = None
     folder: str = "DATA"
     allow_cp: bool = True if "allow_cp" not in kwargs else False
     saved_file: str = (
-        "data_block.json" if "saved_file" not in kwargs else kwargs["saved_file"]
+        "data_block.json"
+        if "saved_file" not in kwargs
+        else kwargs["saved_file"]
     )
     back_up: bool = False
     attach_load = []
-    data_file = path_builder(folder, file_name=saved_file)
+    data_file = path_builder(
+        folder,
+        file_name=saved_file,
+    )
 
-    def time_share(_time: str, _items=None) -> bool:
+    def time_share(
+        _time: str,
+        _items=None,
+    ) -> bool:
         """
-        Calculate the time difference it takes with the date and now to determine if deletion is possible.
+        Calculate the time difference it takes with the date and now to
+        determine if deletion is possible.
 
         :param _time: A string of date range to check
 
@@ -5641,7 +8100,10 @@ def delete_attachments(
         }
 
         times = []
-        if isinstance(_time, str):
+        if isinstance(
+            _time,
+            str,
+        ):
             number = re.compile(r"(?:\d+)")
             string_one = re.compile(r"(?:[a-zA-Z]{4,7})")
             if number.search(_time) is not None:
@@ -5650,16 +8112,14 @@ def delete_attachments(
                 times.append(string_one.search(_time).group())
         else:
             add_log(
-                'Invalid time parameter received. Expected a string but got "{}"'.format(
-                    type(_time)
-                ),
+                "Invalid time parameter received. Expected a "
+                'string but got "{}"'.format(type(_time)),
                 "debug",
             )
             raise JiraOneErrors(
                 "wrong",
-                'Invalid time parameter received. Expected a string but got "{}"'.format(
-                    type(_time)
-                ),
+                "Invalid time parameter received. Expected a "
+                'string but got "{}"'.format(type(_time)),
             )
 
         if times[1]:
@@ -5671,19 +8131,20 @@ def delete_attachments(
                 selection = "time_factors"
             else:
                 add_log(
-                    'Invalid option "{}" detected as `time_info` for "by_date" argument'.format(
-                        by_date
-                    ),
+                    'Invalid option "{}" detected as `time_info` '
+                    'for "by_date" argument'.format(by_date),
                     "error",
                 )
                 raise JiraOneErrors(
                     "value",
-                    'We\'re unable to determine your precise date range with "{}"'.format(
-                        by_date
-                    ),
+                    "We're unable to determine your precise "
+                    'date range with "{}"'.format(by_date),
                 )
 
-        def time_delta(val: int, cet: str) -> tuple:
+        def time_delta(
+            val: int,
+            cet: str,
+        ) -> tuple:
             """
             Return a tuple to determine what the expected datetime are.
 
@@ -5693,27 +8154,54 @@ def delete_attachments(
 
             :return: A tuple of probably time factor.
             """
+
             _time_ = None
-            time_check_ = time_factor if selection == "time_factor" else time_factors
+            time_check_ = (
+                time_factor if selection == "time_factor" else time_factors
+            )
             if cet in time_check_:
                 _time_ = val * time_check_[cet]
-            return _time_, list(time_check_.keys())[list(time_check_.keys()).index(cet)]
+            return (
+                _time_,
+                list(time_check_.keys())[list(time_check_.keys()).index(cet)],
+            )
 
         if len(times) > 0:
             issue_time = datetime.strptime(
-                _items.get("created"), "%Y-%m-%dT%H:%M:%S.%f%z"
+                _items.get("created"),
+                DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ,
             )
+
             present = datetime.strftime(
-                datetime.astimezone(datetime.now()), "%Y-%m-%dT%H:%M:%S.%f%z"
+                datetime.astimezone(datetime.now()),
+                DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ,
             )
-            parse_present = datetime.strptime(present, "%Y-%m-%dT%H:%M:%S.%f%z")
-            time_check = time_factor if selection == "time_factor" else time_factors
+            parse_present = datetime.strptime(
+                present,
+                DateFormat.YYYY_MM_dd_HH_MM_SS_MS_TZ,
+            )
+            time_check = (
+                time_factor if selection == "time_factor" else time_factors
+            )
             if times[1] in time_check:
-                ask_time = time_delta(int(times[0]), times[1])
+                ask_time = time_delta(
+                    int(times[0]),
+                    times[1],
+                )
                 d_range = (
-                    ["days", "months", "years", "weeks"]
+                    [
+                        "days",
+                        "months",
+                        "years",
+                        "weeks",
+                    ]
                     if selection == "time_factors"
-                    else ["day", "month", "year", "week"]
+                    else [
+                        "day",
+                        "month",
+                        "year",
+                        "week",
+                    ]
                 )
                 d_min = "minute" if selection == "time_factor" else "minutes"
                 past_time = (
@@ -5729,7 +8217,10 @@ def delete_attachments(
 
         return False
 
-    def regulator(size: str, block=None) -> bool:
+    def regulator(
+        size: str,
+        block=None,
+    ) -> bool:
         """
         Determine the size of an attachment.
 
@@ -5737,13 +8228,17 @@ def delete_attachments(
 
         :param block: An iterable that contains the attachment data
 
-        :return: Returns a boolean output to determine if an attachment is greater or lesser than size parameter.
+        :return: Returns a boolean output to determine if an attachment is
+                 greater or lesser than size parameter.
         """
         chars = []
         giga_byte = 1000 * 1000 * 1000
         mega_byte = 1000 * 1000
         kilo_byte = 1000
-        if isinstance(size, str):
+        if isinstance(
+            size,
+            str,
+        ):
             sign = re.compile(r"(?:[\<|\>])")
             number = re.compile(r"(?:\d+)")
             string_ = re.compile(r"(?:[a-zA-Z]{2})")
@@ -5757,23 +8252,25 @@ def delete_attachments(
                 chars.append("")
         else:
             add_log(
-                'Invalid size parameter received. Expected a string but got "{}"'.format(
-                    type(size)
-                ),
+                "Invalid size parameter received. "
+                'Expected a string but got "{}"'.format(type(size)),
                 "debug",
             )
             raise JiraOneErrors(
                 "wrong",
-                'Invalid size parameter received. Expected a string but got "{}"'.format(
-                    type(size)
-                ),
+                "Invalid size parameter received. "
+                'Expected a string but got "{}"'.format(type(size)),
             )
 
         if len(chars) > 0:
             symbol = chars[0]
             my_num = int(chars[1])
             this = chars[2].lower()
-            if this in ["mb", "kb", "gb"]:
+            if this in [
+                "mb",
+                "kb",
+                "gb",
+            ]:
                 byte_size = (
                     my_num * mega_byte
                     if this == "mb"
@@ -5799,7 +8296,9 @@ def delete_attachments(
                         return True
         return False
 
-    def get_ext(ex) -> Union[str, List]:
+    def get_ext(
+        ex,
+    ) -> Union[str, List,]:
         """
         Determine the extension and cycle through it.
 
@@ -5807,27 +8306,42 @@ def delete_attachments(
 
         :return: A string or a list item
         """
-        if isinstance(ex, str):
+        if isinstance(
+            ex,
+            str,
+        ):
             if "," in ex:
                 ex = ex.lower().split(",")
                 return ex
             return ex.lower()
-        elif isinstance(ex, list):
+        elif isinstance(
+            ex,
+            list,
+        ):
             return [x.lower() for x in ex]
 
-    def ex_validator(func, _item=None, tp: bool = True) -> bool:
+    def ex_validator(
+        func,
+        _item=None,
+        tp: bool = True,
+    ) -> bool:
         """
-        Determines if an extension supplied is equivalent to what it is all about prior to deletion.
+        Determines if an extension supplied is equivalent to what it is all
+        about prior to deletion.
 
         :param func: A str or list value of extensions
 
         :param _item: An iterable of a file extension
 
-        :param tp: Changes context between file or search mode parameter for this function.
+        :param tp: Changes context between file or search mode parameter
+                   for this function.
 
         :return: True or False for the query
         """
-        if isinstance(func, str):
+        if isinstance(
+            func,
+            str,
+        ):
             _ex_name = (
                 (
                     f".{_item.get('filename').split('.')[-1].lower()}"
@@ -5842,7 +8356,10 @@ def delete_attachments(
                 )
             )
             return _ex_name == func
-        elif isinstance(func, list):
+        elif isinstance(
+            func,
+            list,
+        ):
             _ex_name = (
                 (
                     f".{_item.get('filename').split('.')[-1].lower()}"
@@ -5859,7 +8376,9 @@ def delete_attachments(
             return _ex_name in func
         return False
 
-    def get_attachments(items: Dict) -> None:
+    def get_attachments(
+        items: Dict,
+    ) -> None:
         """
         Helps to get a list of attachments on an issue.
 
@@ -5869,15 +8388,24 @@ def delete_attachments(
         """
         nonlocal attach_load, count, depth
         infinity_point = data_brick["point"]
-        issues = items["issues"][data_brick["point"]:]
-        attach_load = data_brick["data_block"] if back_up is True else attach_load
-        count = set_up["iter"] if back_up is True and depth == 1 else data_brick["iter"]
+        issues = items["issues"][data_brick["point"] :]
+        attach_load = (
+            data_brick["data_block"] if back_up is True else attach_load
+        )
+        count = (
+            set_up["iter"]
+            if back_up is True and depth == 1
+            else data_brick["iter"]
+        )
 
-        def inf_block(atl: bool = False):
+        def inf_block(
+            atl: bool = False,
+        ):
             """
             A function that updates data_brick.
 
-            :param atl: Indicates whether a condition exist that favours search attachment or not.
+            :param atl: Indicates whether a condition exist that favours
+                        search attachment or not.
 
             :return: None
             """
@@ -5889,7 +8417,11 @@ def delete_attachments(
                     "point": infinity_point,
                 }
             ) if atl is False else data_brick.update(
-                {"key": keys, "status": "in_progress", "point": infinity_point}
+                {
+                    "key": keys,
+                    "status": "in_progress",
+                    "point": infinity_point,
+                }
             )
 
         for each_issue in issues:
@@ -5912,12 +8444,14 @@ def delete_attachments(
                         }
                         print(
                             "Accessing attachments {} | Key: {}".format(
-                                attach.get("filename"), keys
+                                attach.get("filename"),
+                                keys,
                             )
                         )
                         add_log(
                             "Accessing attachments {} | Key: {}".format(
-                                attach.get("filename"), keys
+                                attach.get("filename"),
+                                keys,
                             ),
                             "info",
                         )
@@ -5928,7 +8462,13 @@ def delete_attachments(
             else:
                 inf_block(atl=True)
             json.dump(
-                data_brick, open(data_file, mode="w+", encoding="utf-8"), indent=4
+                data_brick,
+                open(
+                    data_file,
+                    mode="w+",
+                    encoding="utf-8",
+                ),
+                indent=4,
             ) if allow_cp is True else None
             infinity_point += 1
 
@@ -5936,7 +8476,11 @@ def delete_attachments(
     set_up = {}
 
     def data_wipe(
-            del_, counts_, usr: bool = False, fl: bool = False, _items_=None
+        del_,
+        counts_,
+        usr: bool = False,
+        fl: bool = False,
+        _items_=None,
     ) -> None:
         """
         Trigger the delete mode.
@@ -5958,7 +8502,9 @@ def delete_attachments(
                 )
             ) if usr is False else print(
                 'Deleting attachment by user {} "{}" | Key: {}'.format(
-                    _items_.get("author"), _items_.get("filename"), _items_.get("key")
+                    _items_.get("author"),
+                    _items_.get("filename"),
+                    _items_.get("key"),
                 )
             )
             add_log(
@@ -5977,11 +8523,14 @@ def delete_attachments(
                 )
             ) if usr is False else print(
                 'Unable to delete attachment by user {} "{}" | Key: {}'.format(
-                    _items_.get("author"), _items_.get("filename"), _items_.get("key")
+                    _items_.get("author"),
+                    _items_.get("filename"),
+                    _items_.get("key"),
                 )
             )
             add_log(
-                'Attachment deletion of "{}" failed with reason "{}" | Key: {}'.format(
+                'Attachment deletion of "{}" failed with reason "{}" '
+                "| Key: {}".format(
                     _items_.get("filename") if fl is False else _items_[0],
                     del_.reason,
                     _items_.get("key") if fl is False else _items_[1],
@@ -5996,31 +8545,55 @@ def delete_attachments(
                 "do you want to use it? (Y/N) \n"
             )
             set_up = json.load(open(data_file))
-            if user_input.lower() in ["y", "yes"]:
+            if user_input.lower() in [
+                "y",
+                "yes",
+            ]:
                 back_up = True
             else:
                 print("Starting search from scratch.")
                 add_log(
-                    "Starting search from scratch, any previous data will be removed",
+                    "Starting search from scratch, "
+                    "any previous data will be removed",
                     "info",
                 )
-    descriptor = os.open(data_file, flags=os.O_CREAT) if allow_cp is True else None
+    descriptor = (
+        os.open(
+            data_file,
+            flags=os.O_CREAT,
+        )
+        if allow_cp is True
+        else None
+    )
     os.close(descriptor) if allow_cp is True else None
-    count, cycle, step = 0, 0, 0
+    (
+        count,
+        cycle,
+        step,
+    ) = (
+        0,
+        0,
+        0,
+    )
     if file is None:
         if search is None:
             add_log(
-                "The search parameter can't be None when you have not provided a file input data.",
+                "The search parameter can't be None when "
+                "you have not provided a file input data.",
                 "debug",
             )
             raise JiraOneErrors(
-                "value", "Search parameter can't be None if a file is not provided."
+                "value",
+                "Search parameter can't be None if a " "file is not provided.",
             )
         search_path = search
     elif file is not None:
         key_index = 0
         attach_index = []
-        temp_reader = file_reader(file_name=file, **kwargs)
+        temp_reader = file_reader(
+            file_name=file,
+            **kwargs,
+        )
         loop = 1
         for _row in temp_reader:
             _loop_count = -1
@@ -6035,7 +8608,11 @@ def delete_attachments(
             if loop > 1:
                 break
 
-        reader = file_reader(file_name=file, skip=True, **kwargs)
+        reader = file_reader(
+            file_name=file,
+            skip=True,
+            **kwargs,
+        )
         new_data_form = deque()
         do_once = 0
         for issue in reader:
@@ -6048,38 +8625,71 @@ def delete_attachments(
                 attach_loop = 0
                 for column in attach_index:
                     attach_loop += 1
-                    _attach_.update({"attach_{}".format(attach_loop): issue[column]})
-            # Find every attachment in the attachment column to determine the attachments
-            for each_attach, attach_ in _attach_.items():
+                    _attach_.update(
+                        {"attach_{}".format(attach_loop): issue[column]}
+                    )
+            # Find every attachment in the attachment column to
+            # determine the attachments
+            for (
+                each_attach,
+                attach_,
+            ) in _attach_.items():
                 if ";" in attach_:
                     break_ = attach_.split(";")
                     files_ = break_[-1]
-                    new_data_form.append([key, files_])
+                    new_data_form.append(
+                        [
+                            key,
+                            files_,
+                        ]
+                    )
             do_once += 1
             if len(_attach_) == 0 and do_once == 1:
                 print(
-                    "Attachment not processed, file structure could be empty or not properly formatted."
+                    "Attachment not processed, file structure could be "
+                    "empty or not properly formatted."
                 )
                 add_log(
-                    f"It seems that the attachments URL could not be determined from the {file}",
+                    f"It seems that the attachments URL "
+                    f"could not be determined from the {file}",
                     "debug",
                 )
-            # Use regex to find other attachments links that are in other fields.
+            # Use regex to find other attachments links that are in
+            # other fields.
             # The below would likely find one or more links or none if it can't.
             for data in issue:
                 if attach_pattern.match(data) is not None:
                     _files = attach_pattern.match(data).group()
-                    new_data_form.append([key, _files])
+                    new_data_form.append(
+                        [
+                            key,
+                            _files,
+                        ]
+                    )
 
         new_list = []
         for arrange_attach in new_data_form:
             if arrange_attach[1] is not None:
-                new_list.append([arrange_attach[0], arrange_attach[1]])
+                new_list.append(
+                    [
+                        arrange_attach[0],
+                        arrange_attach[1],
+                    ]
+                )
         new_data_form.clear()
         split_file = file.split(".")[-2]
         new_file = f"{split_file}_temp.csv"
-        file_writer(folder, file_name=new_file, data=new_list, mark="many", mode="w+")
-        read_file = file_reader(folder, file_name=new_file)
+        file_writer(
+            folder,
+            file_name=new_file,
+            data=new_list,
+            mark="many",
+            mode="w+",
+        )
+        read_file = file_reader(
+            folder,
+            file_name=new_file,
+        )
 
         step = (
             0
@@ -6092,46 +8702,92 @@ def delete_attachments(
             attach_id = attach_[-2]
             if delete is True:
                 if extension is not None:
-                    if ex_validator(get_ext(extension), attach_, tp=False):
+                    if ex_validator(
+                        get_ext(extension),
+                        attach_,
+                        tp=False,
+                    ):
                         delete_ = LOGIN.delete(
                             endpoint.issue_attachments(attach_id=attach_id)
                         )
                         data_wipe(
-                            delete_, count, fl=True, _items_=[attach_[-1], item[0]]
+                            delete_,
+                            count,
+                            fl=True,
+                            _items_=[
+                                attach_[-1],
+                                item[0],
+                            ],
                         )
                 else:
                     delete_ = LOGIN.delete(
                         endpoint.issue_attachments(attach_id=attach_id)
                     )
-                    data_wipe(delete_, count, fl=True, _items_=[attach_[-1], item[0]])
+                    data_wipe(
+                        delete_,
+                        count,
+                        fl=True,
+                        _items_=[
+                            attach_[-1],
+                            item[0],
+                        ],
+                    )
             else:
                 data_brick.update({"iter": count})
                 print(
-                    'Safe mode on: Attachment will not be deleted "{}" | Key: {}'.format(
-                        attach_[-1], item[0]
+                    "Safe mode on: Attachment will not be deleted "
+                    '"{}" | Key: {}'.format(
+                        attach_[-1],
+                        item[0],
                     )
                 )
                 add_log(
-                    'Safe mode on: Attachment will not be deleted "{}" | Key: {}'.format(
-                        attach_[-1], item[0]
+                    "Safe mode on: Attachment will not be deleted "
+                    '"{}" | Key: {}'.format(
+                        attach_[-1],
+                        item[0],
                     ),
                     "info",
                 )
             count += 1
             json.dump(
-                data_brick, open(data_file, mode="w+", encoding="utf-8"), indent=4
+                data_brick,
+                open(
+                    data_file,
+                    mode="w+",
+                    encoding="utf-8",
+                ),
+                indent=4,
             ) if allow_cp is True else None
-        os.remove(path_builder(folder, file_name=new_file))
+        os.remove(
+            path_builder(
+                folder,
+                file_name=new_file,
+            )
+        )
     if search_path is not None:
         query = (
             f"key in ({search_path})"
-            if isinstance(search_path, (str, int))
+            if isinstance(
+                search_path,
+                (
+                    str,
+                    int,
+                ),
+            )
             else "key in {}".format(tuple(search_path))
-            if isinstance(search_path, list)
+            if isinstance(
+                search_path,
+                list,
+            )
             else search_path["jql"]
-            if isinstance(search_path, dict)
+            if isinstance(
+                search_path,
+                dict,
+            )
             else sys.stderr.write(
-                "Unexpected datatype received. Example on https://jiraone.readthedocs.io "
+                "Unexpected datatype received. "
+                "Example on https://jiraone.readthedocs.io "
             )
         )
         data_brick["status"] = (
@@ -6144,32 +8800,42 @@ def delete_attachments(
             load = (
                 LOGIN.get(
                     endpoint.search_issues_jql(
-                        query=set_up["query"], start_at=set_up["iter"], max_results=100
+                        query=set_up["query"],
+                        start_at=set_up["iter"],
+                        max_results=100,
                     )
                 )
                 if back_up is True and depth == 1
                 else LOGIN.get(
                     endpoint.search_issues_jql(
-                        query=query, start_at=count, max_results=100
+                        query=query,
+                        start_at=count,
+                        max_results=100,
                     )
                 )
             )
             if data_brick["status"] == "complete":
                 open_ = json.load(open(data_file)) if allow_cp is True else {}
-                attach_load = open_["data_block"] if "data_block" in open_ else []
+                attach_load = (
+                    open_["data_block"] if "data_block" in open_ else []
+                )
                 break
             if load.status_code < 300:
                 data_ = load.json()
                 cycle = 0
                 print(
                     "Extracting attachment details on row {}".format(
-                        set_up["iter"] if back_up is True and depth == 1 else count
+                        set_up["iter"]
+                        if back_up is True and depth == 1
+                        else count
                     )
                 )
                 print("*" * 100)
                 add_log(
                     "Extracting attachment details on row {}".format(
-                        set_up["iter"] if back_up is True and depth == 1 else count
+                        set_up["iter"]
+                        if back_up is True and depth == 1
+                        else count
                     ),
                     "info",
                 )
@@ -6193,11 +8859,16 @@ def delete_attachments(
                     data_brick.update({"status": "complete"})
                     json.dump(
                         data_brick,
-                        open(data_file, mode="w+", encoding="utf-8"),
+                        open(
+                            data_file,
+                            mode="w+",
+                            encoding="utf-8",
+                        ),
                         indent=4,
                     ) if allow_cp is True else None
                     add_log(
-                        "Extraction is completed, deletion of attachments on the next step",
+                        "Extraction is completed, "
+                        "deletion of attachments on the next step",
                         "info",
                     )
                     break
@@ -6211,16 +8882,22 @@ def delete_attachments(
                 cycle += 1
                 if cycle > 99:
                     add_log(
-                        'Trying to search for the issues with query "{}" returned a "{}" '
+                        "Trying to search for the issues with "
+                        'query "{}" returned a "{}" '
                         'error with reason "{}".'.format(
-                            query, load.status_code, load.reason
+                            query,
+                            load.status_code,
+                            load.reason,
                         ),
                         "error",
                     )
                     raise JiraOneErrors(
                         "value",
                         'It seems that the search "{}" cannot be '
-                        "retrieved as we've attempted it {} times".format(query, cycle),
+                        "retrieved as we've attempted it {} times".format(
+                            query,
+                            cycle,
+                        ),
                     )
 
         length = len(attach_load)
@@ -6228,20 +8905,31 @@ def delete_attachments(
             _open_ = json.load(open(data_file)) if allow_cp is True else {}
             data_brick["data_block"] = attach_load
             data_brick["iter"] = _open_["iter"] if "iter" in _open_ else 0
-            data_brick["query"] = _open_["query"] if "query" in _open_ else query
+            data_brick["query"] = (
+                _open_["query"] if "query" in _open_ else query
+            )
             data_brick["saves"] = _open_["saves"] if "saves" in _open_ else 0
             step = 0 if back_up is False else data_brick["saves"]
             count = step
             for each_item in attach_load[step:]:
                 if delete is True:
                     if extension is not None:
-                        if ex_validator(get_ext(extension), each_item):
+                        if ex_validator(
+                            get_ext(extension),
+                            each_item,
+                        ):
                             if by_user is not None:
                                 if each_item.get("accountid") in by_user:
                                     if by_size is not None:
-                                        if regulator(by_size, each_item):
+                                        if regulator(
+                                            by_size,
+                                            each_item,
+                                        ):
                                             if by_date is not None:
-                                                if time_share(by_date, each_item):
+                                                if time_share(
+                                                    by_date,
+                                                    each_item,
+                                                ):
                                                     delete_ = LOGIN.delete(
                                                         endpoint.issue_attachments(
                                                             attach_id=each_item.get(
@@ -6258,7 +8946,9 @@ def delete_attachments(
                                             else:
                                                 delete_ = LOGIN.delete(
                                                     endpoint.issue_attachments(
-                                                        attach_id=each_item.get("id")
+                                                        attach_id=each_item.get(
+                                                            "id"
+                                                        )
                                                     )
                                                 )
                                                 data_wipe(
@@ -6269,10 +8959,15 @@ def delete_attachments(
                                                 )
                                     else:
                                         if by_date is not None:
-                                            if time_share(by_date, each_item):
+                                            if time_share(
+                                                by_date,
+                                                each_item,
+                                            ):
                                                 delete_ = LOGIN.delete(
                                                     endpoint.issue_attachments(
-                                                        attach_id=each_item.get("id")
+                                                        attach_id=each_item.get(
+                                                            "id"
+                                                        )
                                                     )
                                                 )
                                                 data_wipe(
@@ -6284,7 +8979,9 @@ def delete_attachments(
                                         else:
                                             delete_ = LOGIN.delete(
                                                 endpoint.issue_attachments(
-                                                    attach_id=each_item.get("id")
+                                                    attach_id=each_item.get(
+                                                        "id"
+                                                    )
                                                 )
                                             )
                                             data_wipe(
@@ -6295,50 +8992,87 @@ def delete_attachments(
                                             )
                             else:
                                 if by_size is not None:
-                                    if regulator(by_size, each_item):
+                                    if regulator(
+                                        by_size,
+                                        each_item,
+                                    ):
                                         if by_date is not None:
-                                            if time_share(by_date, each_item):
+                                            if time_share(
+                                                by_date,
+                                                each_item,
+                                            ):
                                                 delete_ = LOGIN.delete(
                                                     endpoint.issue_attachments(
-                                                        attach_id=each_item.get("id")
+                                                        attach_id=each_item.get(
+                                                            "id"
+                                                        )
                                                     )
                                                 )
                                                 data_wipe(
-                                                    delete_, count, _items_=each_item
+                                                    delete_,
+                                                    count,
+                                                    _items_=each_item,
                                                 )
                                         else:
                                             delete_ = LOGIN.delete(
                                                 endpoint.issue_attachments(
-                                                    attach_id=each_item.get("id")
+                                                    attach_id=each_item.get(
+                                                        "id"
+                                                    )
                                                 )
                                             )
-                                            data_wipe(delete_, count, _items_=each_item)
+                                            data_wipe(
+                                                delete_,
+                                                count,
+                                                _items_=each_item,
+                                            )
                                 else:
                                     if by_date is not None:
-                                        if time_share(by_date, each_item):
+                                        if time_share(
+                                            by_date,
+                                            each_item,
+                                        ):
                                             delete_ = LOGIN.delete(
                                                 endpoint.issue_attachments(
-                                                    attach_id=each_item.get("id")
+                                                    attach_id=each_item.get(
+                                                        "id"
+                                                    )
                                                 )
                                             )
-                                            data_wipe(delete_, count, _items_=each_item)
+                                            data_wipe(
+                                                delete_,
+                                                count,
+                                                _items_=each_item,
+                                            )
                                     else:
                                         delete_ = LOGIN.delete(
                                             endpoint.issue_attachments(
                                                 attach_id=each_item.get("id")
                                             )
                                         )
-                                        data_wipe(delete_, count, _items_=each_item)
+                                        data_wipe(
+                                            delete_,
+                                            count,
+                                            _items_=each_item,
+                                        )
                     else:
                         if by_user is not None:
                             if each_item.get("accountid") in by_user:
                                 if by_size is not None:
-                                    if regulator(by_size, each_item):
+                                    if regulator(
+                                        by_size,
+                                        each_item,
+                                    ):
                                         if by_date is not None:
-                                            if time_share(by_date, each_item):
+                                            if time_share(
+                                                by_date,
+                                                each_item,
+                                            ):
                                                 delete_ = LOGIN.delete(
                                                     endpoint.issue_attachments(
-                                                        attach_id=each_item.get("id")
+                                                        attach_id=each_item.get(
+                                                            "id"
+                                                        )
                                                     )
                                                 )
                                                 data_wipe(
@@ -6350,7 +9084,9 @@ def delete_attachments(
                                         else:
                                             delete_ = LOGIN.delete(
                                                 endpoint.issue_attachments(
-                                                    attach_id=each_item.get("id")
+                                                    attach_id=each_item.get(
+                                                        "id"
+                                                    )
                                                 )
                                             )
                                             data_wipe(
@@ -6361,10 +9097,15 @@ def delete_attachments(
                                             )
                                 else:
                                     if by_date is not None:
-                                        if time_share(by_date, each_item):
+                                        if time_share(
+                                            by_date,
+                                            each_item,
+                                        ):
                                             delete_ = LOGIN.delete(
                                                 endpoint.issue_attachments(
-                                                    attach_id=each_item.get("id")
+                                                    attach_id=each_item.get(
+                                                        "id"
+                                                    )
                                                 )
                                             )
                                             data_wipe(
@@ -6380,60 +9121,100 @@ def delete_attachments(
                                             )
                                         )
                                         data_wipe(
-                                            delete_, count, usr=True, _items_=each_item
+                                            delete_,
+                                            count,
+                                            usr=True,
+                                            _items_=each_item,
                                         )
                         else:
                             if by_size is not None:
-                                if regulator(by_size, each_item):
+                                if regulator(
+                                    by_size,
+                                    each_item,
+                                ):
                                     if by_date is not None:
-                                        if time_share(by_date, each_item):
+                                        if time_share(
+                                            by_date,
+                                            each_item,
+                                        ):
                                             delete_ = LOGIN.delete(
                                                 endpoint.issue_attachments(
-                                                    attach_id=each_item.get("id")
+                                                    attach_id=each_item.get(
+                                                        "id"
+                                                    )
                                                 )
                                             )
-                                            data_wipe(delete_, count, _items_=each_item)
+                                            data_wipe(
+                                                delete_,
+                                                count,
+                                                _items_=each_item,
+                                            )
                                     else:
                                         delete_ = LOGIN.delete(
                                             endpoint.issue_attachments(
                                                 attach_id=each_item.get("id")
                                             )
                                         )
-                                        data_wipe(delete_, count, _items_=each_item)
+                                        data_wipe(
+                                            delete_,
+                                            count,
+                                            _items_=each_item,
+                                        )
                             elif by_date is not None:
-                                if time_share(by_date, each_item):
+                                if time_share(
+                                    by_date,
+                                    each_item,
+                                ):
                                     delete_ = LOGIN.delete(
                                         endpoint.issue_attachments(
                                             attach_id=each_item.get("id")
                                         )
                                     )
-                                    data_wipe(delete_, count, _items_=each_item)
+                                    data_wipe(
+                                        delete_,
+                                        count,
+                                        _items_=each_item,
+                                    )
                             else:
                                 delete_ = LOGIN.delete(
                                     endpoint.issue_attachments(
                                         attach_id=each_item.get("id")
                                     )
                                 )
-                                data_wipe(delete_, count, _items_=each_item)
+                                data_wipe(
+                                    delete_,
+                                    count,
+                                    _items_=each_item,
+                                )
                 else:
                     data_brick.update({"saves": count})
                     print(
-                        'Safe mode on: Attachment will not be deleted "{}" | Key: {}'.format(
-                            each_item.get("filename"), each_item.get("key")
+                        "Safe mode on: Attachment will not be deleted "
+                        '"{}" | Key: {}'.format(
+                            each_item.get("filename"),
+                            each_item.get("key"),
                         )
                     )
 
                 count += 1
                 json.dump(
-                    data_brick, open(data_file, mode="w+", encoding="utf-8"), indent=4
+                    data_brick,
+                    open(
+                        data_file,
+                        mode="w+",
+                        encoding="utf-8",
+                    ),
+                    indent=4,
                 ) if allow_cp is True else None
 
         else:
             print(
-                "The data search seems to be empty. Please recheck your search criteria."
+                "The data search seems to be empty. Please "
+                "recheck your search criteria."
             )
             add_log(
-                "Searching for attachment did not yield any result. It seems the search criteria"
+                "Searching for attachment did not yield any result. "
+                "It seems the search criteria"
                 " does not have attachments.",
                 "debug",
             )

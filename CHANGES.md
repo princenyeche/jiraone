@@ -1,7 +1,20 @@
 # Jira one change log
 
+**Release 0.7.9** - 2023-12-23
+### Minor update #115
+* Update to `time_in_status` function to include timestamp in UTC
+* Update to `issue_export` method for better performance and caching
+* Update to `field` class in Server/DC Jira preventing key error
+* Update to `change_log` method which now supports multiprocessing and/or threading
+* Added new methods to `endpoint` alias for issuetype scheme, security scheme etc
+* Added tests for all the major functions/methods for CI/CD process
+* Added requirement for Python 3.8.x and above to run jiraone
+* Removed deprecated method `get_attachment_meta_data` from `endpoint` constant as this has been active for more than 2 years.
+* Removed duplicated URL link in code for `task`, `issue_watchers`, and `issue_votes`  method in `endpoint` constant.
+
+
 **Release 0.7.8** - 2023-07-04
-### Minor update #112
+### Minor update #113
 * Fix to management API for organization management.
 
 
@@ -15,7 +28,7 @@
   * It is now possible to perform export in JSON format
   * Added field exclusion and inclusion in CSV format export
 * Added new methods `get_project_versions` and `issue_link_types` to access.py module
-* Added a `process_executor` function, regular express constants and a `DateFormat` class to 
+* Added a `process_executor` function, regular express constants and a `DateFormat` class to
 the utils module of jiraone.
 * Added examples in the documentation
 
@@ -39,10 +52,10 @@ the utils module of jiraone.
 * Patch to file descriptor error in windows machine. Thanks to [@NomadSU](https://github.com/NomadSU)
 * Patch to file_writer encoding. This will help to prevent any encoding errors that might happen due to non utf-8 encoding use cases.
 * Added a new method `LOGIN.from_jira()` which takes an instance of the `jira` object from the python jira package.
-  * This allows the ability to access jira's object methods, classes and properties. Making it possible to combine both 
+  * This allows the ability to access jira's object methods, classes and properties. Making it possible to combine both
    jiraone's and jira's packages as one. Please note this will only work with basic authentication as of now!
 
-Example: 
+Example:
 ```python
 from jira import JIRA
 from jiraone import LOGIN, endpoint
@@ -160,8 +173,8 @@ os.environ["JIRAONE_OAUTH"] = f"{dumps}"
 LOGIN(oauth=client)
 # LOGIN.save_oauth is a property value, always available
 # after an OAuth session is initialized
-json.dump(LOGIN.save_oauth, 
-          open(file, encoding="utf-8", mode="w+"), 
+json.dump(LOGIN.save_oauth,
+          open(file, encoding="utf-8", mode="w+"),
           indent=4)
 print(LOGIN.get(endpoint.myself()).json())
 
@@ -210,7 +223,7 @@ print(dot.name)
 
 
 **Release 0.5.7** - 2022-02-21
-### Update 
+### Update
 * Added a new function `delete_attachments()` that can perform deletion of attachments with filtering.
 * Provided a checkpoint in the iteration of the above function, so it can start from the last known point.
 * Corrected some docs in `access.py` module
@@ -220,8 +233,8 @@ print(dot.name)
 **Release 0.5.6** - 2022-02-02
 ### Patch update #73
 * Patch v5 to `time_in_status()`. Noticed that the statuses time were wrong. There seems to be
-a change in the way the previous API payload was retrieved. Tweaked the logic for retrieving 
-accurate difference in time. 
+a change in the way the previous API payload was retrieved. Tweaked the logic for retrieving
+accurate difference in time.
 * The statuses and their time can now be retrieved accurately.
 * The save check_point is turned off for the `time_in_status()` function as a slight logic needs
 to be added to account for when a breakpoint happens between checkpoint to retain
@@ -254,31 +267,31 @@ be written to the file.
 
 
 **Release 0.5.0** - 2022-01-04
-### Micro update #65 
+### Micro update #65
 * Corrected URL for codacy on `README.md` file.
 
 
 **Release 0.4.9** - 2022-01-04
-### Micro update #64 
+### Micro update #64
 * Updated the repo project URL
-* Updated name on MIT License #63 
+* Updated name on MIT License #63
 
 
 **Release 0.4.8** - 2021-12-20
-### Micro update #62 
+### Micro update #62
 * Added new methods to endpoint API.
 
 
 **Release 0.4.7** - 2021-10-24
-### Micro update #60 
+### Micro update #60
 * Added two other methods to manage api. `get_all_users` and `find_user`.
 * The former returns all the users in the organization and the later finds a specific user based on displayname, accountId or email address
 
 
 **Release 0.4.6** - 2021-10-11
-### Micro update #57 
+### Micro update #57
 
-* Added two new functions used by organization users such as `bulk_change_email` and `bulk_change_swap_email` in the `jiraone.module`. It makes use of the organization API that was released in #54 
+* Added two new functions used by organization users such as `bulk_change_email` and `bulk_change_swap_email` in the `jiraone.module`. It makes use of the organization API that was released in #54
 
 For example
 ```python
@@ -295,12 +308,12 @@ bulk_change_email(file, token)
 ```
 
 **Release 0.4.5** - 2021-10-10
-### Micro update #55 
-* Made a patch on #55 
+### Micro update #55
+* Made a patch on #55
 
 
 **Release 0.4.4** - 2021-10-09
-### Micro update #54 
+### Micro update #54
 * Added new organization and user management REST API
 * You can be able to create and manage organization users. See more details [here](https://princenyeche.github.io/atlassian-cloud-api/api#manage)
 Example
@@ -319,8 +332,8 @@ manage.manage_user(account_id, json=payload) # By default it is set to disable a
 ```
 
 **Release 0.4.3** - 2021-09-23
-### Micro update #53 
-* Added a new function in `jiraone.module`  which you can use as below. The helps to generate a report of the`time in status` of Jira issues. You can create an output file either in CSV or JSON format. #53 
+### Micro update #53
+* Added a new function in `jiraone.module`  which you can use as below. The helps to generate a report of the`time in status` of Jira issues. You can create an output file either in CSV or JSON format. #53
 _Example usage_
 ```python
 from jiraone import LOGIN, PROJECT, file_reader
@@ -339,30 +352,30 @@ if __name__ == "__main__":
 ```
 
 **Release 0.4.2** - 2021-08-31
-### Micro update #52 
+### Micro update #52
 * Made patch to v0.4.1 from #51  due to key error when using on server instance.
 
 
 **Release 0.4.1** - 2021-08-30
-### Micro update #51 
-* Patch to v0.4.0 about the bug reported on #47 
+### Micro update #51
+* Patch to v0.4.0 about the bug reported on #47
 
 
 **Release 0.4.0** - 2021-08-29
 ### #49 Minor update
-* Fixed problem associated with `None` value reported on #47 
+* Fixed problem associated with `None` value reported on #47
 * Fixed some minor issues with `field_update` from `jira.module`
 * Added access to `user` and `password` attribute with `LOGIN` variable. Now you can do
     * `LOGIN.user` and `LOGIN.password` to get a call to those attributes.
 
 
 **Release 0.3.9** - 2021-08-1
-### Micro update #45 
+### Micro update #45
 - Patch and removal of print statement in `field.cascading`.
 
 
 **Release 0.3.8** - 2021-08-1
-### Micro update #43 
+### Micro update #43
 - Patch to `USER.search_user` unable to find some users
   - Apparently increasing the **maxResult** from 50 to 100 caused this unknown behaviour. Reverted back to 50.
 - Patch to `field.search_field` unable to find some custom fields.
@@ -370,7 +383,7 @@ if __name__ == "__main__":
 
 
 **Release 0.3.7** - 2021-08-1
-## v0.3.7 #42 
+## v0.3.7 #42
 - Added exceptions class `exceptions.py`
 - Created a new module for fields  
 - A new function  `field_update` from the module file to handle most field updates.
@@ -379,7 +392,7 @@ if __name__ == "__main__":
 ```python
 from jiraone import field, echo, module
 #...previous login statements
-# first parameter is the field class alias, 2nd param is an issue key, 3rd a Jira field and 
+# first parameter is the field class alias, 2nd param is an issue key, 3rd a Jira field and
 # 4th the data value you want to update or change
 key = 'T6-73'
 field_name = 'A Cascading field'
@@ -404,7 +417,7 @@ echo(value)
 ### #38 Micro update
 * Added two more attributes to the comment(key).comment() method
 * `first_comment` -> returns the first comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
-  
+
  * `last_comment` -> returns the last comment in the body content. Can only be called when "body" option is called on the type_field else returns "None".
 **Example usage**:
 
@@ -463,10 +476,10 @@ text = """
 comment(key, method="post", text_block=text, placer="<user>", mention=USER.mention_user(name), event=True)
 ```
 
-The name of users separated by comma, will be changed dynamically within the method. Using the `event=True` argument enables the comment endpoint to switch to post. See more from the `endpoint` methods. As you can see, for any place in the text string where I used 
+The name of users separated by comma, will be changed dynamically within the method. Using the `event=True` argument enables the comment endpoint to switch to post. See more from the `endpoint` methods. As you can see, for any place in the text string where I used
      ***< user >*** that will be replaced to a mentioned format for cloud e.g. [~accountId:5584xxxxxx]
-     
-     
+
+
 
 **Release 0.3.1** - 2021-04-10
 ### #36 Fix bug
@@ -724,7 +737,7 @@ if __name__ == '__main__':
 
 
 **Release 0.1.2** - 2021-01-05
-### Micro update #5 
+### Micro update #5
 Micro updates
 * Corrected Docstrings
 

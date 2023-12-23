@@ -30,14 +30,14 @@
    :target: https://github.com/psf/black
    :alt: black
 
-Jira one
+jiraone
 =================
 A REST API Implementation to Jira Cloud APIs for creating reports and for performing other Jira queries.
 
 
 Configurations
 -------
-Install using `pip`. You have to be on python >= 3.6.x in order to utilize this script.
+Install using `pip`. You have to be on python >= 3.6.x to utilize this script. From version 0.7.9 will require Python 3.8.x and above.
 
 * Download python and install on your device by visiting `python.org <https://python.org/download>`_
 * Run the below command either using a virtual environment or from your python alias
@@ -45,7 +45,7 @@ Install using `pip`. You have to be on python >= 3.6.x in order to utilize this 
 .. code-block:: bash
 
     pip install jiraone
-    
+
 OR
 
 .. code-block:: bash
@@ -56,17 +56,12 @@ OR
 
 Classes, functions and methods
 -------
-Jiraone comes with various classes, functions and methods. Aliases as well, are used to represent
-links to classes and functions. The major ones to take note of are the ones shown on the directory link below.
+jiraone comes with various classes, functions and methods. Aliases as well, are used to represent links to classes and functions. The major ones to take note of are the ones shown on the directory link below.
 
-For further knowledge on how to use the classes, methods or functions.Open 
-the jiraone package and read the docstring on the aforementioned
-methods or functions above to get further information.
+If you would like more information on how to use the classes, methods or functions. Open the jiraone package and read the docstring on the aforementioned methods or functions to get further information.
 
-If you're connecting to Jira server or datacenter, you will need to change 
-the API endpoint to point to server instances. To do that, simply change
-the attribute ``LOGIN.api = False`` this helps to use the endpoint ``/rest/api/latest``
-which is compatible for Jira server or datacenter.
+
+If you're connecting to a Jira server or data centre, you must change the API endpoint to point to server instances. To do that, change the attribute ``LOGIN.api = False`` this helps to use the endpoint ``/rest/api/latest`` which is compatible with Jira server or datacenter.
 
 .. code-block:: python
 
@@ -77,9 +72,7 @@ which is compatible for Jira server or datacenter.
     LOGIN(*data)
 
 
-The above login method applies only when you need to access a Jira server or 
-datacenter type instances. The above has little or no effect on cloud 
-instance and will work normally.
+The above login method applies only when you need to access a Jira server or datacenter type instances. The above has little or no effect on cloud instances and will work normally.
 
 
 Directory
@@ -87,7 +80,7 @@ Directory
 
 .. toctree::
    :maxdepth: 2
-   
+
    api
    report
    apis

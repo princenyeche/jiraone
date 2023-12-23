@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Get access to Atlassian User management REST API.
-You can use the same API key for the organizations REST API and the user management REST API.
+You can use the same API key for the organizations REST API
+and the user management REST API.
 Create an API key from this URL https://confluence.atlassian.com/x/jPnJOQ
 This API provides all the access to the User management REST API.
 """
@@ -17,8 +18,8 @@ from collections import deque
 # Define APIs
 class UserManagement:
     """
-    The UserManagement API is used to access organization profiles on Atlassian sites.
-    The alias to this class is called ``manage``
+    The UserManagement API is used to access organization profiles on
+    Atlassian sites. The alias to this class is called ``manage``
 
     It comes with the below attributes and methods.
 
@@ -47,7 +48,8 @@ class UserManagement:
         self._event_id_ = None
 
     def get_user_permission(self, account_id: str, query: list = None) -> t.Any:
-        """Returns the set of permissions you have for managing the specified Atlassian account.
+        """Returns the set of permissions you have for managing the
+        specified Atlassian account.
 
         :param account_id:  A user string value for Atlassian accounts
 
@@ -55,15 +57,17 @@ class UserManagement:
 
                       *Valid options*
 
-                       Valid values: profile, profile.write, profile.read, email.set, lifecycle.enablement,
-                       apiToken.read, apiToken.delete
+                       Valid values: profile, profile.write, profile.read,
+                       email.set, lifecycle.enablement, apiToken.read,
+                       apiToken.delete
 
         :return: Any
 
         """
         if "Authorization" not in self.AUTH:
             raise JiraOneErrors(
-                "login", "You need to authenticate to use this resource"
+                "login", "You need to authenticate "
+                         "to use this resource"
             )
         url = (
             f"{self.LINK}/users/{account_id}/manage"
@@ -75,7 +79,8 @@ class UserManagement:
     def manage_profile(
         self, account_id: str, method: str = "GET", **kwargs: t.Any
     ) -> t.Any:
-        """Returns information about a single Atlassian account by ID by using a "GET" request.
+        """Returns information about a single Atlassian account by
+        ID by using a "GET" request.
 
         :request PATCH: Updates fields in a user account.
         The profile.write privilege details which fields you can change.
@@ -93,13 +98,19 @@ class UserManagement:
 
                        :request PATCH:  Updates a given set of data
 
-                               :body parameter: Any or all user object this is value
+                               :body parameter: Any or all user object
+                               this is value
+
+                               Example::
 
                                e.g. {"name": "Lila User", "nickname": "marshmallow"}
 
                        :request PUT: Change the email account of the user
 
         :body parameter: email - string
+
+                        Example::
+
                         e.g. {"email": "prince.nyeche@elfapp.website"}
 
         :param kwargs: - Contains other options passed to the requests.<patch>
@@ -116,7 +127,8 @@ class UserManagement:
         """
         if "Authorization" not in self.AUTH:
             raise JiraOneErrors(
-                "login", "You need to authenticate to use this resource"
+                "login", "You need to authenticate "
+                         "to use this resource"
             )
         url = (
             f"{self.LINK}/users/{account_id}/manage/profile"
@@ -131,7 +143,9 @@ class UserManagement:
             return requests.put(url, **kwargs, headers=self.AUTH)
         else:
             raise JiraOneErrors(
-                "wrong", "The method you posted is not available for this operation."
+                "wrong",
+                "The method you posted is not available "
+                "for this operation.",
             )
 
     def api_token(
@@ -151,7 +165,8 @@ class UserManagement:
         """
         if "Authorization" not in self.AUTH:
             raise JiraOneErrors(
-                "login", "You need to authenticate to use this resource"
+                "login", "You need to authenticate "
+                         "to use this resource"
             )
         url = (
             f"{self.LINK}/users/{account_id}/manage/api-tokens"
@@ -165,18 +180,23 @@ class UserManagement:
         else:
             raise JiraOneErrors(
                 "wrong",
-                'Unexpected method received. Only "GET" or "DELETE" methods allowed',
+                'Unexpected method received. Only "GET" '
+                'or "DELETE" methods allowed',
             )
 
-    def manage_user(self, account_id: str, disable: bool = True, **kwargs) -> t.Any:
+    def manage_user(
+        self, account_id: str, disable: bool = True, **kwargs
+    ) -> t.Any:
         """Disables the specified user account.
-        The permission to make use of this resource is exposed by the lifecycle.enablement privilege.
+        The permission to make use of this resource is exposed by the
+        lifecycle.enablement privilege.
 
         OR
 
         Enables the specified user account.
 
-        The permission to make use of this resource is exposed by the lifecycle.enablement privilege.
+        The permission to make use of this resource is exposed by the
+        lifecycle.enablement privilege.
 
         :param account_id:  A user string value for Atlassian accounts
 
@@ -198,7 +218,8 @@ class UserManagement:
         """
         if "Authorization" not in self.AUTH:
             raise JiraOneErrors(
-                "login", "You need to authenticate to use this resource"
+                "login", "You need to authenticate to "
+                         "use this resource"
             )
         url = (
             f"{self.LINK}/users/{account_id}/manage/lifecycle/disable"
@@ -231,9 +252,9 @@ class UserManagement:
 
         Returns information about a single event by ID.
 
-        Returns information about org policies
+        Returns information about org policies.
 
-        Returns information about a single policy by ID
+        Returns information about a single policy by ID.
 
         :param org_id: Retrieve the organization id from the API key
 
@@ -253,9 +274,11 @@ class UserManagement:
 
         :param event_id: Use to determine the events in the audit log
 
-        :param action:  Additional positional argument for events. True sets events-actions
+        :param action:  Additional positional argument for events.
+                        True sets events-actions
 
-                       * action - Sets the event actions, true to enable by default set to true.
+                       * action - Sets the event actions, true to enable by
+                                  default set to true.
                                   e.g. action=True
 
         :param policy_id: An id of the policy
@@ -275,7 +298,8 @@ class UserManagement:
         """
         if "Authorization" not in self.AUTH:
             raise JiraOneErrors(
-                "login", "You need to authenticate to use this resource"
+                "login", "You need to authenticate to "
+                         "use this resource"
             )
         org_id = self._org_id_ if org_id is None else org_id
 
@@ -312,8 +336,14 @@ class UserManagement:
                     elif action is False and event_id is not None:
                         url = f"{self.LINK}/admin/v1/orgs/{org_id}/events/{event_id}"
                         return requests.get(url, headers=self.AUTH, **kwargs)
-                    elif action is True and event_id is None or event_id is not None:
-                        url = f"{self.LINK}/admin/v1/orgs/{org_id}/event-actions"
+                    elif (
+                        action is True
+                        and event_id is None
+                        or event_id is not None
+                    ):
+                        url = (
+                            f"{self.LINK}/admin/v1/orgs/{org_id}/event-actions"
+                        )
                         return requests.get(url, headers=self.AUTH, **kwargs)
             elif filter_by == "policies":
                 if org_id is not None:
@@ -327,7 +357,9 @@ class UserManagement:
                         return requests.get(url, headers=self.AUTH, **kwargs)
             else:
                 raise JiraOneErrors(
-                    "wrong", "Unexpected error - unable to determine parameter value"
+                    "wrong",
+                    "Unexpected error - unable to "
+                    "determine parameter value",
                 )
 
     def manage_organization(
@@ -338,14 +370,12 @@ class UserManagement:
         resource_id: t.Optional[str] = None,
         **kwargs: t.Any,
     ) -> t.Any:
-        """Create, put and delete organization data
-
+        """Create, put and delete organization data.
         Create a policy for an org
-        Send a post request by using method="post" as keyword args
-
+        Send a post request by using method="post" as keyword args.
         Update a policy for an org.
-        Send a put request by using method="put" as keyword args
-           You will need to send a payload for the body using the example shown below
+        Send a put request by using method="put" as keyword args.
+        You need to send a payload for the body using the example shown below
 
         .. code-block:: json
 
@@ -374,8 +404,8 @@ class UserManagement:
                     }
             }
 
-        Delete a policy for an org
 
+        Delete a policy for an org.
 
         :param org_id: ID of the organization to create policy for
 
@@ -399,39 +429,51 @@ class UserManagement:
         """
         if "Authorization" not in self.AUTH:
             raise JiraOneErrors(
-                "login", "You need to authenticate to use this resource"
+                "login", "You need to authenticate "
+                         "to use this resource"
             )
         if method.lower() == "post":
             if org_id is not None and policy_id is None:
                 url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies"
                 return requests.post(url, headers=self.AUTH, **kwargs)
             elif org_id is not None and policy_id is not None:
-                url = (
-                    f"{self.LINK}/admin/v1/orgs/{org_id}/policies/{policy_id}/resources"
-                )
+                url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies/{policy_id}/resources"
                 return requests.post(url, headers=self.AUTH, **kwargs)
         elif method.lower() == "put":
-            if org_id is not None and policy_id is not None and resource_id is None:
+            if (
+                org_id is not None
+                and policy_id is not None
+                and resource_id is None
+            ):
                 url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies/{policy_id}"
                 return requests.put(url, headers=self.AUTH, **kwargs)
             elif (
-                org_id is not None and policy_id is not None and resource_id is not None
+                org_id is not None
+                and policy_id is not None
+                and resource_id is not None
             ):
                 url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies/{policy_id}/resources/{resource_id}"
                 return requests.put(url, headers=self.AUTH, **kwargs)
         elif method.lower() == "delete":
-            if org_id is not None and policy_id is not None and resource_id is None:
+            if (
+                org_id is not None
+                and policy_id is not None
+                and resource_id is None
+            ):
                 url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies/{policy_id}"
                 return requests.delete(url, headers=self.AUTH, **kwargs)
             elif (
-                org_id is not None and policy_id is not None and resource_id is not None
+                org_id is not None
+                and policy_id is not None
+                and resource_id is not None
             ):
                 url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies/{policy_id}/resources/{resource_id}"
                 return requests.delete(url, headers=self.AUTH, **kwargs)
         else:
             raise JiraOneErrors(
                 "wrong",
-                "Method is not allowed - unexpected option entered method argument.",
+                "Method is not allowed - unexpected option "
+                "entered method argument.",
             )
 
     @property
@@ -487,7 +529,9 @@ class UserManagement:
     def __repr__(self):
         return f"<JiraOne: {self.LINK} \n" f"This API is accessible>"
 
-    def _parse_data_obj(self, data: requests.Response, types: str = "org") -> None:
+    def _parse_data_obj(
+        self, data: requests.Response, types: str = "org"
+    ) -> None:
         """Parse JSON response object for organization properties.
 
         :param data: A response object
@@ -498,7 +542,9 @@ class UserManagement:
         """
         many = []
         total = (
-            -1 if types == "org" or types == "domain" else data.json()["meta"]["page_size"]
+            -1
+            if types == "org" or types == "domain"
+            else data.json()["meta"]["page_size"]
         )
         count = 0
         for ids in data.json()["data"]:
@@ -536,11 +582,16 @@ class UserManagement:
         :return: None
         """
         if not isinstance(token, str):
-            raise JiraOneErrors("value", "An API token of type string is required")
+            raise JiraOneErrors(
+                "value", "An API token of type string is required"
+            )
         if token == "":
-            raise JiraOneErrors("value", "Your API token cannot be an empty string.")
+            raise JiraOneErrors(
+                "value", "Your API token cannot be an empty string."
+            )
         self.AUTH.update({"Authorization": f"Bearer {token}"})
-        # Make a request to get the organization id, domain_id and policy_id and store it as a <property.name_id>
+        # Make a request to get the organization id, domain_id and
+        # policy_id and store it as a <property.name_id>
         try:
             # Get access to property values
             threading.Thread(target=self.get_organization).run()
@@ -550,17 +601,21 @@ class UserManagement:
             threading.Thread(
                 target=self.get_organization, kwargs={"filter_by": "domains"}
             ).run()
-            # This property is accessible to premium / enterprise users, so turning off this feature by default,
+            # This property is accessible to premium / enterprise users,
+            # so turning off this feature by default,
             # You can still call this from the events request.
-            # threading.Thread(target=self.get_organization, kwargs={"filter_by": "events", "action": False}).run()
+            # threading.Thread(target=self.get_organization,
+            # kwargs={"filter_by": "events", "action": False}).run()
         except KeyError:
             raise JiraOneErrors(
                 "warning",
-                "Your connection has failed. Please check the response to see the reason!",
+                "Your connection has failed. "
+                "Please check the response to see the reason!",
             )
 
     def get_all_users(self, source, detail: bool = False) -> deque:
-        """Store all user list from organization, so we can search them by email.
+        """Store all user list from organization, so we can search
+        them by email.
 
         .. code-block:: python
 
@@ -584,8 +639,9 @@ class UserManagement:
         ) else ""
         user_collection = deque()
         exit(
-            f"Incorrect data type {type(detail)} for keyword argument 'detail'. "
-            f"Expecting bool type"
+            f"Incorrect data type {type(detail)} for keyword "
+            "argument 'detail'. "
+            "Expecting bool type"
         ) if not isinstance(detail, bool) else True if detail is True else False
         print("Checking organization users...")
         while True:
@@ -596,7 +652,10 @@ class UserManagement:
             )
             for item in source["data"]:
                 user_data = (
-                    {"account_id": item.get("account_id"), "email": item.get("email")}
+                    {
+                        "account_id": item.get("account_id"),
+                        "email": item.get("email"),
+                    }
                     if detail is False
                     else {
                         "account_id": item.get("account_id"),
@@ -625,8 +684,10 @@ class UserManagement:
     def find_user(query: str, source: t.List = None) -> t.Union[t.Dict, t.List]:
         """Finds a specific user.
 
-        :param query: A search term, could be an email, displayname or accountId if
-        the ``source`` data is gotten from ``self.get_all_users`` and parameter ``detail=True``
+        :param query: A search term, could be an email,
+                      displayname or accountId if
+                      the ``source`` data is gotten from
+                      ``self.get_all_users`` and parameter ``detail=True``
 
         :param source: A list of users
 
@@ -658,7 +719,8 @@ class UserManagement:
                 else:
                     raise JiraOneErrors(
                         "value",
-                        "You cannot search with displayName, received 2 items only.",
+                        "You cannot search with displayName, "
+                        "received 2 items only.",
                     )
         return search
 

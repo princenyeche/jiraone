@@ -6,7 +6,6 @@ Basic Report Usage
 The script comes with some basic reporting Classes and methods which you can use to generate a report in CSV format.
 currently only CSV file output is supported. other format such as JSON might be available in future.
 
-.. _user-api:
 
 USER API
 ---------
@@ -15,34 +14,34 @@ USER API
 .. code-block:: python
 
     from jiraone import LOGIN, USER
-    
+
     user = "email"
     password = "token"
     link = "https://yourinstance.atlassian.net"
     LOGIN(user=user, password=password, url=link)
-    
-    
+
+
     if __name__ == '__main__':
-        # the output of the file would be absolute to the directory where this python 
+        # the output of the file would be absolute to the directory where this python
         # file is being executed from
         USER.get_all_users(pull="active", user_type="atlassian", file="user_file.csv")
 
 
-    
+
 * Generate a report of all user in the instance and which group do they belong to
 
 .. code-block:: python
 
     from jiraone import LOGIN, USER
-    
+
     user = "email"
     password = "token"
     link = "https://yourinstance.atlassian.net"
     LOGIN(user=user, password=password, url=link)
-    
-    
+
+
     if __name__ == '__main__':
-        # the output of the file would be absolute to the directory 
+        # the output of the file would be absolute to the directory
         # where this python file is being executed from
         USER.get_all_users_group(pull="active", user_type="atlassian")
 
@@ -52,7 +51,7 @@ USER API
 .. code-block:: python
 
     from jiraone import LOGIN, USER
-    
+
     user = "email"
     password = "token"
     link = "https://yourinstance.atlassian.net"
@@ -60,7 +59,7 @@ USER API
 
 
     if __name__ == '__main__':
-        # the output of the file would be absolute to the directory 
+        # the output of the file would be absolute to the directory
         # where this python file is being executed from
         name = "Prince Nyeche"  # displayName of a user
         # find multiple users, use a list
@@ -73,7 +72,7 @@ USER API
 .. code-block:: python
 
     from jiraone import LOGIN, USER
-    
+
     user = "email"
     password = "token"
     link = "https://yourinstance.atlassian.net"
@@ -81,15 +80,14 @@ USER API
 
 
     if __name__ == '__main__':
-        # the output of the file would be absolute to the directory 
+        # the output of the file would be absolute to the directory
         # where this python file is being executed from
         # displayName of a user, to output multiple users separate by a comman
         # name = "Prince Nyeche,Prince,John Doe"
-        name = "Prince Nyeche"  
+        name = "Prince Nyeche"
         USER.mention_user(name)
 
 
-.. _project-api:
 
 PROJECT API
 -------------
@@ -108,7 +106,7 @@ PROJECT API
 
 
     if __name__ == '__main__':
-        # the output of the file would be absolute to the directory 
+        # the output of the file would be absolute to the directory
         # where this python file is being executed from
         PROJECT.projects_accessible_by_users("expand=insight,description", "searchBy=key,name", permission="BROWSE",
                                         pull="active", user_type="atlassian")
@@ -127,7 +125,7 @@ PROJECT API
 
 
     if __name__ == '__main__':
-        # the output of the file would be absolute to the 
+        # the output of the file would be absolute to the
         # directory where this python file is being executed from
         PROJECT.dashboards_shared_with()
 
@@ -146,7 +144,7 @@ PROJECT API
 
 
     if __name__ == '__main__':
-        # the output of the file would be absolute to the 
+        # the output of the file would be absolute to the
         # directory where this python file is being executed from
         PROJECT.get_all_roles_for_projects(pull="active", user_type="atlassian")
 
@@ -164,7 +162,7 @@ PROJECT API
 
 
     if __name__ == '__main__':
-        # the output of the file would be absolute to the 
+        # the output of the file would be absolute to the
         # directory where this python file is being executed from
         # you can use any valid jql query
         jql = "project%20in%20(COM%2C%20PYT)%20order%20by%20created%20DESC"
@@ -244,11 +242,10 @@ Use ``LOGIN.api = False`` if you want to extract the issue history from a Server
      PROJECT.change_log(jql=jql)
 
 
-.. _module-api:
 
 Module API
 -----------
-The API from the ``jiraone.module`` uses functions
+The API from the :ref:`module-api` uses functions
 
 * Generate a report of time in status of Jira issue.
 
@@ -268,7 +265,7 @@ The API from the ``jiraone.module`` uses functions
       time_in_status(PROJECT, key, file_reader, pprint=True, is_printable=False,
       output_format="json", report_folder="STATUSPAGE", report_file="time.csv",
       status="In progress", login=LOGIN, output_filename="result")
-     
+
  # output
  # result.json file
 
@@ -292,19 +289,19 @@ Once you run the script, you will end up with a report that looks like the one b
 .. code-block:: json
 
  [
-  {        
-   "author": "Prince Nyeche",        
-   "issueKey": "COM-12",        
-   "status": "To Do",        
-   "summary": "Workflow test 3",        
-   "timeStatus": "0h 00m 19s"    
-  },    
-  {        
-   "author": "Prince Nyeche",        
-   "issueKey": "COM-14",        
-   "status": "In Progress",        
-   "summary": "Workflow test 3",        
-   "timeStatus": "8d 6h 32m 52s"    
+  {
+   "author": "Prince Nyeche",
+   "issueKey": "COM-12",
+   "status": "To Do",
+   "summary": "Workflow test 3",
+   "timeStatus": "0h 00m 19s"
+  },
+  {
+   "author": "Prince Nyeche",
+   "issueKey": "COM-14",
+   "status": "In Progress",
+   "summary": "Workflow test 3",
+   "timeStatus": "8d 6h 32m 52s"
   }
  ]
 
@@ -335,7 +332,7 @@ Once you run the script, you will end up with a report that looks like the one b
 
 
 The above function is able to update any field used on Jira cloud. All you simply need to do is find the field based on it's name (case sensitive). If it exist, then a result will be shown for it. The field_update requires the below argument.
-* field: a call to the `~Field` class needs to be passed as the first argument.
+* field: a call to the :ref;`field-class` class needs to be passed as the first argument.
 * key_or_id: An issue key or issue id needs to be passed as the second argument or you can use a keyword argument.
 * update: A way to update the custom field. It accepts two valid values either ``add`` (adds a value to a list or dict) or `remove` (removes from a value to a list or dict)
 * name: The name of a field
@@ -360,7 +357,7 @@ Another example is given below to update multiple value set to a field. Use the 
       vals = ['Browser', 'Firefox']
       make = field_update(field, key, name, data=vals, update="add")
       echo(make)
-     
+
  # output
  # <Response [204]>
 
@@ -376,7 +373,7 @@ Another example is given below to update multiple value set to a field. Use the 
       vals = 3 # An integer and not string for Story Points type field
       make = field_update(field, key, name, data=vals)
       echo(make)
-     
+
  # output
  # <Response [204]>
 
@@ -392,7 +389,7 @@ Another example is given below to update multiple value set to a field. Use the 
       vals = '2021-10-24'
       make = field_update(field, key, name, data=vals)
       echo(make)
-     
+
  # output
  # <Response [204]>
 
@@ -403,12 +400,12 @@ Another example is given below to update multiple value set to a field. Use the 
 
  key = 'ITSM-4'
  name = 'Due date picker'  # A Date time picker field
- 
+
  if __name__ == "__main__":
       vals = '2021-10-11T19:56:28.118+0200'
       make = field_update(field, key, name, data=vals)
       echo(make)
-     
+
  # output
  # <Response [204]>
 
