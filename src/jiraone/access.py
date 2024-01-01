@@ -143,8 +143,9 @@ class Credentials:
         :return: None
         """
         if not isinstance(oauth, dict):
-            add_log("Wrong data type received for "
-                    "the oauth argument.", "error")
+            add_log(
+                "Wrong data type received for " "the oauth argument.", "error"
+            )
             raise JiraOneErrors(
                 "wrong",
                 "Excepting a dictionary object got {} instead.".format(
@@ -324,8 +325,7 @@ class Credentials:
                     "debug",
                 )
                 raise JiraOneErrors(
-                    "login", "Could not establish "
-                             "the OAuth connection."
+                    "login", "Could not establish " "the OAuth connection."
                 )
 
         print("Connected to instance:", self.instance_name)
@@ -350,8 +350,7 @@ class Credentials:
         """
         self.headers = {"Content-Type": "application/json"}
         self.headers.update(
-            {"Authorization": "{} {}".format(
-                token["type"], token["token"])}
+            {"Authorization": "{} {}".format(token["type"], token["token"])}
         )
 
     # produce a session for the script and save the session
@@ -731,9 +730,7 @@ class EndPoints:
         :return: A string of the url
         """
         return "{}/rest/api/{}/user/groups?accountId={}".format(
-            LOGIN.base_url,
-            '3' if LOGIN.api is True else 'latest',
-            account_id
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", account_id
         )
 
     @classmethod
@@ -820,9 +817,7 @@ class EndPoints:
         :return: A string of the url
         """
         return "{}/rest/api/{}/project/{}/role".format(
-            LOGIN.base_url,
-            "3" if LOGIN.api is True else "latest",
-            id_or_key
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", id_or_key
         )
 
     @classmethod
@@ -882,14 +877,11 @@ class EndPoints:
             )
         elif attr is False:
             return "{}/rest/api/{}/role/{}/actors".format(
-                LOGIN.base_url,
-                "3" if LOGIN.api is True else "latest",
-                role_id
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", role_id
             )
         else:
             raise JiraOneErrors(
-                "name",
-                "Invalid request received, unable to process request"
+                "name", "Invalid request received, unable to process request"
             )
 
     @classmethod
@@ -902,9 +894,7 @@ class EndPoints:
         """
         if query is not None:
             return "{}/rest/api/{}/permissionscheme?{}".format(
-                LOGIN.base_url,
-                "3" if LOGIN.api is True else "latest",
-                query
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
             )
         else:
             return "{}/rest/api/{}/permissionscheme".format(
@@ -965,8 +955,7 @@ class EndPoints:
                 )
             else:
                 raise JiraOneErrors(
-                    "name",
-                    "Invalid name for scheme argument received."
+                    "name", "Invalid name for scheme argument received."
                 )
 
     @classmethod
@@ -1111,6 +1100,10 @@ class EndPoints:
         *  fields that contain a string in the field name or description,
          by defining query.
 
+         For example::
+
+          query = "type=custom"
+
         *  specific fields that contain a string in the field name or
         description, by defining id and query.
         Only custom fields can be queried, type must be set to custom.
@@ -1134,6 +1127,7 @@ class EndPoints:
 
         :param query: accepted options -> string type=custom
                      (use to search for custom fields)
+
 
         :param start_at: defaults to 0
 
@@ -1177,59 +1171,57 @@ class EndPoints:
         """Returns the attachment content.
 
          :request GET: - Get Jira attachment settings
-                     Returns the attachment settings, that is,
-                     whether attachments
-                     are enabled and the maximum attachment size allowed.
+                         Returns the attachment settings, that is,
+                         whether attachments.
+                         are enabled and the maximum attachment size allowed.
 
          :request GET: - Get attachment metadata
-                     Returns the metadata for an attachment.
-                     Note that the attachment itself is not returned.
+                         Returns the metadata for an attachment.
+                         Note that the attachment itself is not returned.
 
          :param attach_id: required (id of the attachment), datatype -> string
 
          :request DELETE: - Deletes an attachment from an issue.
-                        attach_id required (id of the attachment),
-                        datatype -> string
+                            attach_id required (id of the attachment),
+                            datatype -> string.
 
-        :request GET:  - Get all metadata for an expanded attachment
+        :request GET:  - Get all metadata for an expanded attachment.
 
-        :param query: This argument accepts a string, check the options
+        :param query: This argument accepts a string, check the options.
 
             *available options*
 
-            * expand/human -Returns the metadata for the contents of an
-                      attachment, if it is an archive,
-                      and metadata for the attachment itself. For example,
-                      if the attachment is a ZIP archive,
-                      then information about the files in the archive is
-                      returned and metadata for the ZIP archive.
+            * expand/human - Returns the metadata for the contents of an
+                             attachment, if it is an archive,
+                             and metadata for the attachment itself.
+                             For example, if the attachment is a ZIP archive,
+                             then information about the files in the archive is
+                             returned and metadata for the ZIP archive.
 
             * expand/raw - Returns the metadata for the contents of an
-                      attachment, if it is an archive.
-                      For example, if the attachment is a ZIP archive,
-                      then information about the files in the
-                      archive is returned. Currently, only the ZIP archive
-                      format is supported.
+                           attachment, if it is an archive.
+                           For example, if the attachment is a ZIP archive,
+                           then information about the files in the
+                           archive is returned. Currently, only the ZIP archive
+                           format is supported.
 
         :request POST: - Adds one or more attachments to an issue.
-                         Attachments are posted as multipart/form-data
+                         Attachments are posted as multipart/form-data.
 
          :request POST: - Adds one or more attachments to an issue.
-                         Attachments are posted as multipart/form-data
+                          Attachments are posted as multipart/form-data.
 
-         :param id_or_key: required, datatype -> string. The ID or key of
-                          the issue that are added to and attachments.
+         :param id_or_key: (required) The ID or key of
+                           the issue that are added to and attachments.
 
-         :param uri: various endpoint to attachment
+         :param uri: various endpoint to attachment.
 
 
          :return: A string of the url
         """
         if uri is not None:
             return "{}/rest/api/{}/attachment/{}".format(
-                LOGIN.base_url,
-                "3" if LOGIN.api is True else "latest",
-                uri
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri
             )
         else:
             if (
@@ -1364,9 +1356,7 @@ class EndPoints:
         :return: A string of the url
         """
         return "{}/rest/api/{}/dashboard/{}".format(
-            LOGIN.base_url,
-            "3" if LOGIN.api is True else "latest",
-            dashboard_id
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", dashboard_id
         )
 
     @classmethod
@@ -1430,9 +1420,7 @@ class EndPoints:
         :return: A string of the url
         """
         return "{}/rest/api/{}/screens?startAt={}&maxResults=100".format(
-            LOGIN.base_url,
-            "3" if LOGIN.api is True else "latest",
-            query
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
         )
 
     @classmethod
@@ -1448,9 +1436,7 @@ class EndPoints:
         :return: A string of the url
         """
         return "{}/rest/api/{}/screenscheme?startAt={}&maxResults=25".format(
-            LOGIN.base_url,
-            "3" if LOGIN.api is True else "latest",
-            query
+            LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
         )
 
     @classmethod
@@ -1459,9 +1445,7 @@ class EndPoints:
         ids: str = None,
         id_or_key: Union[str, int] = None,
         move_to: str = None,
-        issue_count: bool = False,
-        pagination: bool = False,
-        query: str = None,
+        **kwargs: Any,
     ) -> str:
         """Returns all components in a project.
         See the Get project components paginated resource if you want to
@@ -1471,11 +1455,19 @@ class EndPoints:
         :param ids: A component id (required for GET, PUT, DEL)
         :param id_or_key: An issue key or id
         :param move_to: An id of a component to replace
-        :param issue_count: Count issues of a component
-        :param pagination: Allows project component pagination. For pagination
-                          argument, you can combine the query argument to get more details.
-        :param query: A query parameter for pagination argument.
-                      e.g. startAt=0&maxResults=50
+        :param kwargs: Any additional arguments to pass
+
+                       **Acceptable options**
+
+                       - issue_count: Count issues of a component
+
+                       - pagination: Allows project component pagination.
+                                     For pagination argument, you can combine
+                                     the query argument to get more details.
+
+                       - query: A query parameter for pagination argument.
+                                e.g. startAt=0&maxResults=50
+
 
         :request POST: Creates a component. Use components to provide containers
                      for issues within a project.
@@ -1534,6 +1526,9 @@ class EndPoints:
 
         :return: A string of the url
         """
+        issue_count: bool = kwargs.get("issue_count", False)
+        pagination: bool = kwargs.get("pagination", False)
+        query: str = kwargs.get("query") if "query" in kwargs else None
         if ids is not None:
             if move_to is not None:
                 return "{}/rest/api/{}/component/{}?moveIssuesTo={}".format(
@@ -1589,12 +1584,7 @@ class EndPoints:
         ids: str = None,
         id_or_key: Union[str, int] = None,
         move: bool = False,
-        move_to_issue: str = None,
-        issue_count: bool = False,
-        unresolved_count: bool = False,
-        pagination: bool = False,
-        swap: bool = False,
-        query: str = None,
+        **kwargs: Any,
     ):
         """Returns all versions in a project. See the Get project version
         paginated. Resource if you want to get a full list of versions
@@ -1603,14 +1593,24 @@ class EndPoints:
         :param ids: A version id (required for GET, PUT, POST)
         :param id_or_key: An issue key or id
         :param move: Modifies the version's sequence within the project
-        :param move_to_issue: The ID of the version to merge into.
-        :param swap: Deletes a project version. Used with POST method
-        :param issue_count: Count issues of a version. Used with GET method
-        :param unresolved_count: Count of a version's unresolved issues.
-                               Used with "GET" method
-        :param pagination: Allows project version pagination
-        :param query: A query parameter for pagination argument.
-                      e.g. startAt=0&maxResults=50
+        :param kwargs: Additional keyword arguments to provide
+
+                       **Acceptable options**
+
+                       - move_to_issue: The ID of the version to merge into.
+
+                       - swap: Deletes a project version. Used with POST method
+
+                       - issue_count: Count issues of a version. Used with
+                                      GET method
+
+                       - unresolved_count: Count of a version's unresolved
+                                           issues.Used with "GET" method
+
+                       - pagination: Allows project version pagination
+
+                       - query: A query parameter for pagination argument.
+                                e.g. startAt=0&maxResults=50
 
         :request POST: Creates a version.
 
@@ -1640,7 +1640,7 @@ class EndPoints:
                  "description": "An excellent version",
                   "name": "New Version 1",
                  "projectId": 10000,
-            "releaseDate": "2010-07-06",
+                 "releaseDate": "2010-07-06",
                 "released": true
                 }
 
@@ -1651,7 +1651,7 @@ class EndPoints:
 
             :query param: Used for query argument in pagination
                          The query argument is a string and can be
-                         constructed as below
+                         constructed as below.
 
              Example::
 
@@ -1708,6 +1708,14 @@ class EndPoints:
 
         :return: A string of the url
         """
+        move_to_issue: str = (
+            kwargs.get("move_to_issue") if "move_to_issue" in kwargs else None
+        )
+        issue_count: bool = kwargs.get("issue_count", False)
+        unresolved_count: bool = kwargs.get("unresolved_count", False)
+        pagination: bool = kwargs.get("pagination", False)
+        swap: bool = kwargs.get("swap", False)
+        query: str = kwargs.get("query") if "query" in kwargs else None
         if ids is not None:
             if move is True:
                 if move_to_issue is not None:
@@ -1855,7 +1863,7 @@ class EndPoints:
         :request GET: Returns an issue link.
 
         :request POST: Creates a link between two issues.
-                     link_id required.
+                       link_id required.
 
         :request DELETE: Deletes an issue link. link_id required.
 
@@ -1865,14 +1873,11 @@ class EndPoints:
         """
         if link_id:
             return "{}/rest/api/{}/issueLink/{}".format(
-                LOGIN.base_url,
-                "3" if LOGIN.api is True else "latest",
-                link_id
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", link_id
             )
         else:
             return "{}/rest/api/{}/issueLink".format(
-                LOGIN.base_url,
-                "3" if LOGIN.api is True else "latest"
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
             )
 
     @classmethod
@@ -1887,7 +1892,7 @@ class EndPoints:
                       have issue linking enabled.
 
         :request GET: Get issue link types, this requires the
-                     linked type id.
+                      linked type id.
 
         :request POST: Creates an issue link type. Use this
                        operation to create descriptions of the reasons
@@ -1909,10 +1914,10 @@ class EndPoints:
                         }
 
         :request DELETE: Deletes an issue link type.
-                       This requires the linked type id
+                         This requires the linked type id
 
         :request PUT: Updates an issue link type.
-                     This requires the linked type id
+                      This requires the linked type id
 
              :body param:
                * id - Datatype (str)
@@ -1941,8 +1946,7 @@ class EndPoints:
             )
         else:
             return "{}/rest/api/{}/issueLinkType".format(
-                LOGIN.base_url,
-                "3" if LOGIN.api is True else "latest"
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest"
             )
 
     @classmethod
@@ -1951,17 +1955,7 @@ class EndPoints:
         key_or_id: Union[str, int] = None,
         start_at: int = 0,
         max_results: int = 1048576,
-        started_after: int = None,
-        started_before: int = None,
-        worklog_id: Optional[str] = None,
-        expand: Optional[str] = None,
-        notify_users: Optional[bool] = True,
-        adjust_estimate: Optional[str] = "auto",
-        new_estimate: Optional[str] = None,
-        increase_by: Optional[str] = None,
-        override_editable_flag: Optional[bool] = False,
-        reduce_by: Optional[str] = None,
-        since: Optional[int] = None,
+        **kwargs: Any,
     ) -> str:
         """Returns worklogs for an issue, starting from
         the oldest worklog or from the worklog started on or
@@ -1982,14 +1976,62 @@ class EndPoints:
                             return per page.
 
 
-        :param started_after: The worklog start date and time,
-                              as a UNIX timestamp in milliseconds, after
-                              which worklogs are returned.
+        :param kwargs: Additional keyword
+
+                       **Acceptable options**
+
+                       - started_after: The worklog start date and time, as a
+                                        UNIX timestamp in milliseconds, after
+                                        which worklogs are returned.
+
+                       - started_before: The worklog start date and time, as a
+                                         UNIX timestamp in milliseconds, before
+                                         which worklogs are returned.
+
+                       - worklog_id: The ID of the worklog.
+
+                       - expand: Use expand to include additional information
+                                 about worklogs in the response.
+
+                       - notify_users: Whether users watching the issue are
+                                       notified by email.
+
+                       - adjust_estimate: Defines how to update the issue's
+                                          time estimate, the options are
+                                          ``new``  Sets the estimate to a
+                                          specific value, defined in newEstimate.
+                                          ``leave`` Leaves the estimate
+                                          unchanged. ``auto`` Updates the
+                                          estimate by the difference between the
+                                          original and updated value of
+                                          timeSpent or timeSpentSeconds.
+                                          Valid values: new, leave, manual, auto
+
+                       - new_estimate: The value to set as the issue's remaining
+                                       time estimate, as days (#d),  hours (#h),
+                                       or minutes (#m or #).
+                                       For example, 2d. Required when
+                                       adjustEstimate is new.
+
+                       - override_editable_flag: Whether the worklog should be
+                                                 added to the issue even if the
+                                                 issue is not editable.
+
+                       - increase_by: The amount to increase the issue's
+                                      remaining estimate by, as days (#d),
+                                      hours (#h), or minutes (#m or #).
+                                       For example, 2d.
+
+                       - reduce_by: The amount to reduce the issue's remaining
+                                    estimate by, as days (#d), hours (#h),
+                                    or minutes (#m).
+                                    For example, 2d.
+
+                       - since: The date and time, as a UNIX timestamp in
+                                milliseconds, after which updated worklogs
+                                are returned.
 
 
-        :param started_before: The worklog start date and time,
-                               as a UNIX timestamp in milliseconds, before which
-                               worklogs are returned.
 
 
         :request POST: Adds a worklog to an issue. Other query parameters
@@ -2001,58 +2043,38 @@ class EndPoints:
                         is specified. Other query parameters
                         can be specified such as ``adjust_estimate`` argument.
 
-
-        :param worklog_id: The ID of the worklog.
-
-
-        :param expand: Use expand to include additional information
-                       about worklogs in the response.
-
-
-        :param notify_users: Whether users watching the issue are
-                            notified by email.
-
-
-        :param adjust_estimate: Defines how to update the issue's
-                               time estimate, the options are
-                              ``new``  Sets the estimate to a specific value,
-                               defined in newEstimate.
-                               ``leave`` Leaves the estimate unchanged.
-                               ``auto`` Updates the estimate by the difference
-                                between the original and updated value of
-                                timeSpent or timeSpentSeconds.
-                                Valid values: new, leave, manual, auto
-
-
-        :param new_estimate: The value to set as the issue's remaining
-                             time estimate, as days (#d),  hours (#h),
-                             or minutes (#m or #).
-                             For example, 2d. Required when
-                             adjustEstimate is new.
-
-
-        :param override_editable_flag: Whether the worklog should be added
-                                       to the issue even if the issue
-                                       is not editable.
-
-
-        :param increase_by: The amount to increase the issue's remaining
-                            estimate by, as days (#d), hours (#h),
-                            or minutes (#m or #).
-                            For example, 2d.
-
-
-        :param reduce_by: The amount to reduce the issue's remaining
-                          estimate by, as days (#d), hours (#h),
-                          or minutes (#m).
-                          For example, 2d.
-
-        :param since: The date and time, as a UNIX timestamp in
-                      milliseconds, after which updated worklogs are returned.
-
         :return: str
 
         """
+        started_after: int = (
+            kwargs.get("started_after") if "started_after" in kwargs else None
+        )
+        started_before: int = (
+            kwargs.get("started_before") if "started_before" in kwargs else None
+        )
+        worklog_id: Optional[str] = (
+            kwargs.get("worklog_id") if "worklog_id" in kwargs else None
+        )
+        expand: Optional[str] = (
+            kwargs.get("expand") if "expand" in kwargs else None
+        )
+        notify_users: Optional[bool] = kwargs.get("notify_users", True)
+        adjust_estimate: Optional[str] = kwargs.get("adjust_estimate", "auto")
+        new_estimate: Optional[str] = (
+            kwargs.get("new_estimate") if "new_estimate" in kwargs else None
+        )
+        increase_by: Optional[str] = (
+            kwargs.get("increase_by") if "increase_by" in kwargs else None
+        )
+        override_editable_flag: Optional[bool] = kwargs.get(
+            "override_editable_flag", False
+        )
+        reduce_by: Optional[str] = (
+            kwargs.get("reduce_by") if "reduce_by" in kwargs else None
+        )
+        since: Optional[int] = (
+            kwargs.get("since") if "since" in kwargs else None
+        )
 
         if key_or_id is not None and worklog_id is None:
             if started_after is not None and started_before is None:
@@ -2306,7 +2328,7 @@ class EndPoints:
         :request DELETE: Removes webhooks by ID.
             :body param: webhookIds - required List[int]
 
-        :param uri: A url path context
+        :param uri: Url path context
 
                   *options available*
 
@@ -2496,8 +2518,8 @@ class EndPoints:
     def project_avatar(
         cls,
         key_or_id: Union[str, int] = None,
-        avatar_id: Optional = None,
-        method: Optional = "get",
+        avatar_id: Optional[str] = None,
+        method: Optional[str] = "get",
         **kwargs,
     ) -> str:
         """
@@ -2537,15 +2559,17 @@ class EndPoints:
         :param kwargs: Additional query parameters. The below
                        variables all are in integers
 
-            cord_x: The X coordinate of the top-left corner of the crop region.
+                    - cord_x: The X coordinate of the top-left corner of the
+                              crop region.
 
-            cord_y: The Y coordinate of the top-left corner of the crop region.
+                    - cord_y: The Y coordinate of the top-left corner of the
+                              crop region.
 
-            size: The length of each side of the crop region.
-            e.g. 16, 24, 32, and 48
+                    - size: The length of each side of the crop region.
+                             e.g. 16, 24, 32, and 48
 
-            The cropped image is then used to create avatars of 16x16,
-            24x24, 32x32, and 48x48 in size.
+                             The cropped image is then used to create avatars
+                             of 16x16, 4x24, 32x32, and 48x48 in size.
 
         :return: string
         """
@@ -2558,14 +2582,12 @@ class EndPoints:
         elif method.lower() == "post":
             if "size" not in kwargs:
                 raise JiraOneErrors(
-                    "value",
-                    "size keyword argument is required but missing."
+                    "value", "size keyword argument is required but missing."
                 )
             for key, value in kwargs.items():
                 if not isinstance(value, int):
                     raise JiraOneErrors(
-                        "value",
-                        f"{key} keyword argument is not a number."
+                        "value", f"{key} keyword argument is not a number."
                     )
             if (
                 "cord_x" in kwargs
@@ -2602,8 +2624,7 @@ class EndPoints:
                 )
             else:
                 raise JiraOneErrors(
-                    "value",
-                    "Either cord_x or cord_y argument must be provided"
+                    "value", "Either cord_x or cord_y argument must be provided"
                 )
         elif method.lower() == "delete":
             return "{}/rest/api/{}/project/{}/avatar/{}".format(
@@ -2620,8 +2641,7 @@ class EndPoints:
             )
         else:
             raise JiraOneErrors(
-                "wrong",
-                "No such method exist within this operation"
+                "wrong", "No such method exist within this operation"
             )
 
     ################################################
@@ -2729,9 +2749,7 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/agile/1.0/board/{}".format(
-            LOGIN.base_url, board_id
-        )
+        return "{}/rest/agile/1.0/board/{}".format(LOGIN.base_url, board_id)
 
     @classmethod
     def get_issues_on_backlog(
@@ -3698,9 +3716,7 @@ class EndPoints:
         query: str = None,
         key_or_id: Union[str, int] = None,
         start_at: int = 0,
-        max_results: int = 50,
-        ids: int = None,
-        event: bool = False,
+        **kwargs: Any,
     ) -> str:
         """Create, update, delete or get a comment.
 
@@ -3727,48 +3743,44 @@ class EndPoints:
 
         :param start_at: datatype -> integer defaults to 0
 
-        :param max_results: datatyoe -> integer defaults to 50
+        :param kwargs: Additional arguments
 
-        :query param: orderBy datatype -> string
-                   Valid values: created, -created, +created
+                       **Acceptable options**
+
+                       - max_results: datatype -> integer defaults to 50
+
+                            :query param: orderBy datatype -> string
+                                          Valid values: created,
+                                          -created, +created
+
+                       - event: defaults to false, set to true to
+
+                            :query param: expand
+
+                            :body param:  body datatype -> Anything
+                                          visibility -> The group or role to
+                                          which this comment is visible.
+                                          Optional on create and update.
+
+                                          properties datatype -> Array<EntityProperty>
+
+                                          A list of comment properties.
+                                          Optional on create and update.
+                                          Additional Properties
+                                          datatype ->anything
+
+                       - ids: datatype integers - The ID of the comment.
+
+                              :query param: expand
 
         :request POST:  Adds a comment to an issue.
                       key_or_id required
 
-         :param event: defaults to false, set to true to
-                      add a comment to an issue.
-
-            :query param: expand
-
-            :body param:
-
-                body datatype -> Anything
-                visibility -> The group or role to which this comment is
-                visible. Optional on create and update.
-                properties datatype -> Array<EntityProperty>
-
-                A list of comment properties. Optional on create and update.
-                Additional Properties datatype ->anything
-
         :request GET: - Returns a comment.
-
-        :param ids: datatype integers - The ID of the comment.
-
-          :query param: expand
 
         :request PUT: - Updates a comment.
                        key_or_id required
                        ids The ID of the comment.
-
-          :query param: expand
-
-          :body param:
-                body datatype -> Anything
-                visibility -> The group or role to which this
-                comment is visible. Optional on create and update.
-                properties datatype -> Array<EntityProperty>
-                A list of comment properties. Optional on create and update.
-                Additional Properties datatype ->anything
 
         :request DELETE: - Deletes a comment.
                         key_or_id required
@@ -3777,6 +3789,9 @@ class EndPoints:
 
         :return: A string of the url
         """
+        max_results: int = kwargs.get("max_results", 50)
+        ids: int = kwargs.get("ids") if "ids" in kwargs else None
+        event: bool = kwargs.get("event", False)
         if key_or_id is not None and ids is None:
             return (
                 f"{LOGIN.base_url}/rest/api/{'3' if LOGIN.api is True else 'latest'}/issue/{key_or_id}/comment"
@@ -3794,9 +3809,7 @@ class EndPoints:
             )
         else:
             return "{}/rest/api/{}/comment/list?{}".format(
-                LOGIN.base_url,
-                "3" if LOGIN.api is True else "latest",
-                query
+                LOGIN.base_url, "3" if LOGIN.api is True else "latest", query
             )
 
     @classmethod
@@ -4036,6 +4049,11 @@ class Field:
     def search_field(find_field: str = None) -> Any:
         """Search for custom fields.
 
+        .. note::
+
+         When using on Jira Server or DC, this method will return
+         all fields.
+
         :param find_field: A field name to search.
 
         :return: A dictionary if field is found else None
@@ -4049,22 +4067,34 @@ class Field:
         while True:
             load = LOGIN.get(
                 endpoint.get_field(query="type=custom", start_at=count_start_at)
+            ) if LOGIN.api is True else LOGIN.get(
+                endpoint.get_field(system="all")
             )
-            if load.status_code < 300:
-                data = load.json()
-                for a in data["values"]:
-                    if a["name"] == fields:
-                        return {
-                            "id": a.get("id"),
-                            "name": a.get("name"),
-                            "customType": a.get("schema")["custom"],
-                            "customId": a.get("schema")["customId"],
-                            "type": a.get("schema")["type"],
-                        }
 
+            if load.status_code < 300:
+                data = (
+                    load.json().get("values")
+                    if LOGIN.api is True
+                    else load.json()
+                )
+                break_out = count_start_at > (
+                    data["total"] if LOGIN.api is True else len(data)
+                )
+                for value in data:
+                    if value["name"] == fields:
+                        return {
+                            "id": value.get("id"),
+                            "name": value.get("name"),
+                            "customType": value.get("schema").get("custom"),
+                            "customId": value.get("schema").get("customId"),
+                            "type": value.get("schema").get("type"),
+                        }
                 count_start_at += 50
-                if count_start_at > data["total"]:
+                if break_out:
                     break
+            else:
+                # if the request failed, quietly stop the loop
+                break
 
     @staticmethod
     def get_field(find_field: str = None) -> Any:
@@ -4082,37 +4112,38 @@ class Field:
         load = LOGIN.get(endpoint.get_field(system="type=system"))
         if load.status_code < 300:
             data = load.json()
-            for a in list(data):
-                if fields in a["name"]:
-                    if fields == a["name"]:
-                        if "schema" in a:
-                            if "customId" not in a["schema"]:
+            for value in data:
+                if fields in value["name"]:
+                    if fields == value["name"]:
+                        if "schema" in value:
+                            if "customId" not in value["schema"]:
                                 return {
-                                    "name": a.get("name"),
-                                    "id": a.get("id"),
-                                    "custom": a.get("custom"),
-                                    "key": a.get("key"),
-                                    "searchable": a.get("searchable"),
-                                    "type": a.get("schema").get("type"),
-                                    "system": a["schema"].get("system"),
+                                    "name": value.get("name"),
+                                    "id": value.get("id"),
+                                    "custom": value.get("custom"),
+                                    "key": value.get("key"),
+                                    "searchable": value.get("searchable"),
+                                    "type": value.get("schema").get("type"),
+                                    "system": value.get("schema").get(
+                                        "system"),
                                 }
                             return {
-                                "name": a.get("name"),
-                                "id": a.get("id"),
-                                "key": a.get("key"),
-                                "searchable": a.get("searchable"),
-                                "customType": a.get("schema").get("custom"),
-                                "customId": a.get("schema").get("customId"),
-                                "type": a.get("schema").get("type"),
-                                "custom": a.get("custom"),
+                                "name": value.get("name"),
+                                "id": value.get("id"),
+                                "key": value.get("key"),
+                                "searchable": value.get("searchable"),
+                                "customType": value.get("schema").get("custom"),
+                                "customId": value.get("schema").get("customId"),
+                                "type": value.get("schema").get("type"),
+                                "custom": value.get("custom"),
                             }
-                        if "schema" not in a["name"]:
+                        if "schema" not in value["name"]:
                             return {
-                                "name": a.get("name"),
-                                "id": a.get("id"),
-                                "key": a.get("key"),
-                                "searchable": a.get("searchable"),
-                                "custom": a.get("custom"),
+                                "name": value.get("name"),
+                                "id": value.get("id"),
+                                "key": value.get("key"),
+                                "searchable": value.get("searchable"),
+                                "custom": value.get("custom"),
                             }
 
     def update_field_data(
@@ -4178,8 +4209,7 @@ class Field:
             else:
                 raise JiraOneErrors(
                     "wrong",
-                    "You are using the wrong data type. "
-                    "Please check again.",
+                    "You are using the wrong data type. " "Please check again.",
                 )
 
         if data == "" or data is None:
@@ -4322,8 +4352,7 @@ class Field:
                     if options is None:
                         if not isinstance(data, list):
                             raise JiraOneErrors(
-                                "wrong",
-                                "Expecting a list of values"
+                                "wrong", "Expecting a list of values"
                             )
                         else:
                             if len(data) > 1:
@@ -4331,9 +4360,7 @@ class Field:
                                     "value",
                                     "Expecting 1 value got {}. Use the "
                                     "update parameter for "
-                                    "multiple values".format(
-                                        len(data)
-                                    ),
+                                    "multiple values".format(len(data)),
                                 )
                             else:
                                 attr = {search["id"]: data}
@@ -4343,8 +4370,7 @@ class Field:
                     ):  # update the field with the desired value
                         if not isinstance(data, list):
                             raise JiraOneErrors(
-                                "wrong",
-                                "Expecting a list of values"
+                                "wrong", "Expecting a list of values"
                             )
                         else:
                             if len(data) == 1:
@@ -4599,9 +4625,9 @@ class Field:
 
         :param s: is a placeholder to determine the object key.
 
-               * e.g. required output [{"value": "hello"}] -> for
+               * e.g. required payload [{"value": "hello"}] -> for
                       Multicheckboxes type of field.
-               * e.g. required output [{"name": "hello"}] -> for
+               * e.g. required payload [{"name": "hello"}] -> for
                       Components or Fix versions type of field.
 
         :return: A list of data
@@ -4634,8 +4660,7 @@ class Field:
                 m = f"Parent values: {data[0]}(10059)Level 1 values: {data[1]}(10060)"
             elif len(data) > 2:
                 raise JiraOneErrors(
-                    "value",
-                    "Too many values received, expecting 2 only."
+                    "value", "Too many values received, expecting 2 only."
                 )
 
         if m.__len__() > 0:
@@ -4721,8 +4746,7 @@ class Field:
         if amend == "add":
             if data in collect:
                 raise JiraOneErrors(
-                    "wrong",
-                    'Value "{}" already exist in list'.format(data)
+                    "wrong", 'Value "{}" already exist in list'.format(data)
                 )
             else:
                 collect.append(data)
@@ -4731,7 +4755,7 @@ class Field:
         else:
             raise JiraOneErrors(
                 "value",
-                'The amend option cannot be processed '
+                "The amend option cannot be processed "
                 'because the value "{}" doesn\'t exist.'
                 "Please check your input.".format(amend),
             )
@@ -4757,8 +4781,10 @@ class Field:
             return get_value["fields"][var.get("id")]
         except (AttributeError, KeyError) as i:
             if isinstance(i, AttributeError):
-                return (f"<Error: {i} - options: Most probably "
-                        f"the field '{name}' cannot be found >")
+                return (
+                    f"<Error: {i} - options: Most probably "
+                    f"the field '{name}' cannot be found >"
+                )
             if isinstance(i, KeyError):
                 return (
                     f"<Error: KeyError on {i} - options: "
