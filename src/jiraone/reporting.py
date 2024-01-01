@@ -41,7 +41,6 @@ class Projects:
         project_folder: str = "Project",
         project_file_name: str = "project_file.csv",
         user_extraction_file: str = "project_extract.csv",
-        permission: str = "BROWSE",
         **kwargs,
     ) -> None:
         """
@@ -65,14 +64,17 @@ class Projects:
 
         :param user_extraction_file: A file to hold user temp data
 
-        :param permission: A permission of Jira to check
-
         :param kwargs: Additional arguments
+
+                      **Acceptable options**
+
+                      * permission: A permission of Jira to check
 
         .. _here:
 
         :return: None
         """
+        permission: str = kwargs.get("permission", "BROWSE")
         count_start_at = 0
         headers = [
             "Project Key",
@@ -837,8 +839,6 @@ class Projects:
         attach_file: str = "attachment_file.csv",
         key: int = 3,
         attach: int = 8,
-        file: int = 6,
-        last_cell: bool = True,
         **kwargs,
     ) -> None:
         """Ability to post an attachment into another Instance.
@@ -859,12 +859,19 @@ class Projects:
 
         :param attach: a row index of the column
 
-        :param file:  integers to specify the index of the columns
+        :param kwargs: Additional arguments
 
-        :param last_cell: is a boolean determines if the last cell should
-                          be counted.
-             e.g.
+                       **Acceptable options**
 
+                       * file:  Specify the index of the columns. Integer
+                                datatype expected.
+
+                       * last_cell: Determines if the last cell
+                                    should be counted. Bool datatype expected.
+
+             For example::
+
+               e.g.
               * key=3,
 
               * attach=6,
@@ -872,11 +879,13 @@ class Projects:
               * file=8
 
         the above example corresponds with the index if using the
-         ``def get_attachments_on_project()`` otherwise, specify your
-         value in each keyword args when calling the method.
+        ``def get_attachments_on_project()`` otherwise, specify your
+        value in each keyword args when calling the method.
 
          :return: None
         """
+        file: int = kwargs.get("file", 6)
+        last_cell: bool = kwargs.get("last_cell", True)
         read = file_reader(
             folder=attach_folder,
             file_name=attach_file,
@@ -950,7 +959,6 @@ class Projects:
         file_name: str = None,
         download_path: str = "Downloads",
         attach: int = 8,
-        file: int = 6,
         **kwargs,
     ) -> None:
         """Download the attachments to your local device read from a csv file.
@@ -964,13 +972,17 @@ class Projects:
 
         :param download_path: a directory where files are stored
 
-        :param file: a row to the index of the column
-
         :param file_name: a file name to a file
 
                 e.g
                   * attach=6,
                   * file=8
+
+        :param kwargs: Additional keyword argument
+
+                        **Acceptable options**
+
+                        * file: A row to the index of the column
 
         the above example corresponds with the index if using the
         ``def get_attachments_on_project()`` otherwise, specify your value
@@ -978,6 +990,7 @@ class Projects:
 
         :return: None
         """
+        file: int = kwargs.get("file", 6)
         read = file_reader(
             folder=file_folder,
             file_name=file_name,
@@ -1960,8 +1973,8 @@ class Projects:
                        some additional arguments that makes its iteration much
                        faster than your regular ``change_log`` method.
 
-               * worker: Datatype(int) The number of thread processes to
-                         begin with.
+               * workers: Datatype(int) The number of thread processes to
+                          begin with.
 
                * timeout: Datatype(float or int) - A number to denote the thread
                           process timeout.
@@ -1978,8 +1991,20 @@ class Projects:
             DotNotation,
             process_executor,
             validate_on_error,
+            validate_argument_name,
         )
         from time import sleep
+
+        valid_kwargs = {
+            "folder": "folder",
+            "file": "file",
+            "workers": "workers",
+            "timeout": "timeout",
+            "field_name": "field_name",
+            "flush": "flush",
+        }
+        for name_key in kwargs:
+            validate_argument_name(name_key, valid_kwargs)
 
         field_name: str = (
             kwargs.get("field_name") if "field_name" in kwargs else ""
@@ -1993,6 +2018,9 @@ class Projects:
         )
         flush: int = kwargs.get("flush") if "flush" in kwargs else 10
         config = {"history": []}
+        if not file.endswith(".csv"):
+            file = file + ".csv"
+
         validate_on_error(
             folder,
             (
@@ -2157,6 +2185,7 @@ class Projects:
                 )
             )
 
+        print("Starting history extraction. Please wait...")
         header = [
             "Issue Key",
             "Summary",
@@ -2823,7 +2852,7 @@ class Projects:
                   Example::
 
                      # previous statements
-                     my_files = ["file1.csv", "file2.csv", file3.csv"]
+                     my_files = ["file1.csv", "file2.csv", "file3.csv"]
                      PROJECT.export_issues(merge_files=my_files,
                           check_auth=False)
 
@@ -3021,6 +3050,7 @@ class Projects:
             INWARD_ISSUE_LINK,
             OUTWARD_ISSUE_LINK,
             validate_on_error,
+            validate_argument_name,
         )
         from copy import (
             deepcopy,
@@ -3037,6 +3067,45 @@ class Projects:
         from time import (
             sleep,
         )
+
+        valid_kwargs = {
+            "folder": "folder",
+            "jql": "jql",
+            "page": "page",
+            "temp_file": "temp_file",
+            "final_file": "final_file",
+            "target": "target",
+            "encoding": "encoding",
+            "errors": "errors",
+            "extension": "extension",
+            "field_type": "field_type",
+            "exclude_fields": "exclude_fields",
+            "include_fields": "include_fields",
+            "workers": "workers",
+            "is_sd_internal": "is_sd_internal",
+            "merge_files": "merge_files",
+            "csv_to_json": "csv_to_json",
+            "timeout": "timeout",
+            "json_properties": "json_properties",
+            "json_custom_type": "json_custom_type",
+            "is_cache": "is_cache",
+            "use_cache": "use_cache",
+            "is_cache_filename": "is_cache_filename",
+            "expires": "expires",
+            "allow_media": "allow_media",
+            "sub_tasks": "sub_tasks",
+            "project_type": "project_type",
+            "workflows": "workflows",
+            "flush": "flush",
+            "fields": "fields",
+            "delimit": "delimit",
+            "show_export_link": "show_export_link",
+            "date_format": "date_format",
+            "check_auth": "check_auth",
+        }
+        # validate the keyword arguments passed to the functions
+        for name_keys in kwargs:
+            validate_argument_name(name_keys, valid_kwargs)
 
         check_auth: bool = (
             kwargs["check_auth"] if "check_auth" in kwargs else True
@@ -5254,15 +5323,9 @@ class Projects:
                     data=[file_headers],
                     mark="many",
                     mode="w+",
-                )
-                if operation == "exclude" or operation == "include"
-                else file_writer(
-                    folder,
-                    temp_file,
-                    data=[file_headers],
-                    mark="many",
-                    mode="w+",
-                    delimiter=delimit,
+                    delimiter=delimit
+                    if operation == "exclude" or operation == "include"
+                    else ",",
                 )
             )
             print(
@@ -5280,14 +5343,9 @@ class Projects:
                     temp_file,
                     data=_field_list,
                     mark="many",
-                )
-                if operation == "exclude" or operation == "include"
-                else file_writer(
-                    folder,
-                    temp_file,
-                    data=_field_list,
-                    mark="many",
-                    delimiter=delimit,
+                    delimiter=delimit
+                    if operation == "exclude" or operation == "include"
+                    else ",",
                 )
             )
 
@@ -7650,7 +7708,7 @@ class Users:
 def path_builder(
     path: str = "Report",
     file_name: str = Any,
-    **kwargs,
+    **kwargs: Any,
 ) -> str:
     """Builds a dir path and file path in a directory.
 
@@ -7680,13 +7738,8 @@ def path_builder(
 def file_writer(
     folder: str = WORK_PATH,
     file_name: str = None,
-    data: Iterable = object,
+    data: Iterable = Any,
     mark: str = "single",
-    mode: str = "a+",
-    content: Union[
-        str,
-        bytes,
-    ] = None,
     **kwargs,
 ) -> None:
     """Reads and writes to a file, single or multiple rows or write
@@ -7699,18 +7752,18 @@ def file_writer(
     :param data: An iterable data, usually in form of a list.
 
     :param mark: Helps evaluate how data is created,
-               available options [“single”, “many”, “file”],
-               by default mark is set to “single”
-
-    :param mode: File mode, available options [“a”, “w”, “a+”, “w+”, “wb”],
-                   by default the mode is set to “a+”.
-
-    :param content: Outputs the file in bytes if mode is in bytes else in
-                  strings
+                  available options [“single”, “many”, “file”],
+                  by default mark is set to “single”
 
     :param kwargs: Additional parameters
 
                **options**
+
+               * mode: File mode, available options [“a”, “w”, “a+”, “w+”, “wb”],
+                       by default the mode is set to “a+”.
+
+               * content: Outputs the file in bytes if mode is in bytes else in
+                           strings
 
                * delimiter: defaults to comma - datatype (strings)
 
@@ -7732,6 +7785,14 @@ def file_writer(
     """
     from platform import (
         system,
+    )
+
+    mode: str = kwargs.get("mode", "a+")
+    content: Union[
+        str,
+        bytes,
+    ] = (
+        kwargs.get("content") if "content" in kwargs else None
     )
 
     delimiter = kwargs["delimiter"] if "delimiter" in kwargs else ","
@@ -7789,7 +7850,6 @@ def file_reader(
     file_name: str = None,
     mode: str = "r",
     skip: bool = False,
-    content: bool = False,
     **kwargs,
 ) -> Union[List[List[str]], str,]:
     """Reads a CSV file and returns a list comprehension of the data or
@@ -7804,14 +7864,13 @@ def file_reader(
     :param skip: True allows you to skip the header if the file has any.
                  Otherwise, defaults to False
 
-    :param content: True allows you to read a byte file. By default,
-                    it is set to False
-
     :param kwargs: Additional parameters
 
               **options**
 
-              * encoding - standard encoding strings. e.g “utf-8”.
+              * content: True allows you to read a byte file. By default,
+                         it is set to False
+              * encoding: Standard encoding strings. e.g “utf-8”.
 
               * delimiter: defaults to comma.
 
@@ -7829,6 +7888,8 @@ def file_reader(
     from platform import (
         system,
     )
+
+    content: bool = kwargs.get("content", False)
 
     file = path_builder(
         path=folder,
@@ -7944,9 +8005,6 @@ def delete_attachments(
         str,
         List,
     ] = None,
-    by_user: Optional[List] = None,
-    by_size: Optional[str] = None,
-    by_date: Optional[str] = None,
     **kwargs: Union[
         str,
         bool,
@@ -7991,27 +8049,27 @@ def delete_attachments(
 
     :param extension: A file extension to focus on while deleting.
 
-    :param by_user: Search by user accountId and delete attachments.
-                    You can also combine the extension parameter.
-                    This will only work when using the ``search`` parameter.
-
-    :param by_size: Search by allocated file size and delete the attachment.
-                    You can combine the extension and by_user
-                    parameter with this argument.
-
-
-    :param by_date: Search by date_range from when the attachment was created
-                    until the initiator's current time.
-                    Then delete the attachment.
-                    You can combine this argument with all
-                    other arguments provided with the search parameter.
-
     :param delete: A decision to delete or not delete the attachments.
                    Defaults to ``True``
 
     :param kwargs: Additional arguments
 
                  **Available options**
+
+                 * by_user: Search by user accountId and delete attachments.
+                            You can also combine the extension parameter.
+                            This will only work when using the ``search``
+                            parameter.
+
+                 * by_size: Search by allocated file size and delete the
+                             attachment. You can combine the extension and
+                             ``by_user`` parameter with this argument.
+
+                 * by_date: Search by date_range from when the attachment was
+                            created until the initiator's current time.
+                            Then delete the attachment.
+                            You can combine this argument with all
+                            other arguments provided with the search parameter.
 
                  * allow_cp: Allows the ability to trigger and save a
                   checkpoint.
@@ -8024,6 +8082,9 @@ def delete_attachments(
 
     :return: None
     """
+    by_user: Optional[List] = kwargs.get("by_user", None)
+    by_size: Optional[str] = kwargs.get("by_size", None)
+    by_date: Optional[str] = kwargs.get("by_date", None)
     from jiraone.exceptions import (
         JiraOneErrors,
     )

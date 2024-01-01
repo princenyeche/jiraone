@@ -98,20 +98,26 @@ def process_executor(
     *,
     data: t.Iterable = None,
     workers: int = 4,
-    timeout: t.Union[float, int] = 2.5,
     **kwargs,
 ) -> None:
     """
-    A process executor function
+    A process executor function. This function allows you to run asynchronous
+    request on certain functions of jiraone, thus making multiple request at
+    the same time.
 
     :param func: A function to act upon
     :param data: A data that the function processes (an argument)
     :param workers: Number of threads to use and wait until terminates
-    :param timeout: Specifies a timeout if threads are still running
     :param kwargs: Additional arguments supplied to Thread class or
                    the keyword arguments from the function
+
+                   **Acceptable options**
+
+                   * timeout: Specifies a timeout if threads are still running
+
     :return: None
     """
+    timeout: t.Union[float, int] = kwargs.get("timeout", 2.5)
     process = threading.Thread(target=func, args=(data,), kwargs=kwargs)
     process.start()
     if threading.active_count() > workers:
@@ -269,9 +275,9 @@ def validate_on_error(
 
     Example 1::
 
-    # import statements
-    name: str = "Mr. John"
-    validate_on_error(
+     # import statements
+     name: str = "Mr. John"
+     validate_on_error(
             name,
             (str, "name", "a string"),
             "the name of a user in strings"
@@ -282,9 +288,9 @@ def validate_on_error(
 
     Example 2::
 
-    # import statements
-    salary: Union[float, int] = 1230.45
-    validate_on_error(
+     # import statements
+     salary: Union[float, int] = 1230.45
+     validate_on_error(
             salary,
             ((float, int), "salary", "a number"),
             "a number to indicate the salary of a user"
@@ -313,4 +319,24 @@ def validate_on_error(
             "wrong",
             f"The `{data_type[1]}` argument should be "
             f"{err_message}."
-            f"Detected {type(name_field)} instead.")
+            f"Detected {type(name_field)} instead.",
+        )
+
+
+def validate_argument_name(
+    name_field: str, valid_args: t.Union[dict, list] = None
+):
+    """
+    Validates the key word argument name and type of the argument
+
+    :param name_field: The key word argument name
+    :param valid_args: The values of arguments expected
+    :return: None
+    :raise: JiraOneErrors
+    """
+    if name_field not in valid_args:
+        raise JiraOneErrors(
+            "errors",
+            f"The `{name_field}` argument is invalid, as it does not"
+            f" exist in the list of accepted keyword arguments.",
+        )

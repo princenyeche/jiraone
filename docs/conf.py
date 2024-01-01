@@ -19,7 +19,7 @@ from jiraone import __version__
 
 # -- Project information -----------------------------------------------------
 
-project = 'Jira one'
+project = 'jiraone'
 copyright = '2021, Prince Nyeche'
 author = 'Prince Nyeche'
 

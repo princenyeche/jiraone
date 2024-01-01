@@ -1,5 +1,13 @@
 # Jira one change log
 
+**Release 0.8.0** - 2024-01-01
+### Minor update #123
+- Fix to issue reported on #124
+- Corrected the documentation
+- Minimized arguments on each method or function to max 5, then the rest are called via keyword arguments
+- Added a new function for argument validation called `validate_argument_name`
+
+
 **Release 0.7.9** - 2023-12-23
 ### Minor update #115
 * Update to `time_in_status` function to include timestamp in UTC
