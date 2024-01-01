@@ -6,7 +6,7 @@
 - Corrected the documentation
 - Minimized arguments on each method or function to max 5, then the rest are called via keyword arguments
 - Added a new function for argument validation called `validate_argument_name`
-- v0.8.0 and v0.8.1 are practically the same
+- v0.8.0 and v0.8.1 are practically the same.
 
 
 **Release 0.7.9** - 2023-12-23
