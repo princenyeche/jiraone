@@ -4078,7 +4078,7 @@ class Field:
                     else load.json()
                 )
                 break_out = count_start_at > (
-                    data["total"] if LOGIN.api is True else len(data)
+                    load.json().get("total") if LOGIN.api is True else len(data)
                 )
                 for value in data:
                     if value["name"] == fields:
