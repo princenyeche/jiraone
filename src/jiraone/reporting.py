@@ -3654,7 +3654,7 @@ class Projects:
                 "expires",
                 "an integer of the expiry" " period required for caching",
             ),
-            "an integer in seconds for the period of " "caching time",
+            "an integer in days for the period of " "caching time",
         )
 
         validate_on_error(
