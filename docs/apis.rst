@@ -277,3 +277,5 @@ threads to start with by increasing the ``workers`` argument
 
 
 .. autofunction:: validate_on_error
+
+.. autofunction:: validate_argument_name
