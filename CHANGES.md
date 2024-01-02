@@ -1,5 +1,9 @@
 # Jira one change log
 
+**Release 0.8.2** - 2024-01-02
+* Minor fix to `process_executor` function with invalid arguments
+
+
 **Release 0.8.1** - 2024-01-01
 ### Minor update #123
 - Fix to issue reported on #124

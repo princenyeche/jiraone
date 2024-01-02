@@ -98,6 +98,7 @@ def process_executor(
     *,
     data: t.Iterable = None,
     workers: int = 4,
+    timeout: t.Union[float, int] = 2.5,
     **kwargs,
 ) -> None:
     """
@@ -108,16 +109,12 @@ def process_executor(
     :param func: A function to act upon
     :param data: A data that the function processes (an argument)
     :param workers: Number of threads to use and wait until terminates
+    :param timeout: Specifies a timeout if threads are still running
     :param kwargs: Additional arguments supplied to Thread class or
                    the keyword arguments from the function
 
-                   **Acceptable options**
-
-                   * timeout: Specifies a timeout if threads are still running
-
     :return: None
     """
-    timeout: t.Union[float, int] = kwargs.get("timeout", 2.5)
     process = threading.Thread(target=func, args=(data,), kwargs=kwargs)
     process.start()
     if threading.active_count() > workers:
