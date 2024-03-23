@@ -3906,6 +3906,18 @@ class EndPoints:
                     ". See jiraone docs for more info.",
                 )
 
+    @classmethod
+    def runbackup(cls):
+        """Runs a backup process for the environment
+        
+        Example 1::
+        # send a POST request with the payload
+        payload_data = {"cbAttachments": "false", "exportToCloud": "true"}
+        # changing "cbAttachments" to "true" will enable backup with attachments
+        
+        """
+        return "{}/rest/backup/1/export/runbackup".format(LOGIN.base_url)
+
 
 class For:
     """A Class to show the implementation of a 'for' loop.

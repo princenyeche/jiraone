@@ -1,5 +1,10 @@
 # Jira one change log
 
+**Release 0.8.3** - 2024-03-28
+* Fixing the CSV change file type and merge_files to run without JQL
+* Added a new endpoint to `runbackup`
+
+
 **Release 0.8.2** - 2024-01-02
 * Minor fix to `process_executor` function with invalid arguments
 
