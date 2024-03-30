@@ -1,6 +1,6 @@
 # Jira one change log
 
-**Release 0.8.3** - 2024-03-28
+**Release 0.8.3** - 2024-03-31
 * Fixing the CSV change file type and merge_files to run without JQL
 * Added a new endpoint to `runbackup`
 
