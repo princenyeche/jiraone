@@ -3270,6 +3270,22 @@ class Projects:
         # stores most configuration data using a dictionary
         config = {}
 
+        if merge_files:
+            jql = ""
+        if csv_to_json:
+            jql = ""
+            extension = "json"
+            if check_auth is False:
+                sys.stderr.write("Warning: A valid session to query Jira data"
+                                 " is required when using the `csv_to_json` "
+                                 "argument.")
+
+        if merge_files and csv_to_json:
+            raise JiraOneErrors("errors",
+                                "You cannot use both "
+                                "`merge_files` and `csv_to_json` at the same"
+                                " time as both are mutually exclusive.")
+
         # Checking that the arguments are passing correct data structure.
         def field_value_check(
             param_field: list = None,
@@ -3431,6 +3447,7 @@ class Projects:
                     "single string character.",
                 )
         elif delimit == "":
+            delimit = ","
             print(
                 "Defaulting to comma as CSV separator."
             ) if extension.lower() == "csv" else None
@@ -3860,6 +3877,7 @@ class Projects:
             0,
             0,
         )
+
         if csv_to_json != "":
             merge_files.append(csv_to_json)
 
@@ -5266,7 +5284,8 @@ class Projects:
                 if operation == "exclude" or operation == "include"
                 else "Changing CSV file delimiter"
             )
-            fetch_field_ids(config["headers"])
+            if operation == "exclude" or operation == "include":
+                fetch_field_ids(config["headers"])
             (
                 _field_list,
                 first_run,
@@ -5305,7 +5324,7 @@ class Projects:
                         _field_data.append(field_row)
                         if first_run is False:
                             file_headers.append(
-                                field_header.get("field_column_name")
+                                field_header.get("column_name")
                             )
 
                 first_run = True
@@ -5324,8 +5343,6 @@ class Projects:
                     mark="many",
                     mode="w+",
                     delimiter=delimit
-                    if operation == "exclude" or operation == "include"
-                    else ",",
                 )
             )
             print(
@@ -5344,8 +5361,6 @@ class Projects:
                     data=_field_list,
                     mark="many",
                     delimiter=delimit
-                    if operation == "exclude" or operation == "include"
-                    else ",",
                 )
             )
 
@@ -7324,6 +7339,13 @@ class Projects:
             "max_page": calc if total > 1000 else 0,
         }
         return DotNotation(value)
+
+
+    @staticmethod
+    def view_issues(*,
+                    project_key_or_id: Union[str, int] = None,
+                    key_or_id: Union[str, int] = None) -> None:
+        """View all issues and its properties"""
 
 
 class Users:
