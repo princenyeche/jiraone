@@ -5840,7 +5840,7 @@ class Projects:
                                 {f"{sprint_item[sub_sprint]}": []}
                             )
 
-                if "customType" in sprint_custom_id:
+                if sprint_custom_id is not None and "customType" in sprint_custom_id:
                     if sprint_custom_id["customType"].endswith("gh-sprint"):
                         extract = sprint_custom_id["id"].split("_")
                         config["sprint_cf"] = "cf[{}]".format(extract[1])
