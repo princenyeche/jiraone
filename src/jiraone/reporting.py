@@ -977,7 +977,11 @@ class Projects:
 
         Calling this method with default arguments assumes that you've
         previously called the ``def get_attachments_on_project()`` method
-        with default arguments
+        with default arguments.
+
+        To avoid conflicts whenever attachments have the same filename (e.g. ``screenshot-1.png``),
+        each downloaded attachment will be placed in a separate directory which corresponds to the
+        content ID that Jira gives the attachment.
 
         :param download_path: the directory where the downloaded attachments are to be stored
 
@@ -1028,19 +1032,23 @@ class Projects:
                 # For example the last line of the attachment list CSV may have:  ,,,,Total Size: 0.09 MB,,,,
                 continue
             fetch = LOGIN.get(attachment)
+            content_id = attachment.split('/')[-1]
+            individual_download_path = os.path.join(download_path, content_id)
+            if not os.path.exists(individual_download_path):
+                os.makedirs(individual_download_path)
             file_writer(
-                download_path,
+                folder=individual_download_path,
                 file_name=_file_name,
                 mode="wb",
                 content=fetch.content,
                 mark="file",
             )
             print(
-                "Attachment downloaded to {}".format(download_path),
+                "Attachment downloaded to {}".format(individual_download_path),
                 "Status code: {}".format(fetch.status_code),
             )
             add_log(
-                "Attachment downloaded to {}".format(download_path),
+                "Attachment downloaded to {}".format(individual_download_path),
                 "info",
             )
             if last_cell is True:
