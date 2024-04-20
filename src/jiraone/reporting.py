@@ -518,21 +518,30 @@ class Projects:
         self,
         attachment_folder: str = "Attachment",
         attachment_file_name: str = "attachment_file.csv",
+        mode: str = 'w',
         **kwargs,
     ) -> None:
-        """Return all attachments of a Project or Projects
+        """Fetch the list of all the attachments of a Project or Projects
+        and write it out to an attachment list CSV file named ``attachment_file_name``
+        located in ``attachment_folder``.
 
-        Get the size of attachments on an Issue, count those attachments
-        collectively and return the total number on all Projects searched.
-        JQL is used as a means to search for the project.
+        Also, get the size of the attachment for each Issue, sum up the size of all
+        attachments, and output the total for all Projects as the last
+        row of the output attachment list CSV file.
 
-        :param attachment_folder: A temp folder
+        JQL is used to search for the attachments.
 
-        :param attachment_file_name: A filename for the attachment
+        :param attachment_folder: Target directory where the attachment list CSV
+            file will be written.
 
-        :param kwargs: Addition argument to supply.
+        :param attachment_file_name: Filename of the attachment list CSV to be written.
 
-        :return: None
+        :param mode: Write mode for attachment list CVS to be written. By default it
+            is 'w', which means that any existing file will be overwritten.
+            For example, set to 'a' if you want to append to instead of truncating any
+            existing file.
+
+        :param kwargs: Additional arguments to specify.
         """
         attach_list = deque()
         count_start_at = 0
@@ -551,6 +560,7 @@ class Projects:
             folder=attachment_folder,
             file_name=attachment_file_name,
             data=headers,
+            mode=mode,
             **kwargs,
         )
 
