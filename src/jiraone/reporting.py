@@ -970,6 +970,7 @@ class Projects:
         download_path: str = "Downloads",
         attach: int = 8,
         skip_csv_header: bool = True,
+        overwrite: bool = True,
         create_html_redirectors: bool = False,
         **kwargs,
     ) -> None:
@@ -1001,6 +1002,10 @@ class Projects:
         :param skip_csv_header: when set to True, skips the first line of the attachment list CSV file; i.e.
             assumes that the first line represents a header row.
             (Default is True, which corresponds to the output of ``def get_attachments_on_project()``)
+
+        :param overwrite: when True, any attachments will be overwritten. When False, downloading
+            of the attachment will be skipped. Setting this to False can significantly speed up
+            incremental backups by only downloading attachments that have not yet been downloaded.
 
         :param create_html_redirectors: is used when you want to use the downloaded attachments
             as part of a website to mirror and serve the attachments separately from the
@@ -1057,26 +1062,27 @@ class Projects:
                 # For example the last line of the attachment list CSV may have:  ,,,,Total Size:
                 # 0.09 MB,,,,
                 continue
-            fetch = LOGIN.get(attachment)
             content_id = attachment.split('/')[-1]
             individual_download_path = os.path.join(download_path, content_id)
             if not os.path.exists(individual_download_path):
                 os.makedirs(individual_download_path)
-            file_writer(
-                folder=individual_download_path,
-                file_name=_file_name,
-                mode="wb",
-                content=fetch.content,
-                mark="file",
-            )
-            print(
-                "Attachment downloaded to {}".format(individual_download_path),
-                "Status code: {}".format(fetch.status_code),
-            )
-            add_log(
-                "Attachment downloaded to {}".format(individual_download_path),
-                "info",
-            )
+            if overwrite or not os.path.exists(os.path.join(individual_download_path, _file_name)):
+                fetch = LOGIN.get(attachment)
+                file_writer(
+                    folder=individual_download_path,
+                    file_name=_file_name,
+                    mode="wb",
+                    content=fetch.content,
+                    mark="file",
+                )
+                print(
+                    "Attachment downloaded to {}".format(individual_download_path),
+                    "Status code: {}".format(fetch.status_code),
+                )
+                add_log(
+                    "Attachment downloaded to {}".format(individual_download_path),
+                    "info",
+                )
             if create_html_redirectors:
                 # Create HTML file with a template that
                 html_content = HTML_REDIRECTOR_TEMPLATE.format(path=_file_name)
