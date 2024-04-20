@@ -970,6 +970,7 @@ class Projects:
         download_path: str = "Downloads",
         attach: int = 8,
         skip_csv_header: bool = True,
+        create_html_redirectors: bool = False,
         **kwargs,
     ) -> None:
         """Go through the attachment list CSV file named ``file_name`` and located in the
@@ -1001,6 +1002,16 @@ class Projects:
             assumes that the first line represents a header row.
             (Default is True, which corresponds to the output of ``def get_attachments_on_project()``)
 
+        :param create_html_redirectors: is used when you want to use the downloaded attachments
+            as part of a website to mirror and serve the attachments separately from the
+            Jira website. When set to True, an ``index.html`` will be created
+            for each attachment so that the original Jira Attachment URL, e.g.
+            https://yourorganization.atlassian.net/rest/api/3/attachment/content/112736 ,
+            can be more easily rewritten to something like
+            https://yourmirrorsite.com/jiraone/MYPROJ/attachment/content/112736 .
+            The ``index.html`` will take care of the HTTP redirect that will point to the
+            attachment with the original filename.
+
         :param kwargs: Additional keyword argument
 
                         **Acceptable options**
@@ -1008,7 +1019,21 @@ class Projects:
                         * file: index of the column 'Name of file' in the attachment list CSV file.
                             (Default is 6, which corresponds to the output of
                             ``def get_attachments_on_project()``)
+
+        :return: None
         """
+        HTML_REDIRECTOR_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+  <title>Download File</title>
+  <meta http-equiv="refresh" content="0; url={path}">
+</head>
+<body>
+    <p>If you are not redirected automatically, please click <a href="{path}">here</a> to download the file.</p>
+</body>
+</html>
+"""
+
         file: int = kwargs.get("file", 6)
         read = file_reader(
             folder=file_folder,
@@ -1029,7 +1054,8 @@ class Projects:
             attachment = r[attach]
             _file_name = r[file]
             if attachment == '' or _file_name == '':
-                # For example the last line of the attachment list CSV may have:  ,,,,Total Size: 0.09 MB,,,,
+                # For example the last line of the attachment list CSV may have:  ,,,,Total Size:
+                # 0.09 MB,,,,
                 continue
             fetch = LOGIN.get(attachment)
             content_id = attachment.split('/')[-1]
@@ -1051,6 +1077,16 @@ class Projects:
                 "Attachment downloaded to {}".format(individual_download_path),
                 "info",
             )
+            if create_html_redirectors:
+                # Create HTML file with a template that
+                html_content = HTML_REDIRECTOR_TEMPLATE.format(path=_file_name)
+                # Write the content to file
+                with open(os.path.join(individual_download_path, 'index.html'), 'w') as html_file:
+                    html_file.write(html_content)
+                add_log(
+                    "Attachment HTML redirector created in {}".format(individual_download_path),
+                    "info",
+                )
             if last_cell is True:
                 if count >= (length - 1):
                     break
