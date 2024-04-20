@@ -965,45 +965,51 @@ class Projects:
 
     @staticmethod
     def download_attachments(
-        file_folder: str = None,
-        file_name: str = None,
+        file_folder: str = 'Attachment',
+        file_name: str = 'attachment_file.csv',
         download_path: str = "Downloads",
         attach: int = 8,
+        skip_csv_header: bool = True,
         **kwargs,
     ) -> None:
-        """Download the attachments to your local device read from a csv file.
+        """Go through the attachment list CSV file named ``file_name`` and located in the
+        ``file_folder``; for each row, download the attachment indicated to your local device.
 
-        we assume you're getting this from ``def get_attachments_on_project()``
-        method.
+        Calling this method with default arguments assumes that you've
+        previously called the ``def get_attachments_on_project()`` method
+        with default arguments
 
-        :param attach: integers to specify the index of the columns
+        :param download_path: the directory where the downloaded attachments are to be stored
 
-        :param file_folder: a folder or directory where the file extract exist
+        :param file_folder: the directory where the attachment list CSV file can be found
+            (Default corresponds to the output of ``def get_attachments_on_project()``
+            when called with default arguments)
 
-        :param download_path: a directory where files are stored
+        :param file_name: file name of the attachment list CSV file
+            (Default corresponds to the output of ``def get_attachments_on_project()``
+            when called with default arguments)
 
-        :param file_name: a file name to a file
+        :param attach: index of the column that corresponds to 'Attachment URL' in the attachment
+            list CSV file.
+            (Default is 8, which corresponds to the output of ``def get_attachments_on_project()``)
 
-                e.g
-                  * attach=6,
-                  * file=8
+        :param skip_csv_header: when set to True, skips the first line of the attachment list CSV file; i.e.
+            assumes that the first line represents a header row.
+            (Default is True, which corresponds to the output of ``def get_attachments_on_project()``)
 
         :param kwargs: Additional keyword argument
 
                         **Acceptable options**
 
-                        * file: A row to the index of the column
-
-        the above example corresponds with the index if using the
-        ``def get_attachments_on_project()`` otherwise, specify your value
-        in each keyword args when calling the method.
-
-        :return: None
+                        * file: index of the column 'Name of file' in the attachment list CSV file.
+                            (Default is 6, which corresponds to the output of
+                            ``def get_attachments_on_project()``)
         """
         file: int = kwargs.get("file", 6)
         read = file_reader(
             folder=file_folder,
             file_name=file_name,
+            skip=skip_csv_header,
             **kwargs,
         )
         add_log(
@@ -1018,6 +1024,9 @@ class Projects:
             count += 1
             attachment = r[attach]
             _file_name = r[file]
+            if attachment == '' or _file_name == '':
+                # For example the last line of the attachment list CSV may have:  ,,,,Total Size: 0.09 MB,,,,
+                continue
             fetch = LOGIN.get(attachment)
             file_writer(
                 download_path,
