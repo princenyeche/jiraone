@@ -7764,7 +7764,7 @@ def path_builder(
         path,
     )
     if not os.path.exists(base_dir):
-        os.mkdir(base_dir)
+        os.makedirs(base_dir)
         add_log(
             f"Building Path {path}",
             "info",
