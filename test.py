@@ -329,6 +329,7 @@ class JiraOne(unittest.TestCase):
             )
             # verify download
             is_download = []
+            path = path_builder("Attachment", "attachment_file.csv")
             read_attachment = file_reader(file_name=path, skip=True)
             for attach_id in read_attachment:
                 uri_attachment = attach_id[8].split("/")[-1]
