@@ -1,6 +1,7 @@
 """
 Run test for different features of the library
 """
+
 import os
 import json
 import unittest
@@ -17,6 +18,7 @@ from jiraone import (
     USER,
     file_writer,
     field,
+    __version__,
 )
 from jiraone.module import time_in_status, bulk_change_email
 
@@ -30,10 +32,7 @@ class JiraOne(unittest.TestCase):
         """Configure test case"""
         user = os.environ.get("JIRAONEUSERNAME") or "email"
         password = os.environ.get("JIRAONEUSERPASS") or "token"
-        link = (
-            os.environ.get("JIRAONEUSERURL")
-            or "https://yourinstance.atlassian.net"
-        )
+        link = os.environ.get("JIRAONEUSERURL") or "https://yourinstance.atlassian.net"
         LOGIN(user=user, password=password, url=link)
         self.payload = {
             "fields": {
@@ -62,14 +61,12 @@ class JiraOne(unittest.TestCase):
         LOGIN.session.headers = LOGIN.headers
         LOGIN.session.auth = LOGIN.auth_request
         session = LOGIN.session.get(endpoint.myself())
-        self.assertTrue(session.status_code < 300,
-                        "Session context failed")
+        self.assertTrue(session.status_code < 300, "Session context failed")
 
     def test_endpoints(self):
         """Test endpoint constant extraction"""
         load = LOGIN.get(endpoint.myself())
-        self.assertTrue(load.status_code < 300,
-                        "Unable to load self endpoint")
+        self.assertTrue(load.status_code < 300, "Unable to load self endpoint")
 
     def test_data_extraction(self):
         """Test response data from an endpoint"""
@@ -81,8 +78,7 @@ class JiraOne(unittest.TestCase):
     def test_issue_export_csv(self):
         """Test CSV issue export"""
         jql = self.jql
-        path = path_builder("TEST",
-                            "test_import_CSV_sample.csv")
+        path = path_builder("TEST", "test_import_CSV_sample.csv")
         # testing parameters
         issue_export(
             jql=jql,
@@ -91,15 +87,13 @@ class JiraOne(unittest.TestCase):
             final_file="test_import_CSV_sample.csv",
         )
         self.assertTrue(
-            os.path.isfile(path),
-            "Unable to detect CSV file for issue export"
+            os.path.isfile(path), "Unable to detect CSV file for issue export"
         )
 
     def test_issue_export_json(self):
         """Test JSON issue export"""
         jql = self.jql
-        path = path_builder("TEST",
-                            "test_import_json_sample.json")
+        path = path_builder("TEST", "test_import_json_sample.json")
         LOGIN.api = True
         issue_export(
             jql=jql,
@@ -108,17 +102,14 @@ class JiraOne(unittest.TestCase):
             final_file="test_import_json_sample.json",
         )
         self.assertTrue(
-            os.path.isfile(path),
-            "Unable to detect JSON file for issue export"
+            os.path.isfile(path), "Unable to detect JSON file for issue export"
         )
 
     def test_time_in_status(self):
         """Test for time in status for CSV or JSON"""
         key = self.issue_key
-        json_file = path_builder("TEST",
-                                 "test_time_in_status.json")
-        csv_file = path_builder("TEST",
-                                "test_time_in_status.csv")
+        json_file = path_builder("TEST", "test_time_in_status.json")
+        csv_file = path_builder("TEST", "test_time_in_status.csv")
         time_in_status(
             PROJECT,
             key,
@@ -181,8 +172,7 @@ class JiraOne(unittest.TestCase):
         delete_attachments(search=issue_key)
         # check for file existence
         image_url = LOGIN.get(upload.json()[0].get("content"))
-        self.assertFalse(image_url.status_code < 300,
-                         "Attachment still exist")
+        self.assertFalse(image_url.status_code < 300, "Attachment still exist")
 
     def test_search_user(self):
         """Test for user search"""
@@ -228,17 +218,12 @@ class JiraOne(unittest.TestCase):
             values[1][0],
             values[1][3],
         )
-        file_writer(
-            file_name="sampleTest.csv", data=headers, mark="single", mode="w+"
-        )
-        file_writer(
-            file_name="sampleTest.csv", data=values, mark="many", mode="a+"
-        )
+        file_writer(file_name="sampleTest.csv", data=headers, mark="single", mode="w+")
+        file_writer(file_name="sampleTest.csv", data=values, mark="many", mode="a+")
         bulk_change_email("sampleTest.csv", self.token)
         # check for those users
         verify_user = manage.manage_profile(account_id_two)
-        self.assertTrue(verify_user.status_code < 300,
-                        "Verifying user failed")
+        self.assertTrue(verify_user.status_code < 300, "Verifying user failed")
         self.assertNotEqual(
             right_email_two,
             verify_user.json().get("account").get("email"),
@@ -269,15 +254,13 @@ class JiraOne(unittest.TestCase):
             disable = manage.manage_user(
                 i.get("account_id"), json=payload, disable=True
             )
-            self.assertTrue(disable.status_code < 300,
-                            "Disabling user failed")
+            self.assertTrue(disable.status_code < 300, "Disabling user failed")
         # enable user
         for i in user_list:
             enable = manage.manage_user(
                 i.get("account_id"), json=payload, disable=False
             )
-            self.assertTrue(enable.status_code < 300,
-                            "Enabling user failed")
+            self.assertTrue(enable.status_code < 300, "Enabling user failed")
 
     def test_multiprocessing_history_extraction(self):
         """Test for multiprocessing on history extraction"""
@@ -285,12 +268,8 @@ class JiraOne(unittest.TestCase):
         LOGIN.api = True
         if hasattr(PROJECT, "async_change_log"):
             project_attr = getattr(PROJECT, "async_change_log")
-            project_attr(
-                self.jql, folder="TEST", file="sampleAsyncFile.csv", flush=10
-            )
-            self.assertTrue(
-                os.path.isfile(path), "Unable to find change log file."
-            )
+            project_attr(self.jql, folder="TEST", file="sampleAsyncFile.csv", flush=10)
+            self.assertTrue(os.path.isfile(path), "Unable to find change log file.")
 
     def test_field_extraction(self):
         """Test for field extraction"""
@@ -302,16 +281,14 @@ class JiraOne(unittest.TestCase):
         to Jira resource"""
         # get
         get = LOGIN.get(endpoint.myself())
-        self.assertTrue(get.status_code < 300,
-                        "GET request is not working")
+        self.assertTrue(get.status_code < 300, "GET request is not working")
         # post
         LOGIN.api = False
         post = LOGIN.post(
             endpoint.issues(),
             payload=self.payload,
         )
-        self.assertTrue(post.status_code < 300,
-                        "POST request is not working")
+        self.assertTrue(post.status_code < 300, "POST request is not working")
         if post.status_code < 300:
             issue_key = post.json().get("key")
             # put
@@ -319,13 +296,78 @@ class JiraOne(unittest.TestCase):
                 endpoint.issues(issue_key),
                 payload={"fields": {"priority": {"name": "Highest"}}},
             )
-            self.assertTrue(put.status_code < 300,
-                            "PUT request is not working")
+            self.assertTrue(put.status_code < 300, "PUT request is not working")
             # delete
             delete = LOGIN.delete(endpoint.issues(issue_key))
-            self.assertTrue(
-                delete.status_code < 300, "DELETE request is not working"
+            self.assertTrue(delete.status_code < 300, "DELETE request is not working")
+
+    def test_get_attachments(self):
+        """Test for get attachments on projects"""
+        # upload the same attachment trice
+        upload = self.uploader()
+        self.assertTrue(upload is True, "Cannot add attachment")
+        if __version__ >= "0.8.4":
+            PROJECT.get_attachments_on_projects(query=self.jql)
+            path = path_builder("Attachment", "attachment_file.csv")
+            self.assertTrue(os.path.isfile(path), "Unable to find attachment file.")
+
+    def test_download_attachments(self):
+        """Test for download attachment files"""
+        # upload some attachments to an issue or multiple issues
+        upload = self.uploader()
+        self.assertTrue(upload is True, "Cannot add attachment")
+        # then download those attachments
+        if __version__ >= "0.8.4":
+            PROJECT.get_attachments_on_projects(query=self.jql)
+            PROJECT.download_attachments(
+                file_folder="Attachment",
+                file_name="attachment_file.csv",
+                download_path="Downloads",
+                skip_csv_header=True,
+                overwrite=False,
+                create_html_redirectors=True,
             )
+            # verify download
+            is_download = []
+            read_attachment = file_reader(file_name=path, skip=True)
+            for attach_id in read_attachment:
+                uri_attachment = attach_id[8].split("/")[-1]
+                file_name = attach_id[6]
+                new_path = path_builder(f"Downloads/{uri_attachment}", f"{file_name}")
+                if os.path.isfile(new_path):
+                    is_download.append(True)
+                else:
+                    is_download.append(False)
+            self.assertTrue(all(is_download) is True, "Attachment download failed")
+
+
+    def uploader(self) -> bool:
+        """uploader function"""
+        count = 0
+        check_upload = []
+        for image in [self.issue_keys, self.issue_keys, self.issue_keys]:
+            issue_key = image
+            # upload a public file for the test
+            file_name = "test-attachment-{}".format(count)
+            attach_file = self.attachment  # public accessible file
+            fetch = LOGIN.custom_method("GET", attach_file)
+            payload = {"file": (file_name, fetch.content)}
+            new_headers = {
+                "Accept": "application/json",
+                "X-Atlassian-Token": "no-check",
+            }
+            LOGIN.headers = new_headers
+            upload = LOGIN.post(
+                endpoint.issue_attachments(issue_key, query="attachments"),
+                files=payload,
+            )
+            count += 1
+            if upload.status_code < 300:
+                check_upload.append(True)
+            else:
+                check_upload.append(False)
+
+        return all(check_upload)
 
     def tearDown(self):
         """Closes the test operations"""
