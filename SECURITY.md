@@ -12,8 +12,8 @@ Below is the list of supported versions for the jiraone library
 | 0.8.1   | :white_check_mark: |
 | 0.7.9   | :white_check_mark: |
 | 0.7.8   | :white_check_mark: |
-| 0.7.7   | :white_check_mark: |
-| 0.7.6   | :white_check_mark: |
+| 0.7.7   | :x: |
+| 0.7.6   | :x: |
 | 0.7.5   | :x: |
 | 0.7.4   | :x:                |
 | 0.7.3   | :x:                |
@@ -32,4 +32,4 @@ Below is the list of supported versions for the jiraone library
 
 ## Reporting a Vulnerability
 
-Please for any security-related issue, email support@elfapp.website
+For any security-related issue, please email support@elfapp.website
