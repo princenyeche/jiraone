@@ -1,5 +1,23 @@
 # Jira one change log
 
+**Release 0.8.4** - 2024-05-20
+
+Thanks to [@huyz](https://github.com/huyz) for the below fixes and improvements to v0.8.4
+
+Fixes:
+- 🐛 `get_attachments_on_projects`: Overwrite attachment file by default
+- 🐛 `json_field_builder`: check if `sprint_custom_id` is None
+- 🐛 `path_builder`: handle multi-dir base_dir
+- 🐛 `download_attachments`: avoid conflicts/overwrites by isolating attachments (helps with https://github.com/princenyeche/jiraone/issues/112)
+  
+Improvements:
+- ✨ `download_attachments`: make defaults and behaviour match `get_attachments_on_projects`
+
+Features:
+- ✨ `download_attachments`: support `create_html_directors` option (resolves https://github.com/princenyeche/jiraone/issues/112)
+- ✨ `download_attachments`: support `overwrite=False` option (to speed up incremental backups)
+
+
 **Release 0.8.3** - 2024-04-01
 * Fixing the CSV change file type and merge_files to run without JQL
 * Added a new endpoint to `runbackup`

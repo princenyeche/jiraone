@@ -518,21 +518,30 @@ class Projects:
         self,
         attachment_folder: str = "Attachment",
         attachment_file_name: str = "attachment_file.csv",
+        mode: str = 'w',
         **kwargs,
     ) -> None:
-        """Return all attachments of a Project or Projects
+        """Fetch the list of all the attachments of a Project or Projects
+        and write it out to an attachment list CSV file named ``attachment_file_name``
+        located in ``attachment_folder``.
 
-        Get the size of attachments on an Issue, count those attachments
-        collectively and return the total number on all Projects searched.
-        JQL is used as a means to search for the project.
+        Also, get the size of the attachment for each Issue, sum up the size of all
+        attachments, and output the total for all Projects as the last
+        row of the output attachment list CSV file.
 
-        :param attachment_folder: A temp folder
+        JQL is used to search for the attachments.
 
-        :param attachment_file_name: A filename for the attachment
+        :param attachment_folder: Target directory where the attachment list CSV
+            file will be written.
 
-        :param kwargs: Addition argument to supply.
+        :param attachment_file_name: Filename of the attachment list CSV to be written.
 
-        :return: None
+        :param mode: Write mode for attachment list CVS to be written. By default it
+            is 'w', which means that any existing file will be overwritten.
+            For example, set to 'a' if you want to append to instead of truncating any
+            existing file.
+
+        :param kwargs: Additional arguments to specify.
         """
         attach_list = deque()
         count_start_at = 0
@@ -551,6 +560,7 @@ class Projects:
             folder=attachment_folder,
             file_name=attachment_file_name,
             data=headers,
+            mode=mode,
             **kwargs,
         )
 
@@ -955,45 +965,85 @@ class Projects:
 
     @staticmethod
     def download_attachments(
-        file_folder: str = None,
-        file_name: str = None,
+        file_folder: str = 'Attachment',
+        file_name: str = 'attachment_file.csv',
         download_path: str = "Downloads",
         attach: int = 8,
+        skip_csv_header: bool = True,
+        overwrite: bool = True,
+        create_html_redirectors: bool = False,
         **kwargs,
     ) -> None:
-        """Download the attachments to your local device read from a csv file.
+        """Go through the attachment list CSV file named ``file_name`` and located in the
+        ``file_folder``; for each row, download the attachment indicated to your local device.
 
-        we assume you're getting this from ``def get_attachments_on_project()``
-        method.
+        Calling this method with default arguments assumes that you've
+        previously called the ``def get_attachments_on_project()`` method
+        with default arguments.
 
-        :param attach: integers to specify the index of the columns
+        To avoid conflicts whenever attachments have the same filename (e.g. ``screenshot-1.png``),
+        each downloaded attachment will be placed in a separate directory which corresponds to the
+        content ID that Jira gives the attachment.
 
-        :param file_folder: a folder or directory where the file extract exist
+        :param download_path: the directory where the downloaded attachments are to be stored
 
-        :param download_path: a directory where files are stored
+        :param file_folder: the directory where the attachment list CSV file can be found
+            (Default corresponds to the output of ``def get_attachments_on_project()``
+            when called with default arguments)
 
-        :param file_name: a file name to a file
+        :param file_name: file name of the attachment list CSV file
+            (Default corresponds to the output of ``def get_attachments_on_project()``
+            when called with default arguments)
 
-                e.g
-                  * attach=6,
-                  * file=8
+        :param attach: index of the column that corresponds to 'Attachment URL' in the attachment
+            list CSV file.
+            (Default is 8, which corresponds to the output of ``def get_attachments_on_project()``)
+
+        :param skip_csv_header: when set to True, skips the first line of the attachment list CSV file; i.e.
+            assumes that the first line represents a header row.
+            (Default is True, which corresponds to the output of ``def get_attachments_on_project()``)
+
+        :param overwrite: when True, any attachments will be overwritten. When False, downloading
+            of the attachment will be skipped. Setting this to False can significantly speed up
+            incremental backups by only downloading attachments that have not yet been downloaded.
+
+        :param create_html_redirectors: is used when you want to use the downloaded attachments
+            as part of a website to mirror and serve the attachments separately from the
+            Jira website. When set to True, an ``index.html`` will be created
+            for each attachment so that the original Jira Attachment URL, e.g.
+            https://yourorganization.atlassian.net/rest/api/3/attachment/content/112736 ,
+            can be more easily rewritten to something like
+            https://yourmirrorsite.com/jiraone/MYPROJ/attachment/content/112736 .
+            The ``index.html`` will take care of the HTTP redirect that will point to the
+            attachment with the original filename.
 
         :param kwargs: Additional keyword argument
 
                         **Acceptable options**
 
-                        * file: A row to the index of the column
-
-        the above example corresponds with the index if using the
-        ``def get_attachments_on_project()`` otherwise, specify your value
-        in each keyword args when calling the method.
+                        * file: index of the column 'Name of file' in the attachment list CSV file.
+                            (Default is 6, which corresponds to the output of
+                            ``def get_attachments_on_project()``)
 
         :return: None
         """
+        HTML_REDIRECTOR_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+  <title>Download File</title>
+  <meta http-equiv="refresh" content="0; url={path}">
+</head>
+<body>
+    <p>If you are not redirected automatically, please click <a href="{path}">here</a> to download the file.</p>
+</body>
+</html>
+"""
+
         file: int = kwargs.get("file", 6)
         read = file_reader(
             folder=file_folder,
             file_name=file_name,
+            skip=skip_csv_header,
             **kwargs,
         )
         add_log(
@@ -1008,22 +1058,41 @@ class Projects:
             count += 1
             attachment = r[attach]
             _file_name = r[file]
-            fetch = LOGIN.get(attachment)
-            file_writer(
-                download_path,
-                file_name=_file_name,
-                mode="wb",
-                content=fetch.content,
-                mark="file",
-            )
-            print(
-                "Attachment downloaded to {}".format(download_path),
-                "Status code: {}".format(fetch.status_code),
-            )
-            add_log(
-                "Attachment downloaded to {}".format(download_path),
-                "info",
-            )
+            if attachment == '' or _file_name == '':
+                # For example the last line of the attachment list CSV may have:  ,,,,Total Size:
+                # 0.09 MB,,,,
+                continue
+            content_id = attachment.split('/')[-1]
+            individual_download_path = os.path.join(download_path, content_id)
+            if not os.path.exists(individual_download_path):
+                os.makedirs(individual_download_path)
+            if overwrite or not os.path.exists(os.path.join(individual_download_path, _file_name)):
+                fetch = LOGIN.get(attachment)
+                file_writer(
+                    folder=individual_download_path,
+                    file_name=_file_name,
+                    mode="wb",
+                    content=fetch.content,
+                    mark="file",
+                )
+                print(
+                    "Attachment downloaded to {}".format(individual_download_path),
+                    "Status code: {}".format(fetch.status_code),
+                )
+                add_log(
+                    "Attachment downloaded to {}".format(individual_download_path),
+                    "info",
+                )
+            if create_html_redirectors:
+                # Create HTML file with a template that
+                html_content = HTML_REDIRECTOR_TEMPLATE.format(path=_file_name)
+                # Write the content to file
+                with open(os.path.join(individual_download_path, 'index.html'), 'w') as html_file:
+                    html_file.write(html_content)
+                add_log(
+                    "Attachment HTML redirector created in {}".format(individual_download_path),
+                    "info",
+                )
             if last_cell is True:
                 if count >= (length - 1):
                     break
@@ -5830,7 +5899,7 @@ class Projects:
                                 {f"{sprint_item[sub_sprint]}": []}
                             )
 
-                if "customType" in sprint_custom_id:
+                if sprint_custom_id is not None and "customType" in sprint_custom_id:
                     if sprint_custom_id["customType"].endswith("gh-sprint"):
                         extract = sprint_custom_id["id"].split("_")
                         config["sprint_cf"] = "cf[{}]".format(extract[1])
@@ -7745,7 +7814,7 @@ def path_builder(
         path,
     )
     if not os.path.exists(base_dir):
-        os.mkdir(base_dir)
+        os.makedirs(base_dir)
         add_log(
             f"Building Path {path}",
             "info",
