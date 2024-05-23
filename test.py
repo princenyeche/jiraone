@@ -49,7 +49,9 @@ class JiraOne(unittest.TestCase):
         self.token = os.environ.get("JIRAONEAPITOKEN") or "token"
         self.issue_key = "IP-5"
         self.issue_keys = "AT2-1"
+        self.key_issues = "IP-74"
         self.jql = "project = AT2 order by created desc"
+        self.queries = "project = IP order by created desc"
 
     def test_login_basic_auth(self):
         """Test the LOGIN authentication for basic auth"""
@@ -318,7 +320,7 @@ class JiraOne(unittest.TestCase):
         self.assertTrue(upload is True, "Cannot add attachment")
         # then download those attachments
         if __version__ >= "0.8.4":
-            PROJECT.get_attachments_on_projects(query=self.jql)
+            PROJECT.get_attachments_on_projects(query=self.queries)
             PROJECT.download_attachments(
                 file_folder="Attachment",
                 file_name="attachment_file.csv",
@@ -346,7 +348,7 @@ class JiraOne(unittest.TestCase):
         """uploader function"""
         count = 0
         check_upload = []
-        for image in [self.issue_keys, self.issue_keys, self.issue_keys]:
+        for image in [self.key_issues, self.key_issues, self.key_issues]:
             issue_key = image
             # upload a public file for the test
             file_name = "test-attachment-{}".format(count)
