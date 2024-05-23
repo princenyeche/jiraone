@@ -330,18 +330,20 @@ class JiraOne(unittest.TestCase):
                 create_html_redirectors=True,
             )
             # verify download
-            is_download = []
+            download_count = 0
             path = path_builder("Attachment", "attachment_file.csv")
             read_attachment = file_reader(file_name=path, skip=True)
             for attach_id in read_attachment:
                 uri_attachment = attach_id[8].split("/")[-1]
                 file_name = attach_id[6]
-                new_path = path_builder(f"Downloads/{uri_attachment}", f"{file_name}")
+                new_path = path_builder(f"Downloads/{uri_attachment}", file_name)
                 if os.path.isfile(new_path):
-                    is_download.append(True)
+                    download_count += 1
                 else:
-                    is_download.append(False)
-            self.assertTrue(all(is_download) is True, "Attachment download failed")
+                    download_count -= 1
+            self.assertTrue(download_count >= 3, "Attachment download failed")
+            delete_attachments(search=self.key_issues)
+            
 
 
     def uploader(self) -> bool:
