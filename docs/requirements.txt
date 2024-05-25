@@ -7,3 +7,4 @@ numpy
 pandas
 matplotlib
 pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
+requests>=2.32.0 # not directly required, pinned by Snyk to avoid a vulnerability
