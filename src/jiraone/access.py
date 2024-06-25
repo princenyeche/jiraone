@@ -2930,12 +2930,14 @@ class EndPoints:
 
         :param max_results: defaults to 50
 
-        :param query: A search term
+        :param query: A search term. Valid values e.g. future, active, or closed
+                      Multiple can be separated by comma e.g. active,closed
+        
 
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/agile/1.0/board/{}/sprint?startAt={}&maxResults={}".format(
+            return "{}/rest/agile/1.0/board/{}/sprint?state={}&startAt={}&maxResults={}".format(
                 LOGIN.base_url, board_id, query, start_at, max_results
             )
         else:
@@ -3909,12 +3911,12 @@ class EndPoints:
     @classmethod
     def runbackup(cls):
         """Runs a backup process for the environment
-        
+
         Example 1::
         # send a POST request with the payload
         payload_data = {"cbAttachments": "false", "exportToCloud": "true"}
         # changing "cbAttachments" to "true" will enable backup with attachments
-        
+
         """
         return "{}/rest/backup/1/export/runbackup".format(LOGIN.base_url)
 
