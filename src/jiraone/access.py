@@ -143,14 +143,10 @@ class Credentials:
         :return: None
         """
         if not isinstance(oauth, dict):
-            add_log(
-                "Wrong data type received for " "the oauth argument.", "error"
-            )
+            add_log("Wrong data type received for " "the oauth argument.", "error")
             raise JiraOneErrors(
                 "wrong",
-                "Excepting a dictionary object got {} instead.".format(
-                    type(oauth)
-                ),
+                "Excepting a dictionary object got {} instead.".format(type(oauth)),
             )
         if (
             "client_id" not in oauth
@@ -158,8 +154,7 @@ class Credentials:
             or "callback_url" not in oauth
         ):
             add_log(
-                "You seem to be missing a key or "
-                "keys in your oauth argument.",
+                "You seem to be missing a key or " "keys in your oauth argument.",
                 "debug",
             )
             raise JiraOneErrors(
@@ -189,17 +184,13 @@ class Credentials:
             for ids in cloud_id:
                 if ids["name"] == oauth.get("name"):
                     self.instance_name = ids["name"]
-                    LOGIN.base_url = oauth_data.get("base_url").format(
-                        cloud=ids["id"]
-                    )
+                    LOGIN.base_url = oauth_data.get("base_url").format(cloud=ids["id"])
                 else:
                     self.instance_name = cloud_id[0]["name"]
                     LOGIN.base_url = oauth_data.get("base_url").format(
                         cloud=cloud_id[0]["id"]
                     )
-            tokens.update(
-                {"base_url": LOGIN.base_url, "ins_name": self.instance_name}
-            )
+            tokens.update({"base_url": LOGIN.base_url, "ins_name": self.instance_name})
 
         if self.auth2_0:
             sess = json.loads(self.auth2_0)
@@ -272,12 +263,8 @@ class Credentials:
                 "scope=", "scope=offline_access%20", 1
             )
             oauth.update({"callback_url": call_back})
-            callback = oauth.get("callback_url").format(
-                YOUR_USER_BOUND_VALUE=state
-            )
-            print(
-                "Please click or copy the link into your browser and hit Enter!"
-            )
+            callback = oauth.get("callback_url").format(YOUR_USER_BOUND_VALUE=state)
+            print("Please click or copy the link into your browser and hit Enter!")
             print(callback)
             redirect_url = input("Enter the redirect url: \n")
             # Check if the supplied url is true to the one
@@ -399,9 +386,7 @@ class Credentials:
             extra = {"type": _type, "token": sess}
             self.__token_only_session__(extra)
 
-    def get(
-        self, url: str, *args, payload: dict = None, **kwargs
-    ) -> requests.Response:
+    def get(self, url: str, *args, payload: dict = None, **kwargs) -> requests.Response:
         """
         A get request to HTTP request.
 
@@ -452,9 +437,7 @@ class Credentials:
         )
         return response
 
-    def put(
-        self, url: str, *args, payload: dict = None, **kwargs
-    ) -> requests.Response:
+    def put(self, url: str, *args, payload: dict = None, **kwargs) -> requests.Response:
         """
         A put request to HTTP request.
 
@@ -599,9 +582,7 @@ class Credentials:
         except Exception as err:
             raise JiraOneErrors(
                 "wrong",
-                "An unknown exception has occurred "
-                "Other errors: "
-                f" {err}.",
+                "An unknown exception has occurred " "Other errors: " f" {err}.",
             ) from err
 
 
@@ -734,9 +715,7 @@ class EndPoints:
         )
 
     @classmethod
-    def get_projects(
-        cls, *args: Any, start_at: int = 0, max_results: int = 50
-    ) -> str:
+    def get_projects(cls, *args: Any, start_at: int = 0, max_results: int = 50) -> str:
         """Return a list of Projects available on an Instance
         How to use this endpoint ``/rest/api/3/project/search``  is mentioned
         `here
@@ -776,21 +755,21 @@ class EndPoints:
             if nos > 0:
                 param = "&".join(args)
                 print("Project Search Query Parameter:", param)
-                return "{}/rest/api/{}/project/search?{}&startAt={}&maxResults={}".format(
-                    LOGIN.base_url,
-                    "3" if LOGIN.api is True else "latest",
-                    param,
-                    start_at,
-                    max_results,
+                return (
+                    "{}/rest/api/{}/project/search?{}&startAt={}&maxResults={}".format(
+                        LOGIN.base_url,
+                        "3" if LOGIN.api is True else "latest",
+                        param,
+                        start_at,
+                        max_results,
+                    )
                 )
         else:
-            return (
-                "{}/rest/api/{}/project/search?startAt={}&maxResults={}".format(
-                    LOGIN.base_url,
-                    "3" if LOGIN.api is True else "latest",
-                    start_at,
-                    max_results,
-                )
+            return "{}/rest/api/{}/project/search?startAt={}&maxResults={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                start_at,
+                max_results,
             )
 
     @classmethod
@@ -1063,12 +1042,14 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/api/{}/notificationscheme?{}&startAt={}&maxResults={}".format(
-                LOGIN.base_url,
-                "3" if LOGIN.api is True else "latest",
-                query,
-                start_at,
-                max_results,
+            return (
+                "{}/rest/api/{}/notificationscheme?{}&startAt={}&maxResults={}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    query,
+                    start_at,
+                    max_results,
+                )
             )
         else:
             if attr is True:
@@ -1151,13 +1132,11 @@ class EndPoints:
                 LOGIN.base_url, "3" if LOGIN.api is True else "latest"
             )
         else:
-            return (
-                "{}/rest/api/{}/field/search?startAt={}&maxResults={}".format(
-                    LOGIN.base_url,
-                    "3" if LOGIN.api is True else "latest",
-                    start_at,
-                    max_results,
-                )
+            return "{}/rest/api/{}/field/search?startAt={}&maxResults={}".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                start_at,
+                max_results,
             )
 
     @classmethod
@@ -1224,22 +1203,14 @@ class EndPoints:
                 LOGIN.base_url, "3" if LOGIN.api is True else "latest", uri
             )
         else:
-            if (
-                query is not None
-                and attach_id is not None
-                and id_or_key is None
-            ):
+            if query is not None and attach_id is not None and id_or_key is None:
                 return "{}/rest/api/{}/attachment/{}/{}".format(
                     LOGIN.base_url,
                     "3" if LOGIN.api is True else "latest",
                     attach_id,
                     query,
                 )
-            elif (
-                query is not None
-                and attach_id is None
-                and id_or_key is not None
-            ):
+            elif query is not None and attach_id is None and id_or_key is not None:
                 return "{}/rest/api/{}/issue/{}/{}".format(
                     LOGIN.base_url,
                     "3" if LOGIN.api is True else "latest",
@@ -1276,9 +1247,7 @@ class EndPoints:
         )
 
     @classmethod
-    def search_for_filters(
-        cls, query: Optional[str] = None, start_at: int = 0
-    ) -> str:
+    def search_for_filters(cls, query: Optional[str] = None, start_at: int = 0) -> str:
         """Returns a paginated list of filters. Use this operation to get:
 
         *  specific filters, by defining id only.
@@ -1307,12 +1276,10 @@ class EndPoints:
                 start_at,
             )
         else:
-            return (
-                "{}/rest/api/{}/filter/search?startAt={}&maxResults=50".format(
-                    LOGIN.base_url,
-                    "3" if LOGIN.api is True else "latest",
-                    start_at,
-                )
+            return "{}/rest/api/{}/filter/search?startAt={}&maxResults=50".format(
+                LOGIN.base_url,
+                "3" if LOGIN.api is True else "latest",
+                start_at,
             )
 
     @classmethod
@@ -1539,12 +1506,10 @@ class EndPoints:
                 )
             else:
                 if issue_count is True:
-                    return (
-                        "{}/rest/api/{}/component/{}/relatedIssueCounts".format(
-                            LOGIN.base_url,
-                            "3" if LOGIN.api is True else "latest",
-                            ids,
-                        )
+                    return "{}/rest/api/{}/component/{}/relatedIssueCounts".format(
+                        LOGIN.base_url,
+                        "3" if LOGIN.api is True else "latest",
+                        ids,
                     )
                 else:
                     return "{}/rest/api/{}/component/{}".format(
@@ -1734,20 +1699,16 @@ class EndPoints:
 
             else:
                 if issue_count is True:
-                    return (
-                        "{}/rest/api/{}/version/{}/relatedIssueCounts".format(
-                            LOGIN.base_url,
-                            "3" if LOGIN.api is True else "latest",
-                            ids,
-                        )
+                    return "{}/rest/api/{}/version/{}/relatedIssueCounts".format(
+                        LOGIN.base_url,
+                        "3" if LOGIN.api is True else "latest",
+                        ids,
                     )
                 elif unresolved_count is True:
-                    return (
-                        "{}/rest/api/{}/version/{}/unresolvedIssueCount".format(
-                            LOGIN.base_url,
-                            "3" if LOGIN.api is True else "latest",
-                            ids,
-                        )
+                    return "{}/rest/api/{}/version/{}/unresolvedIssueCount".format(
+                        LOGIN.base_url,
+                        "3" if LOGIN.api is True else "latest",
+                        ids,
                     )
                 else:
                     if swap is True:
@@ -2055,9 +2016,7 @@ class EndPoints:
         worklog_id: Optional[str] = (
             kwargs.get("worklog_id") if "worklog_id" in kwargs else None
         )
-        expand: Optional[str] = (
-            kwargs.get("expand") if "expand" in kwargs else None
-        )
+        expand: Optional[str] = kwargs.get("expand") if "expand" in kwargs else None
         notify_users: Optional[bool] = kwargs.get("notify_users", True)
         adjust_estimate: Optional[str] = kwargs.get("adjust_estimate", "auto")
         new_estimate: Optional[str] = (
@@ -2072,9 +2031,7 @@ class EndPoints:
         reduce_by: Optional[str] = (
             kwargs.get("reduce_by") if "reduce_by" in kwargs else None
         )
-        since: Optional[int] = (
-            kwargs.get("since") if "since" in kwargs else None
-        )
+        since: Optional[int] = kwargs.get("since") if "since" in kwargs else None
 
         if key_or_id is not None and worklog_id is None:
             if started_after is not None and started_before is None:
@@ -2286,14 +2243,11 @@ class EndPoints:
 
         else:
             if since is not None and expand is not None:
-                return (
-                    "{}/rest/api/{}/worklog/updated?"
-                    "expand={}&since={}".format(
-                        LOGIN.base_url,
-                        "3" if LOGIN.api is True else "latest",
-                        expand,
-                        since,
-                    )
+                return "{}/rest/api/{}/worklog/updated?" "expand={}&since={}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    expand,
+                    since,
                 )
             elif since is not None and expand is None:
                 return "{}/rest/api/{}/worklog/deleted?since={}".format(
@@ -2310,9 +2264,7 @@ class EndPoints:
             else:
                 raise JiraOneErrors(
                     "value",
-                    "At least one argument "
-                    "should be passed"
-                    " with this method.",
+                    "At least one argument " "should be passed" " with this method.",
                 )
 
     @classmethod
@@ -2354,9 +2306,7 @@ class EndPoints:
             )
 
     @classmethod
-    def task(
-        cls, task_id: Optional[str] = None, method: Optional[str] = "GET"
-    ) -> str:
+    def task(cls, task_id: Optional[str] = None, method: Optional[str] = "GET") -> str:
         """When a task has finished, this operation
         returns the JSON blob applicable to the task
 
@@ -2589,11 +2539,7 @@ class EndPoints:
                     raise JiraOneErrors(
                         "value", f"{key} keyword argument is not a number."
                     )
-            if (
-                "cord_x" in kwargs
-                and "size" in kwargs
-                and "cord_y" not in kwargs
-            ):
+            if "cord_x" in kwargs and "size" in kwargs and "cord_y" not in kwargs:
                 return "{}/rest/api/{}/project/{}/avatar2?x={}&size={}".format(
                     LOGIN.base_url,
                     "3" if LOGIN.api is True else "latest",
@@ -2601,11 +2547,7 @@ class EndPoints:
                     kwargs.get("cord_x"),
                     kwargs.get("size"),
                 )
-            elif (
-                "cord_y" in kwargs
-                and "size" in kwargs
-                and "cord_x" not in kwargs
-            ):
+            elif "cord_y" in kwargs and "size" in kwargs and "cord_x" not in kwargs:
                 return "{}/rest/api/{}/project/{}/avatar2?y={}&size={}".format(
                     LOGIN.base_url,
                     "3" if LOGIN.api is True else "latest",
@@ -2640,9 +2582,7 @@ class EndPoints:
                 key_or_id,
             )
         else:
-            raise JiraOneErrors(
-                "wrong", "No such method exist within this operation"
-            )
+            raise JiraOneErrors("wrong", "No such method exist within this operation")
 
     ################################################
     # Jira Software Specifics API endpoints
@@ -2686,9 +2626,7 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/agile/1.0/backlog/{}/issue".format(
-            LOGIN.base_url, board_id
-        )
+        return "{}/rest/agile/1.0/backlog/{}/issue".format(LOGIN.base_url, board_id)
 
     # BOARD -> API for Boards
 
@@ -2730,10 +2668,8 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return (
-            "{}/rest/agile/1.0/board/filter/{}?startAt={}&maxResults={}".format(
-                LOGIN.base_url, filter_id, start_at, max_results
-            )
+        return "{}/rest/agile/1.0/board/filter/{}?startAt={}&maxResults={}".format(
+            LOGIN.base_url, filter_id, start_at, max_results
         )
 
     @classmethod
@@ -2784,8 +2720,10 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/agile/1.0/board/{}/backlog?{}&startAt={}&maxResults={}".format(
-                LOGIN.base_url, board_id, query, start_at, max_results
+            return (
+                "{}/rest/agile/1.0/board/{}/backlog?{}&startAt={}&maxResults={}".format(
+                    LOGIN.base_url, board_id, query, start_at, max_results
+                )
             )
         else:
             return "{}/rest/agile/1.0/board/{}/backlog?startAt={}&maxResults={}".format(
@@ -2824,8 +2762,10 @@ class EndPoints:
         :return: A string of the url
         """
         if query is not None:
-            return "{}/rest/agile/1.0/board/{}/issue?{}&startAt={}&maxResults={}".format(
-                LOGIN.base_url, board_id, query, start_at, max_results
+            return (
+                "{}/rest/agile/1.0/board/{}/issue?{}&startAt={}&maxResults={}".format(
+                    LOGIN.base_url, board_id, query, start_at, max_results
+                )
             )
         else:
             return "{}/rest/agile/1.0/board/{}/issue?startAt={}&maxResults={}".format(
@@ -2852,9 +2792,7 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/agile/1.0/board/{}/issue".format(
-            LOGIN.base_url, board_id
-        )
+        return "{}/rest/agile/1.0/board/{}/issue".format(LOGIN.base_url, board_id)
 
     @classmethod
     def get_projects_on_board(
@@ -2932,7 +2870,7 @@ class EndPoints:
 
         :param query: A search term. Valid values e.g. future, active, or closed
                       Multiple can be separated by comma e.g. active,closed
-        
+
 
         :return: A string of the url
         """
@@ -3059,10 +2997,8 @@ class EndPoints:
                 LOGIN.base_url, account_id, start, limit
             )
         else:
-            return (
-                "{}/rest/servicedeskapi/organization?start={}&limit={}".format(
-                    LOGIN.base_url, start, limit
-                )
+            return "{}/rest/servicedeskapi/organization?start={}&limit={}".format(
+                LOGIN.base_url, start, limit
             )
 
     @classmethod
@@ -3090,9 +3026,7 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/servicedeskapi/organization/{}".format(
-            LOGIN.base_url, org_id
-        )
+        return "{}/rest/servicedeskapi/organization/{}".format(LOGIN.base_url, org_id)
 
     @classmethod
     def get_service_desks(cls, start: int = 0, limit: int = 100) -> str:
@@ -3141,9 +3075,7 @@ class EndPoints:
 
         :return: A string of the url
         """
-        return "{}/rest/servicedeskapi/organization/{}".format(
-            LOGIN.base_url, org_id
-        )
+        return "{}/rest/servicedeskapi/organization/{}".format(LOGIN.base_url, org_id)
 
     @classmethod
     def get_users_in_organization(
@@ -3886,20 +3818,16 @@ class EndPoints:
             )
         else:
             if check.lower() == "key":
-                return (
-                    "{}/rest/api/{}/projectvalidate/validProjectKey?{}".format(
-                        LOGIN.base_url,
-                        "3" if LOGIN.api is True else "latest",
-                        f"key={key_or_name}",
-                    )
+                return "{}/rest/api/{}/projectvalidate/validProjectKey?{}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    f"key={key_or_name}",
                 )
             elif check.lower() == "name":
-                return (
-                    "{}/rest/api/{}/projectvalidate/validProjectName?{}".format(
-                        LOGIN.base_url,
-                        "3" if LOGIN.api is True else "latest",
-                        f"name={key_or_name}",
-                    )
+                return "{}/rest/api/{}/projectvalidate/validProjectName?{}".format(
+                    LOGIN.base_url,
+                    "3" if LOGIN.api is True else "latest",
+                    f"name={key_or_name}",
                 )
             else:
                 raise JiraOneErrors(
@@ -4079,18 +4007,16 @@ class Field:
         )
         count_start_at = 0
         while True:
-            load = LOGIN.get(
-                endpoint.get_field(query="type=custom", start_at=count_start_at)
-            ) if LOGIN.api is True else LOGIN.get(
-                endpoint.get_field(system="all")
+            load = (
+                LOGIN.get(
+                    endpoint.get_field(query="type=custom", start_at=count_start_at)
+                )
+                if LOGIN.api is True
+                else LOGIN.get(endpoint.get_field(system="all"))
             )
 
             if load.status_code < 300:
-                data = (
-                    load.json().get("values")
-                    if LOGIN.api is True
-                    else load.json()
-                )
+                data = load.json().get("values") if LOGIN.api is True else load.json()
                 break_out = count_start_at > (
                     load.json().get("total") if LOGIN.api is True else len(data)
                 )
@@ -4138,8 +4064,7 @@ class Field:
                                     "key": value.get("key"),
                                     "searchable": value.get("searchable"),
                                     "type": value.get("schema").get("type"),
-                                    "system": value.get("schema").get(
-                                        "system"),
+                                    "system": value.get("schema").get("system"),
                                 }
                             return {
                                 "name": value.get("name"),
@@ -4300,9 +4225,7 @@ class Field:
                                 attr = {search["id"]: self.multi_field(concat)}
                                 payload = self.data_load(attr)
                             LOGIN.put(
-                                endpoint.issues(
-                                    issue_key_or_id=key_or_id, query=query
-                                ),
+                                endpoint.issues(issue_key_or_id=key_or_id, query=query),
                                 payload=payload,
                             )
                     else:
@@ -4322,29 +4245,19 @@ class Field:
                         attr = {
                             search["id"]: {
                                 "value": cass.__getitem__(1).lstrip(),
-                                "child": {
-                                    "value": cass.__getitem__(3).lstrip()
-                                },
+                                "child": {"value": cass.__getitem__(3).lstrip()},
                             }
                         }
                         payload = self.data_load(attr)
                         response = LOGIN.put(
-                            endpoint.issues(
-                                issue_key_or_id=key_or_id, query=query
-                            ),
+                            endpoint.issues(issue_key_or_id=key_or_id, query=query),
                             payload=payload,
                         )
                     elif len(cass) <= 3:
-                        attr = {
-                            search["id"]: {
-                                "value": cass.__getitem__(1).lstrip()
-                            }
-                        }
+                        attr = {search["id"]: {"value": cass.__getitem__(1).lstrip()}}
                         payload = self.data_load(attr)
                         response = LOGIN.put(
-                            endpoint.issues(
-                                issue_key_or_id=key_or_id, query=query
-                            ),
+                            endpoint.issues(issue_key_or_id=key_or_id, query=query),
                             payload=payload,
                         )
                 elif search["customType"] in [
@@ -4365,9 +4278,7 @@ class Field:
                     # or string for single value
                     if options is None:
                         if not isinstance(data, list):
-                            raise JiraOneErrors(
-                                "wrong", "Expecting a list of values"
-                            )
+                            raise JiraOneErrors("wrong", "Expecting a list of values")
                         else:
                             if len(data) > 1:
                                 raise JiraOneErrors(
@@ -4383,9 +4294,7 @@ class Field:
                         options == "add" or options == "remove"
                     ):  # update the field with the desired value
                         if not isinstance(data, list):
-                            raise JiraOneErrors(
-                                "wrong", "Expecting a list of values"
-                            )
+                            raise JiraOneErrors("wrong", "Expecting a list of values")
                         else:
                             if len(data) == 1:
                                 attr = {search["id"]: [{options: data[0]}]}
@@ -4427,17 +4336,13 @@ class Field:
                                 payload = self.data_load(attr)
                             else:
                                 attr = {
-                                    search["id"]: self.multi_field(
-                                        data, s="accountId"
-                                    )
+                                    search["id"]: self.multi_field(data, s="accountId")
                                 }
                                 payload = self.data_load(attr)
                     elif options == "add" or options == "remove":
                         # update the field with the desired value
                         if not isinstance(data, list):
-                            raise JiraOneErrors(
-                                "wrong", "Excepting a list value"
-                            )
+                            raise JiraOneErrors("wrong", "Excepting a list value")
                         else:
                             if search["type"] == "user":
                                 raise JiraOneErrors(
@@ -4507,9 +4412,7 @@ class Field:
                                 " by comma.",
                             )
                         else:
-                            attr = {
-                                search["id"]: self.multi_field(data, s="name")
-                            }
+                            attr = {search["id"]: self.multi_field(data, s="name")}
                             payload = self.data_load(attr)
                     elif options == "add" or options == "remove":
                         # update the field with the desired value
@@ -4526,15 +4429,11 @@ class Field:
                             else:
                                 concat = ",".join(get_data)
                                 attr = {
-                                    search["id"]: self.multi_field(
-                                        concat, s="name"
-                                    )
+                                    search["id"]: self.multi_field(concat, s="name")
                                 }
                                 payload = self.data_load(attr)
                             LOGIN.put(
-                                endpoint.issues(
-                                    issue_key_or_id=key_or_id, query=query
-                                ),
+                                endpoint.issues(issue_key_or_id=key_or_id, query=query),
                                 payload=payload,
                             )
 
@@ -4594,8 +4493,7 @@ class Field:
                                 payload = self.data_load(attr)
                     else:
                         raise JiraOneErrors(
-                            "wrong"
-                            "You cannot post multiple values with these fields."
+                            "wrong" "You cannot post multiple values with these fields."
                         )
                 response = (
                     LOGIN.put(
@@ -4789,9 +4687,7 @@ class Field:
         get_value = LOGIN.get(endpoint.issues(keys)).json()
         try:
             if "errorMessages" in get_value:
-                return "It seems you don't have access to this issue {}".format(
-                    keys
-                )
+                return "It seems you don't have access to this issue {}".format(keys)
             return get_value["fields"][var.get("id")]
         except (AttributeError, KeyError) as i:
             if isinstance(i, AttributeError):
