@@ -536,7 +536,7 @@ class Projects:
 
         :param attachment_file_name: Filename of the attachment list CSV to be written.
 
-        :param mode: Write mode for attachment list CVS to be written. By default it
+        :param mode: Write mode for attachment list CSV to be written. By default it
             is 'w', which means that any existing file will be overwritten.
             For example, set to 'a' if you want to append to instead of truncating any
             existing file.

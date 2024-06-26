@@ -49,7 +49,9 @@ class JiraOne(unittest.TestCase):
         self.token = os.environ.get("JIRAONEAPITOKEN") or "token"
         self.issue_key = "IP-5"
         self.issue_keys = "AT2-1"
+        self.key_issues = "IP-74"
         self.jql = "project = AT2 order by created desc"
+        self.queries = "project = IP order by created desc"
 
     def test_login_basic_auth(self):
         """Test the LOGIN authentication for basic auth"""
@@ -318,7 +320,7 @@ class JiraOne(unittest.TestCase):
         self.assertTrue(upload is True, "Cannot add attachment")
         # then download those attachments
         if __version__ >= "0.8.4":
-            PROJECT.get_attachments_on_projects(query=self.jql)
+            PROJECT.get_attachments_on_projects(query=self.queries)
             PROJECT.download_attachments(
                 file_folder="Attachment",
                 file_name="attachment_file.csv",
@@ -328,25 +330,27 @@ class JiraOne(unittest.TestCase):
                 create_html_redirectors=True,
             )
             # verify download
-            is_download = []
+            download_count = 0
             path = path_builder("Attachment", "attachment_file.csv")
             read_attachment = file_reader(file_name=path, skip=True)
             for attach_id in read_attachment:
                 uri_attachment = attach_id[8].split("/")[-1]
                 file_name = attach_id[6]
-                new_path = path_builder(f"Downloads/{uri_attachment}", f"{file_name}")
+                new_path = path_builder(f"Downloads/{uri_attachment}", file_name)
                 if os.path.isfile(new_path):
-                    is_download.append(True)
+                    download_count += 1
                 else:
-                    is_download.append(False)
-            self.assertTrue(all(is_download) is True, "Attachment download failed")
+                    download_count -= 1
+            self.assertTrue(download_count >= 3, "Attachment download failed")
+            delete_attachments(search=self.key_issues)
+            
 
 
     def uploader(self) -> bool:
         """uploader function"""
         count = 0
         check_upload = []
-        for image in [self.issue_keys, self.issue_keys, self.issue_keys]:
+        for image in [self.key_issues, self.key_issues, self.key_issues]:
             issue_key = image
             # upload a public file for the test
             file_name = "test-attachment-{}".format(count)

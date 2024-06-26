@@ -1,5 +1,15 @@
 # Jira one change log
 
+**Release 0.8.5** - 2024-06-26
+
+Fixes:
+- 🐛 `get_all_sprints` API fix to query parameter #137
+- 🐛 Corrected errors associated with the test script
+
+Updates:
+- Made some spelling corrections
+
+
 **Release 0.8.4** - 2024-05-20
 
 Thanks to [@huyz](https://github.com/huyz) for the below fixes and improvements to v0.8.4
