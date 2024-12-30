@@ -1,5 +1,13 @@
 # Jira one change log
 
+**Release 0.8.6** - 2024-12-31
+
+Fixes:
+- 🐛 An issue with JSON export that causes `None` type error which triggers an exception during extraction.
+
+Updates:
+- Made an update to the attributes in `Permissions` to align with the built-in Jira project and global permission module on cloud.
+
 **Release 0.8.5** - 2024-06-26
 
 Fixes:
@@ -19,7 +27,7 @@ Fixes:
 - 🐛 `json_field_builder`: check if `sprint_custom_id` is None
 - 🐛 `path_builder`: handle multi-dir base_dir
 - 🐛 `download_attachments`: avoid conflicts/overwrites by isolating attachments (helps with https://github.com/princenyeche/jiraone/issues/112)
-  
+
 Improvements:
 - ✨ `download_attachments`: make defaults and behaviour match `get_attachments_on_projects`
 
