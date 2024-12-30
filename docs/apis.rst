@@ -26,7 +26,9 @@ You can access this classmethod by calling ``jiraone.endpoint``.
               # some expression here
               ...
 
+.. note::
 
+The :ref:`endpoint-class` gives a base framework for utilising Atlassian API. It does not perform any form of complex data collection or modification. It only applies HTTP requests to retrieve Jira data and returns that data as a response object when combined with jiraone's request functions. For example, the sample code above shows a typical way these functions can be used. In terms of pagination, you must construct your own to retrieve the data using either a ``for`` or ``while`` loop depending on what context the information retrieval may be. The API of the :ref:`endpoint-class` does not produce a payload with all data, rather it will only give a subset of that data and if the retrieval of all data is required, use a loop to get all data.
 
 .. autoclass:: EndPoints
    :members:
