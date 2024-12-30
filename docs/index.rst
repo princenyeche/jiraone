@@ -37,7 +37,7 @@ A REST API Implementation to Jira Cloud APIs for creating reports and for perfor
 
 Configurations
 -------
-Install using `pip`. You have to be on python >= 3.6.x to utilize this script. From version 0.7.9 will require Python 3.8.x and above.
+Install using `pip`. You have to be on python >= 3.6.x to utilize this script. From version 0.8.6 will require Python 3.9.x and above.
 
 * Download python and install on your device by visiting `python.org <https://python.org/download>`_
 * Run the below command either using a virtual environment or from your python alias
