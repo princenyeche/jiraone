@@ -4138,7 +4138,7 @@ class Projects:
                     f"{rem_http[0]}://{user_id[0]}%40{user_id[1]}:"
                     f"{LOGIN.password}@{rem_http[-1]}"
                     if LOGIN.api is True
-                    else f"{rem_http[0]}://{user_id[0]}:"
+                    else f"{rem_http[0]}://{user_id}:"
                     f"{LOGIN.password}@{rem_http[-1]}"
                 )
                 return auth_uri
