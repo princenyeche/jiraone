@@ -5477,7 +5477,7 @@ class Projects:
                             sprint_field = _issue_results_[
                                 sprint_custom_id["id"]
                             ]
-                            if sprint_field:
+                            if isinstance(sprint_field, list):
                                 for sprint_item_ in sprint_field:
                                     if (
                                         sprint_item_.get("name")
@@ -6626,9 +6626,18 @@ class Projects:
                             # values
                             # Below are the conditions for arranging field
                             # values
-                            if not obj_name.get("column_name", "").startswith(
-                                "custom"
-                            ):
+                            def check_is_type(obj_type: str) -> str:
+                                """Check whether the item passed is of a
+                                specific data type
+                                :param obj_type: The searched obj
+                                :return: str
+                                """
+                                if not isinstance(obj_type, str):
+                                    return ""
+                                return obj_type
+
+                            if not check_is_type(obj_name.get("column_name", "")
+                                                 ).startswith("custom"):
                                 if (
                                     obj_name.get("column_name", "")
                                     .lower()
