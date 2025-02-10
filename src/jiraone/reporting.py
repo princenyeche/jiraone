@@ -6639,7 +6639,7 @@ class Projects:
                             if not check_is_type(obj_name.get("column_name", "")
                                                  ).startswith("custom"):
                                 if (
-                                    obj_name.get("column_name", "")
+                                    check_is_type(obj_name.get("column_name", ""))
                                     .lower()
                                     .startswith("comment")
                                 ):
@@ -6672,7 +6672,7 @@ class Projects:
                                         ].append(_data)
 
                                 elif (
-                                    obj_name.get("column_name", "")
+                                    check_is_type(obj_name.get("column_name", ""))
                                     .lower()
                                     .startswith("attachment")
                                 ):
@@ -6687,7 +6687,7 @@ class Projects:
                                         json_attachment_template[
                                             "attachments"
                                         ].append(_data)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "worklog"
                                 ):
                                     worklog = obj_value.split(";")
@@ -6705,7 +6705,7 @@ class Projects:
                                             "worklogs"
                                         ].append(_data)
 
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "labels"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6715,7 +6715,7 @@ class Projects:
                                             obj_value
                                         )
 
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Inward issue link"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6736,7 +6736,7 @@ class Projects:
                                                 ],
                                             }
                                         )
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Outward issue link"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6757,7 +6757,7 @@ class Projects:
                                                 ],
                                             }
                                         )
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Watchers Id"
                                     if LOGIN.api is True
                                     else "Watchers"
@@ -6768,7 +6768,7 @@ class Projects:
                                         json_watchers_template[
                                             "watchers"
                                         ].append(obj_value)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "components"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6777,7 +6777,7 @@ class Projects:
                                         json_component_template[
                                             "components"
                                         ].append(obj_value)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "fixVersions"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6786,7 +6786,7 @@ class Projects:
                                         json_fixversion_template[
                                             "fixedVersions"
                                         ].append(obj_value)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "affectedVersions"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6795,12 +6795,12 @@ class Projects:
                                         json_affectversion_template[
                                             "affectedVersions"
                                         ].append(obj_value)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Issue id"
                                 ):
                                     issue_id = obj_value
                                     issue_data.update({"externalId": issue_id})
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Sprint"
                                 ):
                                     if obj_value == "" or obj_value is None:
