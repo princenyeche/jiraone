@@ -3120,6 +3120,7 @@ class Projects:
             OUTWARD_ISSUE_LINK,
             validate_on_error,
             validate_argument_name,
+            check_is_type,
         )
         from copy import (
             deepcopy,
@@ -5981,10 +5982,10 @@ class Projects:
                     """
                     nonlocal my_index
 
+
                     def start_process() -> None:
                         """
                         Initiates the JSON conversion process
-
                         :return: None
                         """
                         nonlocal my_index
@@ -6626,15 +6627,6 @@ class Projects:
                             # values
                             # Below are the conditions for arranging field
                             # values
-                            def check_is_type(obj_type: str) -> str:
-                                """Check whether the item passed is of a
-                                specific data type
-                                :param obj_type: The searched obj
-                                :return: str
-                                """
-                                if not isinstance(obj_type, str):
-                                    return ""
-                                return obj_type
 
                             if not check_is_type(obj_name.get("column_name", "")
                                                  ).startswith("custom"):
@@ -6856,11 +6848,11 @@ class Projects:
                             _issue_key,
                             _issue_value,
                         ) in issue_data.items():
-                            if _issue_key.startswith("Custom field"):
+                            if check_is_type(_issue_key).startswith("Custom field"):
                                 value_to_delete.append(_issue_key)
-                            if _issue_key.startswith("Inward issue link"):
+                            if check_is_type(_issue_key).startswith("Inward issue link"):
                                 value_to_delete.append(_issue_key)
-                            if _issue_key.startswith("Outward issue link"):
+                            if check_is_type(_issue_key).startswith("Outward issue link"):
                                 value_to_delete.append(_issue_key)
 
                         for _vals_ in value_to_delete:

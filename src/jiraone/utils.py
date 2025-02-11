@@ -337,3 +337,14 @@ def validate_argument_name(
             f"The `{name_field}` argument is invalid, as it does not"
             f" exist in the list of accepted keyword arguments.",
         )
+
+
+def check_is_type(obj_type: str) -> str:
+    """Check whether the item passed is of a
+    specific data type
+    :param obj_type: The searched obj
+    :return: str
+    """
+    if not isinstance(obj_type, str):
+        return ""
+    return obj_type
