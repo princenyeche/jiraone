@@ -412,7 +412,7 @@ def create_urls(**kwargs: t.Any) -> str:
     properties: Union[str, None] = kwargs.get("properties", None)
     fields_by_key: bool = kwargs.get("fields_by_key", False)
     fail_fast: bool = kwargs.get("fail_fast", False)
-    reconcile_issues: Union[int, None] = kwargs.get("reconcile_issues", 0)
+    reconcile_issues: t.Union[int, None] = kwargs.get("reconcile_issues", 0)
     query: t.Union[str, None] = kwargs.get("query", None)
     next_page: t.Union[str, None] = kwargs.get("next_page", None)
     max_results: int = kwargs.get("max_results", 50)

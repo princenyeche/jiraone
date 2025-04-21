@@ -183,8 +183,9 @@ class JiraOne(unittest.TestCase):
             delete_attachments(search=issue_key)
             # check for file existence
             image_url = LOGIN.get(upload.json()[0].get("content"))
-            self.assertFalse(image_url.status_code < 300, "Attachment still exist")
-            
+            self.assertFalse(image_url.status_code < 300,
+                             "Attachment still exist")
+
 
     def test_search_user(self):
         """Test for user search"""
