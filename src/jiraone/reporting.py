@@ -570,7 +570,7 @@ class Projects:
 
             :return: None
             """
-            nonlocal attach_list
+            nonlocal attach_list # noqa: F824
             for issues in result_data["issues"]:
                 keys = issues["key"]
                 get_issue_keys = LOGIN.get(
@@ -1599,7 +1599,6 @@ class Projects:
                     :param val: An issue key variable
                     :return: None
                     """
-                    nonlocal attempt
                     # reach the changelog endpoint and extract
                     # the data of history for servers.
                     # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
@@ -4318,7 +4317,6 @@ class Projects:
 
             :return: None
             """
-            nonlocal max_col_length, headers, column_headers
 
             # create a temp csv file with the header of the export
 
@@ -5593,7 +5591,6 @@ class Projects:
             :param ext: A format type to render
             :return: None
             """
-            nonlocal final_file
 
             def extend_file_type() -> None:
                 """
@@ -5655,7 +5652,6 @@ class Projects:
                     :param _export_data_: An iterable item of data
                     :return: None
                     """
-                    nonlocal _start
 
                     _data_ = {
                         "display_name": _export_data_.get("displayName"),
@@ -6053,7 +6049,6 @@ class Projects:
 
                     :return: None
                     """
-                    nonlocal my_index
 
 
                     def start_process() -> None:
@@ -8626,9 +8621,9 @@ def delete_attachments(
 
         :return: None
         """
-        nonlocal attach_load, count, depth
+        nonlocal attach_load, count, depth # noqa: F824
         infinity_point = data_brick["point"]
-        issues = items["issues"][data_brick["point"] :]
+        issues = items["issues"][data_brick["point"]:]
         attach_load = (
             data_brick["data_block"] if back_up is True else attach_load
         )

@@ -93,7 +93,6 @@ class JiraOne(unittest.TestCase):
                 os.path.isfile(path), "Unable to detect CSV file for issue export"
             )
 
-
     def test_issue_export_json(self):
         """Test JSON issue export"""
         jql = self.jql
@@ -109,7 +108,6 @@ class JiraOne(unittest.TestCase):
             self.assertTrue(
                 os.path.isfile(path), "Unable to detect JSON file for issue export"
             )
-
 
     def test_time_in_status(self):
         """Test for time in status for CSV or JSON"""
@@ -146,7 +144,6 @@ class JiraOne(unittest.TestCase):
                 "Unable to detect CSV file for time in status",
             )
 
-
     def test_history_extraction(self):
         """Test for issue history extraction"""
         jql = "key = {}".format(self.issue_key)
@@ -158,7 +155,6 @@ class JiraOne(unittest.TestCase):
                 os.path.isfile(history_file),
                 "Unable to detect CSV file for history extraction",
             )
-
 
     def test_delete_attachment(self):
         """Test for attachment deletion"""
@@ -185,7 +181,6 @@ class JiraOne(unittest.TestCase):
             image_url = LOGIN.get(upload.json()[0].get("content"))
             self.assertFalse(image_url.status_code < 300,
                              "Attachment still exist")
-
 
     def test_search_user(self):
         """Test for user search"""
@@ -285,7 +280,6 @@ class JiraOne(unittest.TestCase):
                 project_attr(self.jql, folder="TEST", file="sampleAsyncFile.csv", flush=10)
                 self.assertTrue(os.path.isfile(path), "Unable to find change log file.")
 
-
     def test_field_extraction(self):
         """Test for field extraction"""
         name = field.get_field("Test Field")
@@ -356,8 +350,6 @@ class JiraOne(unittest.TestCase):
                     download_count -= 1
             self.assertTrue(download_count >= 3, "Attachment download failed")
             delete_attachments(search=self.key_issues)
-
-
 
     def uploader(self) -> bool:
         """uploader function"""
