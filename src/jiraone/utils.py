@@ -409,7 +409,7 @@ def create_urls(**kwargs: t.Any) -> str:
     method = kwargs.get("method", "GET")
     fields: str = kwargs.get("fields", "*all")
     expand: str = kwargs.get("expand", "schema,names")
-    properties: Union[str, None] = kwargs.get("properties", None)
+    properties: t.Union[str, None] = kwargs.get("properties", None)
     fields_by_key: bool = kwargs.get("fields_by_key", False)
     fail_fast: bool = kwargs.get("fail_fast", False)
     reconcile_issues: t.Union[int, None] = kwargs.get("reconcile_issues", 0)
