@@ -181,9 +181,10 @@ class JiraOne(unittest.TestCase):
         if __version__ >= "0.8.7":
             # delete file
             delete_attachments(search=issue_key)
-        # check for file existence
-        image_url = LOGIN.get(upload.json()[0].get("content"))
-        self.assertFalse(image_url.status_code < 300, "Attachment still exist")
+            # check for file existence
+            image_url = LOGIN.get(upload.json()[0].get("content"))
+            self.assertFalse(image_url.status_code < 300, "Attachment still exist")
+            
 
     def test_search_user(self):
         """Test for user search"""
