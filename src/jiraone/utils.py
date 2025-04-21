@@ -348,3 +348,149 @@ def check_is_type(obj_type: str) -> str:
     if not isinstance(obj_type, str):
         return ""
     return obj_type
+
+def get_datetime_utcnow() -> t.Any:
+    """Return an aware datetime object
+    of the current time
+
+    Example 1::
+
+     curr_date = get_datetime_utcnow()
+     # returns datetime object with TZ info
+     # datetime.datetime(2024, 11, 12, 11, 4, 16, 824379,
+     # tzinfo=datetime.timezone.utc)
+
+    :return: A datetime object with timezone info
+    """
+    today = dt.now()
+    get_date = today.fromtimestamp(today.timestamp(), timezone.utc)
+    return get_date
+
+
+def from_datetime_utcnow(from_date: str, _format: str = None) -> t.Any:
+    """Return an aware datetime object
+    from a string value by adding a timezone info
+
+    :param from_date: The string value to be converted
+    :param _format: The string directive for datetime format
+
+    Example 1::
+
+     curr_date = from_datetime_utcnow("2024-12-31 21:00:20.535875")
+     # returns datetime object with TZ info
+     # datetime.datetime(2024, 12, 31, 20, 0, 20, 535875,
+     # tzinfo=datetime.timezone.utc)
+
+    Example 2::
+
+      curr_date = from_datetime_utcnow("2024-12-31 21:00:20.535875",
+                  "%Y-%m-%d %H:%M:%S.%f")
+     # returns datetime object with TZ info
+     # datetime.datetime(2024, 12, 31, 20, 0, 20, 535875,
+     # tzinfo=datetime.timezone.utc)
+
+    :return: A datetime object with timezone info
+    """
+    curr_date = dt.strptime(from_date,
+                            DateFormat.YYYY_MM_dd_HH_MM_SS_MS
+                            if _format is None else _format)
+    get_date = curr_date.fromtimestamp(curr_date.timestamp(), timezone.utc)
+    return get_date
+
+
+def create_urls(**kwargs: t.Any) -> str:
+    """
+    Dynamically generate a URL pattern based on user supplied arguments.
+
+    :param kwargs: Keyword arguments.
+
+    :return: A URL pattern based on user supplied arguments.
+    """
+    method = kwargs.get("method", "GET")
+    fields: str = kwargs.get("fields", "*all")
+    expand: str = kwargs.get("expand", "schema,names")
+    properties: Union[str, None] = kwargs.get("properties", None)
+    fields_by_key: bool = kwargs.get("fields_by_key", False)
+    fail_fast: bool = kwargs.get("fail_fast", False)
+    reconcile_issues: Union[int, None] = kwargs.get("reconcile_issues", 0)
+    query: t.Union[str, None] = kwargs.get("query", None)
+    next_page: t.Union[str, None] = kwargs.get("next_page", None)
+    max_results: int = kwargs.get("max_results", 50)
+    pathway: str = "/rest/api/3/search/jql?"
+    params: list = []
+    # valid key names to parameters
+    name_to_token = {
+        "jql": query,
+        "nextPageToken": next_page,
+        "maxResults": max_results,
+        "fields": fields,
+        "expand": expand,
+        "properties": properties,
+        "fieldsByKey": fields_by_key,
+        "failFast": fail_fast,
+        "reconcileIssues": reconcile_issues,
+    }
+
+    for key, value in name_to_token.items():
+        if value is not None:
+            params.append(f"{key}={value}")
+        else:
+            name_to_token.pop(key)
+    if method == "GET":
+        return pathway + "&".join(params)
+    elif method == "POST":
+        return pathway
+    else:
+        raise JiraOneErrors("error",
+                            "Invalid `method` argument value provided")
+
+
+async def enhance_search(
+        defined_url: str,
+) -> dict:
+    """Performs a search of issues keeping the same working mechanism as
+    the old API for search, it works in an asynchronous method.
+
+    :param defined_url: The URL pattern to search
+    :return: A dictionary with the results of the search
+    """
+    from jiraone import endpoint
+
+    data_obj: dict = {}
+    total: int = await LOGIN.post(endpoint.search_issue_count(
+        defined_url.split("?")[0])
+    )
+    data_obj["total"] = total.json().get("total", 0)
+
+    if defined_url is not None:
+        resp = await LOGIN.get(
+           defined_url,
+        )
+        if resp.status_code < 300:
+            resp_obj = resp.json()
+            if "issues" in resp_obj:
+                issues = resp_obj["issues"]
+                if "issues" not in data_obj:
+                    data_obj["issues"] = issues
+
+            while "nextPageToken" in resp_obj:
+                if "issues" in resp_obj:
+                    issues = resp_obj["issues"]
+                    if "issues" in data_obj:
+                        data_obj["issues"] = data_obj["issues"] + issues
+
+                next_token = resp_obj["nextPageToken"]
+                resp = await LOGIN.get(
+                    defined_url.replace(
+                        "nextPageToken=",
+                        resp_obj[f"nextPageToken={next_token}"],
+                    1)
+                )
+                if resp.status_code < 300:
+                    resp_obj = resp.json()
+        else:
+            raise JiraOneErrors("error",
+                                f"Failed to get issue data - {resp.text}")
+
+
+    return data_obj

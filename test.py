@@ -81,76 +81,84 @@ class JiraOne(unittest.TestCase):
         """Test CSV issue export"""
         jql = self.jql
         path = path_builder("TEST", "test_import_CSV_sample.csv")
-        # testing parameters
-        issue_export(
-            jql=jql,
-            extension="csv",
-            folder="TEST",
-            final_file="test_import_CSV_sample.csv",
-        )
-        self.assertTrue(
-            os.path.isfile(path), "Unable to detect CSV file for issue export"
-        )
+        if __version__ >= "0.8.7":
+            # testing parameters
+            issue_export(
+                jql=jql,
+                extension="csv",
+                folder="TEST",
+                final_file="test_import_CSV_sample.csv",
+            )
+            self.assertTrue(
+                os.path.isfile(path), "Unable to detect CSV file for issue export"
+            )
+
 
     def test_issue_export_json(self):
         """Test JSON issue export"""
         jql = self.jql
         path = path_builder("TEST", "test_import_json_sample.json")
         LOGIN.api = True
-        issue_export(
-            jql=jql,
-            extension="json",
-            folder="TEST",
-            final_file="test_import_json_sample.json",
-        )
-        self.assertTrue(
-            os.path.isfile(path), "Unable to detect JSON file for issue export"
-        )
+        if __version__ >= "0.8.7":
+            issue_export(
+                jql=jql,
+                extension="json",
+                folder="TEST",
+                final_file="test_import_json_sample.json",
+            )
+            self.assertTrue(
+                os.path.isfile(path), "Unable to detect JSON file for issue export"
+            )
+
 
     def test_time_in_status(self):
         """Test for time in status for CSV or JSON"""
         key = self.issue_key
         json_file = path_builder("TEST", "test_time_in_status.json")
         csv_file = path_builder("TEST", "test_time_in_status.csv")
-        time_in_status(
-            PROJECT,
-            key,
-            reader=file_reader,
-            output_format="json",
-            report_folder="TEST",
-            output_filename="test_time_in_status",
-            login=LOGIN,
-            pprint="timestamp",
-        )
-        self.assertTrue(
-            os.path.isfile(json_file),
-            "Unable to detect JSON file for time in status",
-        )
-        time_in_status(
-            PROJECT,
-            key,
-            reader=file_reader,
-            output_format="csv",
-            report_folder="TEST",
-            output_filename="test_time_in_status",
-            login=LOGIN,
-            pprint=True,
-        )
-        self.assertTrue(
-            os.path.isfile(csv_file),
-            "Unable to detect CSV file for time in status",
-        )
+        if __version__ >= "0.8.7":
+            time_in_status(
+                PROJECT,
+                key,
+                reader=file_reader,
+                output_format="json",
+                report_folder="TEST",
+                output_filename="test_time_in_status",
+                login=LOGIN,
+                pprint="timestamp",
+            )
+            self.assertTrue(
+                os.path.isfile(json_file),
+                "Unable to detect JSON file for time in status",
+            )
+            time_in_status(
+                PROJECT,
+                key,
+                reader=file_reader,
+                output_format="csv",
+                report_folder="TEST",
+                output_filename="test_time_in_status",
+                login=LOGIN,
+                pprint=True,
+            )
+            self.assertTrue(
+                os.path.isfile(csv_file),
+                "Unable to detect CSV file for time in status",
+            )
+
 
     def test_history_extraction(self):
         """Test for issue history extraction"""
         jql = "key = {}".format(self.issue_key)
         file = "test_history.csv"
         history_file = path_builder("TEST", file)
-        PROJECT.change_log(folder="TEST", file=file, jql=jql)
-        self.assertTrue(
-            os.path.isfile(history_file),
-            "Unable to detect CSV file for history extraction",
-        )
+        if __version__ >= "0.8.7":
+            PROJECT.change_log(folder="TEST", file=file, jql=jql)
+            self.assertTrue(
+                os.path.isfile(history_file),
+                "Unable to detect CSV file for history extraction",
+            )
+
 
     def test_delete_attachment(self):
         """Test for attachment deletion"""
@@ -170,8 +178,9 @@ class JiraOne(unittest.TestCase):
             files=payload,
         )
         self.assertTrue(upload.status_code < 300, "Cannot add attachment")
-        # delete file
-        delete_attachments(search=issue_key)
+        if __version__ >= "0.8.7":
+            # delete file
+            delete_attachments(search=issue_key)
         # check for file existence
         image_url = LOGIN.get(upload.json()[0].get("content"))
         self.assertFalse(image_url.status_code < 300, "Attachment still exist")
@@ -269,9 +278,11 @@ class JiraOne(unittest.TestCase):
         path = path_builder("TEST", "sampleAsyncFile.csv")
         LOGIN.api = True
         if hasattr(PROJECT, "async_change_log"):
-            project_attr = getattr(PROJECT, "async_change_log")
-            project_attr(self.jql, folder="TEST", file="sampleAsyncFile.csv", flush=10)
-            self.assertTrue(os.path.isfile(path), "Unable to find change log file.")
+            if __version__ >= "0.8.7":
+                project_attr = getattr(PROJECT, "async_change_log")
+                project_attr(self.jql, folder="TEST", file="sampleAsyncFile.csv", flush=10)
+                self.assertTrue(os.path.isfile(path), "Unable to find change log file.")
+
 
     def test_field_extraction(self):
         """Test for field extraction"""
@@ -308,7 +319,7 @@ class JiraOne(unittest.TestCase):
         # upload the same attachment trice
         upload = self.uploader()
         self.assertTrue(upload is True, "Cannot add attachment")
-        if __version__ >= "0.8.4":
+        if __version__ >= "0.8.7":
             PROJECT.get_attachments_on_projects(query=self.jql)
             path = path_builder("Attachment", "attachment_file.csv")
             self.assertTrue(os.path.isfile(path), "Unable to find attachment file.")
@@ -319,7 +330,7 @@ class JiraOne(unittest.TestCase):
         upload = self.uploader()
         self.assertTrue(upload is True, "Cannot add attachment")
         # then download those attachments
-        if __version__ >= "0.8.4":
+        if __version__ >= "0.8.7":
             PROJECT.get_attachments_on_projects(query=self.queries)
             PROJECT.download_attachments(
                 file_folder="Attachment",
@@ -343,7 +354,7 @@ class JiraOne(unittest.TestCase):
                     download_count -= 1
             self.assertTrue(download_count >= 3, "Attachment download failed")
             delete_attachments(search=self.key_issues)
-            
+
 
 
     def uploader(self) -> bool:

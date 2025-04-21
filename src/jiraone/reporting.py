@@ -544,7 +544,7 @@ class Projects:
         :param kwargs: Additional arguments to specify.
         """
         attach_list = deque()
-        count_start_at = 0
+        count_start_at: Union[str, int] = 0 if LOGIN.api is False else None
         headers = [
             "Project id",
             "Project key",
@@ -642,17 +642,31 @@ class Projects:
                 endpoint.search_issues_jql(
                     start_at=count_start_at,
                     **kwargs,
+                ) if LOGIN.api is False else
+                endpoint.search_cloud_issues(
+                    next_page=count_start_at,
+                    **kwargs,
                 )
             )
             if get_issue.status_code == 200:
                 result_data = json.loads(get_issue.content)
-                if count_start_at > result_data["total"]:
-                    print("Attachment extraction completed")
-                    add_log(
-                        "Attachment extraction completed",
-                        "info",
-                    )
-                    break
+                if LOGIN.api is False:
+                    if count_start_at > result_data["total"]:
+                        print("Attachment extraction completed")
+                        add_log(
+                            "Attachment extraction completed",
+                            "info",
+                        )
+                        break
+                elif LOGIN.api is True:
+                    if "nextPageToken" not in result_data:
+                        print("Attachment extraction completed")
+                        add_log(
+                            "Attachment extraction completed",
+                            "info",
+                        )
+                        break
+
 
                 print("Attachment extraction processing")
                 add_log(
@@ -661,7 +675,10 @@ class Projects:
                 )
                 pull_attachment_sequence()
 
-            count_start_at += 50
+            if LOGIN.api is False:
+                count_start_at += 50
+            elif LOGIN.api is True:
+                count_start_at = get_issue.json().get("nextPageToken", None)
 
         def re_write() -> None:
             """
@@ -1199,7 +1216,7 @@ class Projects:
             "Searching with JQL:",
             search_issues,
         )
-        count_start_at = 0
+        count_start_at: Union[str, int] = 0 if LOGIN.api is False else None
 
         def extract_issue() -> None:
             """Find the comment in each issue and count it.
@@ -1279,22 +1296,38 @@ class Projects:
                 endpoint.search_issues_jql(
                     query=search_issues,
                     start_at=count_start_at,
+                ) if LOGIN.api is False else
+                endpoint.search_cloud_issues(
+                    query=search_issues,
+                    next_page=count_start_at,
                 )
             )
             if get_issues.status_code == 200:
                 result_data = json.loads(get_issues.content)
-                if count_start_at > result_data["total"]:
-                    print("Issues extraction completed")
-                    add_log(
-                        "Issue extraction completed",
-                        "info",
-                    )
-                    break
+                if LOGIN.api is False:
+                    if count_start_at > result_data["total"]:
+                        print("Issues extraction completed")
+                        add_log(
+                            "Issue extraction completed",
+                            "info",
+                        )
+                        break
+                elif LOGIN.api is True:
+                    if "nextPageToken" not in result_data:
+                        print("Issues extraction completed")
+                        add_log(
+                            "Issue extraction completed",
+                            "info",
+                        )
+                        break
 
                 print("Extracting Issues...")
                 extract_issue()
 
-            count_start_at += 50
+            if LOGIN.api is False:
+                count_start_at += 50
+            elif LOGIN.api is True:
+                count_start_at = get_issues.json().get("nextPageToken", None)
 
         def count_and_total() -> (
             Tuple[
@@ -1850,7 +1883,8 @@ class Projects:
                         for change in history["values"]:
                             render_history(change)
 
-        count = 0  # get a counter of the issue record
+        # get a counter of the issue record
+        count: Union[str, int] = 0 if LOGIN.api is False else None
         headers = (
             [
                 "Issue Key",
@@ -1948,6 +1982,11 @@ class Projects:
                         query=set_up["jql"],
                         start_at=set_up["iter"],
                         max_results=100,
+                    ) if LOGIN.api is False else
+                    endpoint.search_cloud_issues(
+                        query=set_up["jql"],
+                        next_page=set_up["iter"],
+                        max_results=100,
                     )
                 )
                 if back_up is True and depth == 1
@@ -1956,9 +1995,15 @@ class Projects:
                         query=jql,
                         start_at=count,
                         max_results=100,
-                    )
+                    ) if LOGIN.api is False else
+                endpoint.search_cloud_issues(
+                query=jql,
+                next_page=count,
+                max_results=100,
+                 )
                 )
-            )
+           )
+
             if load.status_code == 200:
                 data = json.loads(load.content)
                 cycle = 0
@@ -1973,11 +2018,20 @@ class Projects:
                         else attempt,
                     }
                 )
-                if count > data["total"]:
-                    break
-                changelog_search()
-                depth += 1
-            count += 100
+                if LOGIN.api is False:
+                    if count > data["total"]:
+                        break
+                    changelog_search()
+                    depth += 1
+                elif LOGIN.api is True:
+                    if "nextPageToken" not in data:
+                        break
+                    changelog_search()
+                    depth += 1
+            if LOGIN.api is False:
+                count += 100
+            if LOGIN.api is True:
+                count = load.json().get("nextPageToken", None)
             if depth == 2 and back_up is True:
                 count = data_brick["iter"]
             if load.status_code > 300:
@@ -3937,8 +3991,14 @@ class Projects:
             validate_query,
         ) = (
             0,
-            0,
-            LOGIN.get(endpoint.search_issues_jql(jql)),
+            0 if LOGIN.api is False else LOGIN.post(
+                endpoint.search_issue_count(), payload={
+                    "jql": jql
+                }
+            ).json()["count"],
+            LOGIN.get(endpoint.search_issues_jql(jql)
+                if LOGIN.api is False else
+                endpoint.search_cloud_issues(jql)),
         )
         (
             init,
@@ -3953,7 +4013,14 @@ class Projects:
 
         if not merge_files:
             if validate_query.status_code < 300:
-                total = validate_query.json()["total"]
+                if LOGIN.api is False:
+                    total = validate_query.json()["total"]
+                elif LOGIN.api is True:
+                    total = LOGIN.post(
+                endpoint.search_issue_count(), payload={
+                    "jql": jql
+                }
+            ).json()["count"]
             else:
                 add_log(
                     "Invalid JQL query received. Reason {} with status code: "
@@ -5009,6 +5076,9 @@ class Projects:
                             _fields_ = LOGIN.get(
                                 endpoint.search_issues_jql(
                                     field_search.format(field_name=_field_item)
+                                ) if LOGIN.api is False else
+                                endpoint.search_cloud_issues(
+                                    field_search.format(field_name=_field_item)
                                 )
                             )
                             if _fields_.status_code < 300:
@@ -5464,6 +5534,9 @@ class Projects:
             """
             _search_ = LOGIN.get(
                 endpoint.search_issues_jql(
+                    f'{config["sprint_cf"]} = "{sprint_value}"'
+                ) if LOGIN.api is False else
+                endpoint.search_cloud_issues(
                     f'{config["sprint_cf"]} = "{sprint_value}"'
                 )
             )
@@ -6806,9 +6879,9 @@ class Projects:
                                     else:
                                         data.update(
                                             {
-                                                obj_name.get(
+                                                check_is_type(obj_name.get(
                                                     "column_name"
-                                                ): obj_value
+                                                )): obj_value
                                             }
                                         )
                                         issue_data.update(data)
@@ -7382,11 +7455,25 @@ class Projects:
             total,
             validate_query,
         ) = (
-            0,
-            LOGIN.get(endpoint.search_issues_jql(jql)),
+            0 if LOGIN.api is False else LOGIN.post(
+                endpoint.search_issue_count(), payload={
+                    "jql": jql
+                }
+            ).json()["count"],
+            LOGIN.get(endpoint.search_issues_jql(jql)
+                      if LOGIN.api is False else
+                      endpoint.search_cloud_issues(jql)
+                      ),
         )
         if validate_query.status_code < 300:
-            total = validate_query.json()["total"]
+            if LOGIN.api is False:
+                total = validate_query.json()["total"]
+            elif LOGIN.api is True:
+                total = LOGIN.post(
+                endpoint.search_issue_count(), payload={
+                    "jql": jql
+                }
+            ).json()["count"]
         else:
             add_log(
                 "Invalid JQL query received. Reason {} with status code: "
@@ -8956,6 +9043,11 @@ def delete_attachments(
                         query=set_up["query"],
                         start_at=set_up["iter"],
                         max_results=100,
+                    ) if LOGIN.api is False else
+                    endpoint.search_cloud_issues(
+                        query=set_up["query"],
+                        next_page=set_up["iter"],
+                        max_results=100,
                     )
                 )
                 if back_up is True and depth == 1
@@ -8963,6 +9055,11 @@ def delete_attachments(
                     endpoint.search_issues_jql(
                         query=query,
                         start_at=count,
+                        max_results=100,
+                    ) if LOGIN.api is False else
+                    endpoint.search_cloud_issues(
+                        query=query,
+                        next_page=count,
                         max_results=100,
                     )
                 )
@@ -9008,25 +9105,47 @@ def delete_attachments(
                         else 0,
                     }
                 )
-                if count > data_["total"]:
-                    data_brick.update({"status": "complete"})
-                    json.dump(
-                        data_brick,
-                        open(
-                            data_file,
-                            mode="w+",
-                            encoding="utf-8",
-                        ),
-                        indent=4,
-                    ) if allow_cp is True else None
-                    add_log(
-                        "Extraction is completed, "
-                        "deletion of attachments on the next step",
-                        "info",
-                    )
-                    break
+                if LOGIN.api is False:
+                    if count > data_["total"]:
+                        data_brick.update({"status": "complete"})
+                        json.dump(
+                            data_brick,
+                            open(
+                                data_file,
+                                mode="w+",
+                                encoding="utf-8",
+                            ),
+                            indent=4,
+                        ) if allow_cp is True else None
+                        add_log(
+                            "Extraction is completed, "
+                            "deletion of attachments on the next step",
+                            "info",
+                        )
+                        break
+                elif LOGIN.api is True:
+                    if "nextPageToken" not in data_:
+                        data_brick.update({"status": "complete"})
+                        json.dump(
+                            data_brick,
+                            open(
+                                data_file,
+                                mode="w+",
+                                encoding="utf-8",
+                            ),
+                            indent=4,
+                        ) if allow_cp is True else None
+                        add_log(
+                            "Extraction is completed, "
+                            "deletion of attachments on the next step",
+                            "info",
+                        )
+                        break
                 get_attachments(data_)
-            count += 100
+            if LOGIN.api is False:
+                count += 100
+            if LOGIN.api is True:
+                count = load.json().get("nextPageToken", None)
             if back_up is True and depth == 1:
                 data_brick["iter"] = count
                 back_up = False
