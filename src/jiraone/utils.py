@@ -8,7 +8,7 @@ import typing as t
 import threading
 import re
 from datetime import datetime as dt, timedelta, timezone
-from jiraone import add_log
+from jiraone import add_log, LOGIN
 from jiraone.exceptions import JiraOneErrors
 
 
