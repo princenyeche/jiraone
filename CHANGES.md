@@ -6,7 +6,7 @@
 Updates:
 - Deprecation warning of `search_issues_jql` API for Jira Cloud, Jira DC still uses the API #150
 - Added new function in `jira.utils` module to handle utc_datetime in Python 3.12.x
-- Added new function in `jira.utils` module for async issue extraction called `enhance_search`
+- Added new function in `jira.utils` module for issue extraction called `enhance_search`
 - Added new function in `access` module for issue search on Jira Cloud called `search_cloud_issues`
 
 
