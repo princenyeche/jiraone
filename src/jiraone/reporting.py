@@ -658,15 +658,6 @@ class Projects:
                             "info",
                         )
                         break
-                elif LOGIN.api is True:
-                    if "nextPageToken" not in result_data:
-                        print("Attachment extraction completed")
-                        add_log(
-                            "Attachment extraction completed",
-                            "info",
-                        )
-                        break
-
 
                 print("Attachment extraction processing")
                 add_log(
@@ -674,6 +665,14 @@ class Projects:
                     "info",
                 )
                 pull_attachment_sequence()
+                if LOGIN.api is True:
+                    if "nextPageToken" not in result_data:
+                        print("Attachment extraction completed")
+                        add_log(
+                            "Attachment extraction completed",
+                            "info",
+                        )
+                        break
 
             if LOGIN.api is False:
                 count_start_at += 50
@@ -685,6 +684,7 @@ class Projects:
             Rewrite and sort the extracted data
             :return: None
             """
+            nonlocal read_file
             calc_made = self.grade_and_sort(
                 attach_list,
                 read_file,
@@ -1673,7 +1673,10 @@ class Projects:
                                 print("*" * 100)
                                 starter += 100
 
-                infinity_counter += 1
+                if LOGIN.api is False:
+                    infinity_counter += 1
+                if LOGIN.api is True:
+                    infinity_counter = count
                 data_brick.update(
                     {
                         "iter": infinity_counter,
@@ -1730,7 +1733,7 @@ class Projects:
                         _field_id = ""
                         _tmpFromAccountId = ""
                         _tmpToAccountId = ""
-                        if LOGIN.api is False:
+                        if LOGIN.api is True:
                             _field_id = item.get("fieldId")
                             _tmpFromAccountId = item.get("tmpFromAccountId")
                             _tmpToAccountId = item.get("tmpToAccountId")
@@ -1789,7 +1792,7 @@ class Projects:
                             )
                             item_list.append(raw)
 
-                        ItemList = (
+                        ItemList = ( # noqa
                             namedtuple(
                                 "ItemList",
                                 [
@@ -1819,7 +1822,7 @@ class Projects:
                         )
 
                         for _ in item_list:
-                            issue = ItemList._make(_)
+                            issue = ItemList._make(_) # noqa
                             # Fix for time in status
                             blank_data(
                                 _keys,
@@ -1985,6 +1988,7 @@ class Projects:
                     endpoint.search_cloud_issues(
                         query=set_up["jql"],
                         next_page=set_up["iter"],
+                        fields=None,
                         max_results=100,
                     )
                 )
@@ -1998,12 +2002,13 @@ class Projects:
                 endpoint.search_cloud_issues(
                 query=jql,
                 next_page=count,
+                    fields=None,
                 max_results=100,
                  )
                 )
            )
 
-            if load.status_code == 200:
+            if load.status_code < 300:
                 data = json.loads(load.content)
                 cycle = 0
                 data_brick.update(
@@ -2022,10 +2027,10 @@ class Projects:
                         break
                     changelog_search()
                     depth += 1
-                elif LOGIN.api is True:
+                if LOGIN.api is True:
+                    changelog_search()
                     if "nextPageToken" not in data:
                         break
-                    changelog_search()
                     depth += 1
             if LOGIN.api is False:
                 count += 100
@@ -8621,7 +8626,7 @@ def delete_attachments(
 
         :return: None
         """
-        nonlocal attach_load, count, depth # noqa: F824
+        nonlocal attach_load, count, depth, next_count # noqa: F824
         infinity_point = data_brick["point"]
         issues = items["issues"][data_brick["point"]:]
         attach_load = (
@@ -8698,7 +8703,7 @@ def delete_attachments(
                 inf_block(atl=True)
             json.dump(
                 data_brick,
-                open(
+                open( # noqa
                     data_file,
                     mode="w+",
                     encoding="utf-8",
@@ -8805,10 +8810,12 @@ def delete_attachments(
         count,
         cycle,
         step,
+        next_count # used for new search API for Jira cloud,
     ) = (
         0,
         0,
         0,
+        None,
     )
     if file is None:
         if search is None:
@@ -8987,7 +8994,7 @@ def delete_attachments(
             count += 1
             json.dump(
                 data_brick,
-                open(
+                open( # noqa
                     data_file,
                     mode="w+",
                     encoding="utf-8",
@@ -9041,7 +9048,8 @@ def delete_attachments(
                     ) if LOGIN.api is False else
                     endpoint.search_cloud_issues(
                         query=set_up["query"],
-                        next_page=set_up["iter"],
+                        next_page=set_up["iters"],
+                        fields=None,
                         max_results=100,
                     )
                 )
@@ -9054,7 +9062,8 @@ def delete_attachments(
                     ) if LOGIN.api is False else
                     endpoint.search_cloud_issues(
                         query=query,
-                        next_page=count,
+                        next_page=next_count,
+                        fields=None,
                         max_results=100,
                     )
                 )
@@ -9070,17 +9079,17 @@ def delete_attachments(
                 cycle = 0
                 print(
                     "Extracting attachment details on row {}".format(
-                        set_up["iter"]
+                        (set_up["iter"] if LOGIN.api is False else set_up["iters"])
                         if back_up is True and depth == 1
-                        else count
+                        else (count if LOGIN.api is False else next_count)
                     )
                 )
                 print("*" * 100)
                 add_log(
                     "Extracting attachment details on row {}".format(
-                        set_up["iter"]
+                        (set_up["iter"] if LOGIN.api is False else set_up["iters"])
                         if back_up is True and depth == 1
-                        else count
+                        else (count if LOGIN.api is False else next_count)
                     ),
                     "info",
                 )
@@ -9089,6 +9098,9 @@ def delete_attachments(
                         "iter": set_up["iter"]
                         if back_up is True and depth == 1
                         else count,
+                        "iters": set_up["iters"]
+                        if back_up is True and depth == 1
+                        else next_count,
                         "query": set_up["query"]
                         if back_up is True and depth == 1
                         else query,
@@ -9105,7 +9117,7 @@ def delete_attachments(
                         data_brick.update({"status": "complete"})
                         json.dump(
                             data_brick,
-                            open(
+                            open( # noqa
                                 data_file,
                                 mode="w+",
                                 encoding="utf-8",
@@ -9118,12 +9130,14 @@ def delete_attachments(
                             "info",
                         )
                         break
-                elif LOGIN.api is True:
+
+                get_attachments(data_)
+                if LOGIN.api is True:
                     if "nextPageToken" not in data_:
                         data_brick.update({"status": "complete"})
                         json.dump(
                             data_brick,
-                            open(
+                            open( # noqa
                                 data_file,
                                 mode="w+",
                                 encoding="utf-8",
@@ -9136,13 +9150,12 @@ def delete_attachments(
                             "info",
                         )
                         break
-                get_attachments(data_)
-            if LOGIN.api is False:
-                count += 100
-            if LOGIN.api is True:
-                count = load.json().get("nextPageToken", None)
+                next_count = data_.get("nextPageToken", None)
+            count += 100 # if api is False use a different search API
+
             if back_up is True and depth == 1:
                 data_brick["iter"] = count
+                data_brick["iters"] = next_count
                 back_up = False
             depth += 2
             if load.status_code > 300:
@@ -9466,7 +9479,7 @@ def delete_attachments(
                 count += 1
                 json.dump(
                     data_brick,
-                    open(
+                    open( # noqa
                         data_file,
                         mode="w+",
                         encoding="utf-8",

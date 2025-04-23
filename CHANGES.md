@@ -1,7 +1,7 @@
 # Jira one change log
 
 
-**Release 0.8.7** - 2025-04-22
+**Release 0.8.7** - 2025-04-23
 
 Updates:
 - Deprecation warning of `search_issues_jql` API for Jira Cloud, Jira DC still uses the API #150

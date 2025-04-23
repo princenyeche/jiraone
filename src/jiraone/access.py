@@ -663,6 +663,8 @@ class EndPoints:
     """A Structural way to dynamically load urls that is fed
     to other functions."""
 
+    issue_payload: dict = None
+
     @classmethod
     def myself(cls) -> str:
         """Return data on your own user.
@@ -1268,12 +1270,13 @@ class EndPoints:
             `See <https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-jql-post>`_
 
 
-            :param query: A search term using JQL.
+            :param query: A search term using JQL with a bounded query
+                         E.g. ``assignee = currentUser() order by key``
 
             :param next_page: A next page data URL.
 
             :param max_results: A max result to return, default is 50 and
-                                max_results is 5000
+                                max result is 5000
 
             :param kwargs: Additional keyword arguments.
 
@@ -1287,7 +1290,7 @@ class EndPoints:
                          * properties - string -A list of up to 5 issue
                                         properties to include in the results
                                         defaults to None
-                         * fields_by_key - bool - Reference fields by their key
+                         * fields_by_keys - bool - Reference fields by their key
                                         (rather than ID)
                          * fail_fast - bool - Fail this request early if we
                                      can't retrieve all field data. Only for GET request.
@@ -1302,13 +1305,14 @@ class EndPoints:
         from jiraone.utils import create_urls, validate_argument_name
 
         method: str = kwargs.get("method", "GET")
-        fields: str = kwargs.get("fields", "*all")
-        expand: str = kwargs.get("expand", "schema,names")
-        properties: Union[str, None] = kwargs.get("properties", None)
-        fields_by_key: bool = kwargs.get("fields_by_key", False)
+        fields: Union[str, list[str], None] = kwargs.get("fields", "*all")
+        expand: Union[str, None] = kwargs.get("expand", "schema,names")
+        properties: Union[str, list[str], None] = kwargs.get("properties", None)
+        fields_by_keys: bool = kwargs.get("fields_by_keys", False)
         fail_fast: bool = kwargs.get("fail_fast", False)
-        reconcile_issues: Union[int, None] = kwargs.get("reconcile_issues", 0)
-        field_names: list = ["method", "fields", "expand", "properties", "fields_by_key",
+        reconcile_issues: Union[int, list[int], None] = kwargs.get(
+            "reconcile_issues", None)
+        field_names: list = ["method", "fields", "expand", "properties", "fields_by_keys",
                        "reconcile_issues", "payload", "next_page",
                        "query", "max_results", "fail_fast"]
         for key, value in kwargs.items():
@@ -1329,7 +1333,7 @@ class EndPoints:
             fields=fields,
             expand=expand,
             properties=properties,
-            fields_by_key=fields_by_key,
+            fields_by_keys=fields_by_keys,
             fail_fast=fail_fast,
             reconcile_issues=reconcile_issues,
             max_results=max_results,
@@ -1337,6 +1341,20 @@ class EndPoints:
         )
                 )
 
+
+    @property
+    def get_issue_search_payload(self) -> dict:
+        """
+        Returns a dict object of the ``endpoint.search_cloud_issues`` arguments
+        """
+        return self.issue_payload
+
+    @get_issue_search_payload.setter
+    def get_issue_search_payload(self, payload: dict) -> None:
+        """
+        Sets the POST request payload of ``endpoint.search_cloud_issues``
+        """
+        self.issue_payload = payload
 
     @classmethod
     def search_issue_count(cls) -> str:
