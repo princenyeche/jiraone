@@ -684,7 +684,7 @@ class Projects:
             Rewrite and sort the extracted data
             :return: None
             """
-            nonlocal read_file
+            nonlocal read_file # noqa: F824
             calc_made = self.grade_and_sort(
                 attach_list,
                 read_file,
