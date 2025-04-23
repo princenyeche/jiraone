@@ -544,7 +544,7 @@ class Projects:
         :param kwargs: Additional arguments to specify.
         """
         attach_list = deque()
-        count_start_at = 0
+        count_start_at: Union[str, int] = 0 if LOGIN.api is False else None
         headers = [
             "Project id",
             "Project key",
@@ -570,7 +570,7 @@ class Projects:
 
             :return: None
             """
-            nonlocal attach_list
+            nonlocal attach_list # noqa: F824
             for issues in result_data["issues"]:
                 keys = issues["key"]
                 get_issue_keys = LOGIN.get(
@@ -642,17 +642,22 @@ class Projects:
                 endpoint.search_issues_jql(
                     start_at=count_start_at,
                     **kwargs,
+                ) if LOGIN.api is False else
+                endpoint.search_cloud_issues(
+                    next_page=count_start_at,
+                    **kwargs,
                 )
             )
             if get_issue.status_code == 200:
                 result_data = json.loads(get_issue.content)
-                if count_start_at > result_data["total"]:
-                    print("Attachment extraction completed")
-                    add_log(
-                        "Attachment extraction completed",
-                        "info",
-                    )
-                    break
+                if LOGIN.api is False:
+                    if count_start_at > result_data["total"]:
+                        print("Attachment extraction completed")
+                        add_log(
+                            "Attachment extraction completed",
+                            "info",
+                        )
+                        break
 
                 print("Attachment extraction processing")
                 add_log(
@@ -660,14 +665,26 @@ class Projects:
                     "info",
                 )
                 pull_attachment_sequence()
+                if LOGIN.api is True:
+                    if "nextPageToken" not in result_data:
+                        print("Attachment extraction completed")
+                        add_log(
+                            "Attachment extraction completed",
+                            "info",
+                        )
+                        break
 
-            count_start_at += 50
+            if LOGIN.api is False:
+                count_start_at += 50
+            elif LOGIN.api is True:
+                count_start_at = get_issue.json().get("nextPageToken", None)
 
         def re_write() -> None:
             """
             Rewrite and sort the extracted data
             :return: None
             """
+            nonlocal read_file # noqa: F824
             calc_made = self.grade_and_sort(
                 attach_list,
                 read_file,
@@ -1199,7 +1216,7 @@ class Projects:
             "Searching with JQL:",
             search_issues,
         )
-        count_start_at = 0
+        count_start_at: Union[str, int] = 0 if LOGIN.api is False else None
 
         def extract_issue() -> None:
             """Find the comment in each issue and count it.
@@ -1279,22 +1296,38 @@ class Projects:
                 endpoint.search_issues_jql(
                     query=search_issues,
                     start_at=count_start_at,
+                ) if LOGIN.api is False else
+                endpoint.search_cloud_issues(
+                    query=search_issues,
+                    next_page=count_start_at,
                 )
             )
             if get_issues.status_code == 200:
                 result_data = json.loads(get_issues.content)
-                if count_start_at > result_data["total"]:
-                    print("Issues extraction completed")
-                    add_log(
-                        "Issue extraction completed",
-                        "info",
-                    )
-                    break
+                if LOGIN.api is False:
+                    if count_start_at > result_data["total"]:
+                        print("Issues extraction completed")
+                        add_log(
+                            "Issue extraction completed",
+                            "info",
+                        )
+                        break
+                elif LOGIN.api is True:
+                    if "nextPageToken" not in result_data:
+                        print("Issues extraction completed")
+                        add_log(
+                            "Issue extraction completed",
+                            "info",
+                        )
+                        break
 
                 print("Extracting Issues...")
                 extract_issue()
 
-            count_start_at += 50
+            if LOGIN.api is False:
+                count_start_at += 50
+            elif LOGIN.api is True:
+                count_start_at = get_issues.json().get("nextPageToken", None)
 
         def count_and_total() -> (
             Tuple[
@@ -1566,7 +1599,6 @@ class Projects:
                     :param val: An issue key variable
                     :return: None
                     """
-                    nonlocal attempt
                     # reach the changelog endpoint and extract
                     # the data of history for servers.
                     # https://docs.atlassian.com/software/jira/docs/api/REST/7.13.11/#api/2/issue-getIssue
@@ -1641,7 +1673,10 @@ class Projects:
                                 print("*" * 100)
                                 starter += 100
 
-                infinity_counter += 1
+                if LOGIN.api is False:
+                    infinity_counter += 1
+                if LOGIN.api is True:
+                    infinity_counter = count
                 data_brick.update(
                     {
                         "iter": infinity_counter,
@@ -1698,7 +1733,7 @@ class Projects:
                         _field_id = ""
                         _tmpFromAccountId = ""
                         _tmpToAccountId = ""
-                        if LOGIN.api is False:
+                        if LOGIN.api is True:
                             _field_id = item.get("fieldId")
                             _tmpFromAccountId = item.get("tmpFromAccountId")
                             _tmpToAccountId = item.get("tmpToAccountId")
@@ -1757,7 +1792,7 @@ class Projects:
                             )
                             item_list.append(raw)
 
-                        ItemList = (
+                        ItemList = ( # noqa
                             namedtuple(
                                 "ItemList",
                                 [
@@ -1787,7 +1822,7 @@ class Projects:
                         )
 
                         for _ in item_list:
-                            issue = ItemList._make(_)
+                            issue = ItemList._make(_) # noqa
                             # Fix for time in status
                             blank_data(
                                 _keys,
@@ -1850,7 +1885,8 @@ class Projects:
                         for change in history["values"]:
                             render_history(change)
 
-        count = 0  # get a counter of the issue record
+        # get a counter of the issue record
+        count: Union[str, int] = 0 if LOGIN.api is False else None
         headers = (
             [
                 "Issue Key",
@@ -1948,6 +1984,12 @@ class Projects:
                         query=set_up["jql"],
                         start_at=set_up["iter"],
                         max_results=100,
+                    ) if LOGIN.api is False else
+                    endpoint.search_cloud_issues(
+                        query=set_up["jql"],
+                        next_page=set_up["iter"],
+                        fields=None,
+                        max_results=100,
                     )
                 )
                 if back_up is True and depth == 1
@@ -1956,10 +1998,17 @@ class Projects:
                         query=jql,
                         start_at=count,
                         max_results=100,
-                    )
+                    ) if LOGIN.api is False else
+                endpoint.search_cloud_issues(
+                query=jql,
+                next_page=count,
+                    fields=None,
+                max_results=100,
+                 )
                 )
-            )
-            if load.status_code == 200:
+           )
+
+            if load.status_code < 300:
                 data = json.loads(load.content)
                 cycle = 0
                 data_brick.update(
@@ -1973,11 +2022,20 @@ class Projects:
                         else attempt,
                     }
                 )
-                if count > data["total"]:
-                    break
-                changelog_search()
-                depth += 1
-            count += 100
+                if LOGIN.api is False:
+                    if count > data["total"]:
+                        break
+                    changelog_search()
+                    depth += 1
+                if LOGIN.api is True:
+                    changelog_search()
+                    if "nextPageToken" not in data:
+                        break
+                    depth += 1
+            if LOGIN.api is False:
+                count += 100
+            if LOGIN.api is True:
+                count = load.json().get("nextPageToken", None)
             if depth == 2 and back_up is True:
                 count = data_brick["iter"]
             if load.status_code > 300:
@@ -3120,6 +3178,7 @@ class Projects:
             OUTWARD_ISSUE_LINK,
             validate_on_error,
             validate_argument_name,
+            check_is_type,
         )
         from copy import (
             deepcopy,
@@ -3936,8 +3995,14 @@ class Projects:
             validate_query,
         ) = (
             0,
-            0,
-            LOGIN.get(endpoint.search_issues_jql(jql)),
+            0 if LOGIN.api is False else LOGIN.post(
+                endpoint.search_issue_count(), payload={
+                    "jql": jql
+                }
+            ).json()["count"],
+            LOGIN.get(endpoint.search_issues_jql(jql)
+                if LOGIN.api is False else
+                endpoint.search_cloud_issues(jql)),
         )
         (
             init,
@@ -3952,7 +4017,14 @@ class Projects:
 
         if not merge_files:
             if validate_query.status_code < 300:
-                total = validate_query.json()["total"]
+                if LOGIN.api is False:
+                    total = validate_query.json()["total"]
+                elif LOGIN.api is True:
+                    total = LOGIN.post(
+                endpoint.search_issue_count(), payload={
+                    "jql": jql
+                }
+            ).json()["count"]
             else:
                 add_log(
                     "Invalid JQL query received. Reason {} with status code: "
@@ -4138,7 +4210,7 @@ class Projects:
                     f"{rem_http[0]}://{user_id[0]}%40{user_id[1]}:"
                     f"{LOGIN.password}@{rem_http[-1]}"
                     if LOGIN.api is True
-                    else f"{rem_http[0]}://{user_id[0]}:"
+                    else f"{rem_http[0]}://{user_id}:"
                     f"{LOGIN.password}@{rem_http[-1]}"
                 )
                 return auth_uri
@@ -4250,7 +4322,6 @@ class Projects:
 
             :return: None
             """
-            nonlocal max_col_length, headers, column_headers
 
             # create a temp csv file with the header of the export
 
@@ -5008,6 +5079,9 @@ class Projects:
                             _fields_ = LOGIN.get(
                                 endpoint.search_issues_jql(
                                     field_search.format(field_name=_field_item)
+                                ) if LOGIN.api is False else
+                                endpoint.search_cloud_issues(
+                                    field_search.format(field_name=_field_item)
                                 )
                             )
                             if _fields_.status_code < 300:
@@ -5464,6 +5538,9 @@ class Projects:
             _search_ = LOGIN.get(
                 endpoint.search_issues_jql(
                     f'{config["sprint_cf"]} = "{sprint_value}"'
+                ) if LOGIN.api is False else
+                endpoint.search_cloud_issues(
+                    f'{config["sprint_cf"]} = "{sprint_value}"'
                 )
             )
             if _search_.status_code < 300:
@@ -5477,7 +5554,7 @@ class Projects:
                             sprint_field = _issue_results_[
                                 sprint_custom_id["id"]
                             ]
-                            if sprint_field:
+                            if isinstance(sprint_field, list):
                                 for sprint_item_ in sprint_field:
                                     if (
                                         sprint_item_.get("name")
@@ -5519,7 +5596,6 @@ class Projects:
             :param ext: A format type to render
             :return: None
             """
-            nonlocal final_file
 
             def extend_file_type() -> None:
                 """
@@ -5581,7 +5657,6 @@ class Projects:
                     :param _export_data_: An iterable item of data
                     :return: None
                     """
-                    nonlocal _start
 
                     _data_ = {
                         "display_name": _export_data_.get("displayName"),
@@ -5979,12 +6054,11 @@ class Projects:
 
                     :return: None
                     """
-                    nonlocal my_index
+
 
                     def start_process() -> None:
                         """
                         Initiates the JSON conversion process
-
                         :return: None
                         """
                         nonlocal my_index
@@ -6626,11 +6700,11 @@ class Projects:
                             # values
                             # Below are the conditions for arranging field
                             # values
-                            if not obj_name.get("column_name", "").startswith(
-                                "custom"
-                            ):
+
+                            if not check_is_type(obj_name.get("column_name", "")
+                                                 ).startswith("custom"):
                                 if (
-                                    obj_name.get("column_name", "")
+                                    check_is_type(obj_name.get("column_name", ""))
                                     .lower()
                                     .startswith("comment")
                                 ):
@@ -6663,7 +6737,7 @@ class Projects:
                                         ].append(_data)
 
                                 elif (
-                                    obj_name.get("column_name", "")
+                                    check_is_type(obj_name.get("column_name", ""))
                                     .lower()
                                     .startswith("attachment")
                                 ):
@@ -6678,7 +6752,7 @@ class Projects:
                                         json_attachment_template[
                                             "attachments"
                                         ].append(_data)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "worklog"
                                 ):
                                     worklog = obj_value.split(";")
@@ -6696,7 +6770,7 @@ class Projects:
                                             "worklogs"
                                         ].append(_data)
 
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "labels"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6706,7 +6780,7 @@ class Projects:
                                             obj_value
                                         )
 
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Inward issue link"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6727,7 +6801,7 @@ class Projects:
                                                 ],
                                             }
                                         )
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Outward issue link"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6748,7 +6822,7 @@ class Projects:
                                                 ],
                                             }
                                         )
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Watchers Id"
                                     if LOGIN.api is True
                                     else "Watchers"
@@ -6759,7 +6833,7 @@ class Projects:
                                         json_watchers_template[
                                             "watchers"
                                         ].append(obj_value)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "components"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6768,7 +6842,7 @@ class Projects:
                                         json_component_template[
                                             "components"
                                         ].append(obj_value)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "fixVersions"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6777,7 +6851,7 @@ class Projects:
                                         json_fixversion_template[
                                             "fixedVersions"
                                         ].append(obj_value)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "affectedVersions"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6786,12 +6860,12 @@ class Projects:
                                         json_affectversion_template[
                                             "affectedVersions"
                                         ].append(obj_value)
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Issue id"
                                 ):
                                     issue_id = obj_value
                                     issue_data.update({"externalId": issue_id})
-                                elif obj_name.get("column_name", "").startswith(
+                                elif check_is_type(obj_name.get("column_name", "")).startswith(
                                     "Sprint"
                                 ):
                                     if obj_value == "" or obj_value is None:
@@ -6805,9 +6879,9 @@ class Projects:
                                     else:
                                         data.update(
                                             {
-                                                obj_name.get(
+                                                check_is_type(obj_name.get(
                                                     "column_name"
-                                                ): obj_value
+                                                )): obj_value
                                             }
                                         )
                                         issue_data.update(data)
@@ -6847,11 +6921,11 @@ class Projects:
                             _issue_key,
                             _issue_value,
                         ) in issue_data.items():
-                            if _issue_key.startswith("Custom field"):
+                            if check_is_type(_issue_key).startswith("Custom field"):
                                 value_to_delete.append(_issue_key)
-                            if _issue_key.startswith("Inward issue link"):
+                            if check_is_type(_issue_key).startswith("Inward issue link"):
                                 value_to_delete.append(_issue_key)
-                            if _issue_key.startswith("Outward issue link"):
+                            if check_is_type(_issue_key).startswith("Outward issue link"):
                                 value_to_delete.append(_issue_key)
 
                         for _vals_ in value_to_delete:
@@ -7381,11 +7455,25 @@ class Projects:
             total,
             validate_query,
         ) = (
-            0,
-            LOGIN.get(endpoint.search_issues_jql(jql)),
+            0 if LOGIN.api is False else LOGIN.post(
+                endpoint.search_issue_count(), payload={
+                    "jql": jql
+                }
+            ).json()["count"],
+            LOGIN.get(endpoint.search_issues_jql(jql)
+                      if LOGIN.api is False else
+                      endpoint.search_cloud_issues(jql)
+                      ),
         )
         if validate_query.status_code < 300:
-            total = validate_query.json()["total"]
+            if LOGIN.api is False:
+                total = validate_query.json()["total"]
+            elif LOGIN.api is True:
+                total = LOGIN.post(
+                endpoint.search_issue_count(), payload={
+                    "jql": jql
+                }
+            ).json()["count"]
         else:
             add_log(
                 "Invalid JQL query received. Reason {} with status code: "
@@ -8538,9 +8626,9 @@ def delete_attachments(
 
         :return: None
         """
-        nonlocal attach_load, count, depth
+        nonlocal attach_load, count, depth, next_count # noqa: F824
         infinity_point = data_brick["point"]
-        issues = items["issues"][data_brick["point"] :]
+        issues = items["issues"][data_brick["point"]:]
         attach_load = (
             data_brick["data_block"] if back_up is True else attach_load
         )
@@ -8615,7 +8703,7 @@ def delete_attachments(
                 inf_block(atl=True)
             json.dump(
                 data_brick,
-                open(
+                open( # noqa
                     data_file,
                     mode="w+",
                     encoding="utf-8",
@@ -8722,10 +8810,12 @@ def delete_attachments(
         count,
         cycle,
         step,
+        next_count # used for new search API for Jira cloud,
     ) = (
         0,
         0,
         0,
+        None,
     )
     if file is None:
         if search is None:
@@ -8904,7 +8994,7 @@ def delete_attachments(
             count += 1
             json.dump(
                 data_brick,
-                open(
+                open( # noqa
                     data_file,
                     mode="w+",
                     encoding="utf-8",
@@ -8955,6 +9045,12 @@ def delete_attachments(
                         query=set_up["query"],
                         start_at=set_up["iter"],
                         max_results=100,
+                    ) if LOGIN.api is False else
+                    endpoint.search_cloud_issues(
+                        query=set_up["query"],
+                        next_page=set_up["iters"],
+                        fields=None,
+                        max_results=100,
                     )
                 )
                 if back_up is True and depth == 1
@@ -8962,6 +9058,12 @@ def delete_attachments(
                     endpoint.search_issues_jql(
                         query=query,
                         start_at=count,
+                        max_results=100,
+                    ) if LOGIN.api is False else
+                    endpoint.search_cloud_issues(
+                        query=query,
+                        next_page=next_count,
+                        fields=None,
                         max_results=100,
                     )
                 )
@@ -8977,17 +9079,17 @@ def delete_attachments(
                 cycle = 0
                 print(
                     "Extracting attachment details on row {}".format(
-                        set_up["iter"]
+                        (set_up["iter"] if LOGIN.api is False else set_up["iters"])
                         if back_up is True and depth == 1
-                        else count
+                        else (count if LOGIN.api is False else next_count)
                     )
                 )
                 print("*" * 100)
                 add_log(
                     "Extracting attachment details on row {}".format(
-                        set_up["iter"]
+                        (set_up["iter"] if LOGIN.api is False else set_up["iters"])
                         if back_up is True and depth == 1
-                        else count
+                        else (count if LOGIN.api is False else next_count)
                     ),
                     "info",
                 )
@@ -8996,6 +9098,9 @@ def delete_attachments(
                         "iter": set_up["iter"]
                         if back_up is True and depth == 1
                         else count,
+                        "iters": set_up["iters"]
+                        if back_up is True and depth == 1
+                        else next_count,
                         "query": set_up["query"]
                         if back_up is True and depth == 1
                         else query,
@@ -9007,27 +9112,50 @@ def delete_attachments(
                         else 0,
                     }
                 )
-                if count > data_["total"]:
-                    data_brick.update({"status": "complete"})
-                    json.dump(
-                        data_brick,
-                        open(
-                            data_file,
-                            mode="w+",
-                            encoding="utf-8",
-                        ),
-                        indent=4,
-                    ) if allow_cp is True else None
-                    add_log(
-                        "Extraction is completed, "
-                        "deletion of attachments on the next step",
-                        "info",
-                    )
-                    break
+                if LOGIN.api is False:
+                    if count > data_["total"]:
+                        data_brick.update({"status": "complete"})
+                        json.dump(
+                            data_brick,
+                            open( # noqa
+                                data_file,
+                                mode="w+",
+                                encoding="utf-8",
+                            ),
+                            indent=4,
+                        ) if allow_cp is True else None
+                        add_log(
+                            "Extraction is completed, "
+                            "deletion of attachments on the next step",
+                            "info",
+                        )
+                        break
+
                 get_attachments(data_)
-            count += 100
+                if LOGIN.api is True:
+                    if "nextPageToken" not in data_:
+                        data_brick.update({"status": "complete"})
+                        json.dump(
+                            data_brick,
+                            open( # noqa
+                                data_file,
+                                mode="w+",
+                                encoding="utf-8",
+                            ),
+                            indent=4,
+                        ) if allow_cp is True else None
+                        add_log(
+                            "Extraction is completed, "
+                            "deletion of attachments on the next step",
+                            "info",
+                        )
+                        break
+                next_count = data_.get("nextPageToken", None)
+            count += 100 # if api is False use a different search API
+
             if back_up is True and depth == 1:
                 data_brick["iter"] = count
+                data_brick["iters"] = next_count
                 back_up = False
             depth += 2
             if load.status_code > 300:
@@ -9351,7 +9479,7 @@ def delete_attachments(
                 count += 1
                 json.dump(
                     data_brick,
-                    open(
+                    open( # noqa
                         data_file,
                         mode="w+",
                         encoding="utf-8",

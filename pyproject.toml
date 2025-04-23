@@ -1,6 +1,6 @@
 [project]
 name = "jiraone"
-version = "v0.8.6"
+version = "v0.8.7"
 authors = [
     { name="Prince Nyeche", email="support@elfapp.website" },
 ]

@@ -307,7 +307,7 @@ def validate_on_error(
 
     if not isinstance(name_field, data_type[0]):
         add_log(
-            f"The `{data_type[1]}` argument seems to be using the wrong "
+            f"The `{data_type[1]}` argument seems to be using the wrong"
             f'data structure "{name_field}" as value, '
             f"expecting {data_type[2]}.",
             "error",
@@ -337,3 +337,295 @@ def validate_argument_name(
             f"The `{name_field}` argument is invalid, as it does not"
             f" exist in the list of accepted keyword arguments.",
         )
+
+
+def check_is_type(obj_type: str) -> str:
+    """Check whether the item passed is of a
+    specific data type
+    :param obj_type: The searched obj
+    :return: str
+    """
+    if not isinstance(obj_type, str):
+        return ""
+    return obj_type
+
+def get_datetime_utcnow() -> t.Any:
+    """Return an aware datetime object
+    of the current time
+
+    Example 1::
+
+     curr_date = get_datetime_utcnow()
+     # returns datetime object with TZ info
+     # datetime.datetime(2024, 11, 12, 11, 4, 16, 824379,
+     # tzinfo=datetime.timezone.utc)
+
+    :return: A datetime object with timezone info
+    """
+    today = dt.now()
+    get_date = today.fromtimestamp(today.timestamp(), timezone.utc)
+    return get_date
+
+
+def from_datetime_utcnow(from_date: str, _format: str = None) -> t.Any:
+    """Return an aware datetime object
+    from a string value by adding a timezone info
+
+    :param from_date: The string value to be converted
+    :param _format: The string directive for datetime format
+
+    Example 1::
+
+     curr_date = from_datetime_utcnow("2024-12-31 21:00:20.535875")
+     # returns datetime object with TZ info
+     # datetime.datetime(2024, 12, 31, 20, 0, 20, 535875,
+     # tzinfo=datetime.timezone.utc)
+
+    Example 2::
+
+      curr_date = from_datetime_utcnow("2024-12-31 21:00:20.535875",
+                  "%Y-%m-%d %H:%M:%S.%f")
+     # returns datetime object with TZ info
+     # datetime.datetime(2024, 12, 31, 20, 0, 20, 535875,
+     # tzinfo=datetime.timezone.utc)
+
+    :return: A datetime object with timezone info
+    """
+    curr_date = dt.strptime(from_date,
+                            DateFormat.YYYY_MM_dd_HH_MM_SS_MS
+                            if _format is None else _format)
+    get_date = curr_date.fromtimestamp(curr_date.timestamp(), timezone.utc)
+    return get_date
+
+
+def create_urls(**kwargs: t.Any) -> str:
+    """
+    Dynamically generate a URL pattern based on user supplied arguments.
+    It follows the same argument structure as ``endpoint.search_cloud_issues``.
+    See doc for the list of arguments that can be supplied.
+
+    :param kwargs: Keyword arguments.
+
+            **Acceptable arguments are**:
+
+                * method - string values "GET" or "POST"
+                * fields - list[str] defaults to "*all", you can use
+                                    "*all,-comment" - return all fields except
+                                     comments. Specify fields returned by name
+                * expand - string defaults to None, you can use
+                                    "schema,names"
+                * properties - list[str] -A list of up to 5 issue
+                                        properties to include in the results
+                                        defaults to None
+                * fields_by_keys - bool - Reference fields by their key
+                                        (rather than ID)
+                * fail_fast - bool - Fail this request early if we
+                                     can't retrieve all field data.
+                                     Only for GET request.
+                * reconcile_issues - list[int] - Strong consistency
+                                          issue ids to be reconciled
+                * max_results - int - Maximum number of results to return
+                * query - str - The JQL query to submit
+                * next_page - str - The next page token of results to return
+                                    if available
+
+
+    :return: A URL pattern based on user supplied arguments.
+    """
+    from jiraone import endpoint
+
+    method: str = kwargs.get("method", "GET")
+    fields: t.Union[str, list[str], None] = kwargs.get("fields", "*all")
+    expand: t.Union[str, None] = kwargs.get("expand", "schema,names")
+    properties: t.Union[str, list[str], None] = kwargs.get("properties", None)
+    fields_by_keys: bool = kwargs.get("fields_by_keys", False)
+    fail_fast: bool = kwargs.get("fail_fast", False)
+    reconcile_issues: t.Union[
+        int, list[int], None] = kwargs.get("reconcile_issues", None)
+    query: t.Union[str, None] = kwargs.get("query", None)
+    next_page: t.Union[str, None] = kwargs.get("next_page", None)
+    max_results: int = kwargs.get("max_results", 50)
+    pathway: str = "/rest/api/3/search/jql"
+    params: list = []
+    # valid key names to parameters
+    name_to_token = {
+        "jql": query,
+        "nextPageToken": next_page,
+        "maxResults": max_results,
+        "fields": fields,
+        "expand": expand,
+        "properties": properties,
+        "fieldsByKeys": fields_by_keys,
+        "failFast": fail_fast,
+        "reconcileIssues": reconcile_issues,
+    }
+
+    name_popper = []
+    for key, value in name_to_token.items():
+        if value is not None:
+            params.append(f"{key}={value}")
+        else:
+            name_popper.append(key)
+    for _name in name_popper:
+        name_to_token.pop(_name)
+    if method.upper() == "GET":
+        if not params:
+            return pathway
+        else:
+            return f"{pathway}?" + "&".join(params)
+    elif method.upper() == "POST":
+        if "fields" in name_to_token:
+            if not isinstance(name_to_token["fields"], list):
+                get_field = name_to_token.pop("fields")
+                name_to_token["fields"] = get_field.split(",")
+        if "properties" in name_to_token:
+            if not isinstance(name_to_token["properties"], list):
+                get_property = name_to_token.pop("properties")
+                name_to_token["properties"] = get_property.split(",")
+        if "reconcileIssues" in name_to_token:
+            get_reconcile_issues = name_to_token.pop("reconcileIssues")
+            name_to_token["reconcileIssues"] = get_reconcile_issues
+        endpoint.get_issue_search_payload = name_to_token
+        return pathway
+    else:
+        raise JiraOneErrors("error",
+                            "Invalid `method` argument value provided")
+
+
+def enhance_search(
+        defined_url: str,
+        method: str = "GET",
+) -> dict:
+    """Performs a search of issues keeping the payload mechanism looking like
+    the old API for search, while retaining the new features of search in Cloud.
+    It performs the search for the next-page automatically and returns all issues
+    within the project. The URL creation is done automatically by the endpoint
+    constant and accepts various argument, see ``endpoint.search_cloud_issues``
+    docs for more info on the arguments that can be used. You can also supply
+    a direct URL, if it is defined well enough, the API will return results.
+    Works with ``GET`` or ``POST`` method.
+
+    :param defined_url: The URL pattern to issue search
+
+    Example 1::
+
+     from jiraone.utils import enhance_search
+     from jiraone import endpoint, LOGIN
+
+     # auth process here
+     jql = "project = IT AND order by createdDate DESC"
+     search = enhance_search(endpoint.search_cloud_issues(
+      jql, fields=*all)
+     )
+     print(search)
+     # output
+     # {"total": 123, "issues": [...] }
+
+
+    Example 2::
+
+      from jiraone.utils import enhance_search
+      from jiraone import LOGIN
+
+      # auth process here
+      jql = "project = IT AND order by createdDate DESC"
+      url = "https://yoursite.atlassian.net/rest/api/3/search/jql"
+      search = enhance_search(f"{url}?jql={jql}&fields=*all")
+      print(search)
+      # output
+      # {"total": 123, "issues": [...] }
+
+    :param method: values are "GET" or "POST" and case-insensitive
+                   defaults to "GET" method
+
+    Example 3::
+
+      from jiraone.utils import enhance_search
+      from jiraone import endpoint, LOGIN
+
+      # auth process here
+      jql = "project = IT AND order by createdDate DESC"
+      url = "https://yoursite.atlassian.net/rest/api/3/search/jql"
+      search = enhance_search(endpoint.search_cloud_issues(
+      jql, method="POST", fields=*all), method="POST")
+      print(search)
+      # output
+      # {"total": 123, "issues": [...] }
+
+    :return: A dictionary with the results of the search
+    """
+    from jiraone import endpoint, LOGIN
+
+    data_obj: dict = {}
+    # switch between GET or POST method automatically based on the provided
+    # arguments.
+    if "?" in defined_url:
+        get_param_list: list = defined_url.split("?")[1].split("&")
+        jql: str = [
+            item.split("jql=")[1] for item in get_param_list if "jql=" in item
+        ][0]
+    else:
+        jql: dict = endpoint.get_issue_search_payload.get("jql")
+
+    total: int = LOGIN.post(endpoint.search_issue_count(),
+                            payload={"jql": jql},
+                            )
+    data_obj["total"] = total.json().get("count", 0)
+
+    if defined_url is not None:
+        resp = LOGIN.get(
+           defined_url,
+        ) if method.upper() == "GET" else LOGIN.post(
+            defined_url, payload=endpoint.get_issue_search_payload
+        )
+        if resp.status_code < 300:
+            resp_obj = resp.json()
+            if "issues" in resp_obj:
+                issues = resp_obj["issues"]
+                if "issues" not in data_obj:
+                    data_obj["issues"] = issues
+
+            while "nextPageToken" in resp_obj:
+                if "issues" in resp_obj:
+                    issues = resp_obj["issues"]
+                    if "issues" in data_obj:
+                        data_obj["issues"] = data_obj["issues"] + issues
+
+                next_token, token = resp_obj["nextPageToken"], None
+                if "nextPageToken=" in defined_url:
+                    get_token_list = defined_url.split("?")[1].split("&")
+                    token = \
+                    [item.split("nextPageToken=")[1] for item in get_token_list
+                     if "nextPageToken=" in item
+                     ][0]
+                else:
+                    token = next_token
+
+                if method.upper() == "POST":
+                    modify_payload: dict = endpoint.get_issue_search_payload
+                    if next_token is not None:
+                        modify_payload.update({"nextPageToken": next_token})
+                        endpoint.get_issue_search_payload = modify_payload
+                is_token_on = (defined_url.replace(
+                        f"nextPageToken={token}",
+                        f"nextPageToken={next_token}",
+                    1) if "nextPageToken=" in defined_url else
+                 defined_url + f"&nextPageToken={token}")
+
+                resp = (
+                    LOGIN.get(is_token_on)
+                    if method.upper() == "GET" else LOGIN.post(
+                    defined_url, payload=endpoint.get_issue_search_payload
+                    )
+                        )
+                if resp.status_code < 300:
+                    resp_obj = resp.json()
+        else:
+            raise JiraOneErrors(
+                "error","Failed to get issue data - {}".format(
+                    resp.text
+                )
+            )
+
+
+    return data_obj

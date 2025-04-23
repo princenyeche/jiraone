@@ -663,6 +663,8 @@ class EndPoints:
     """A Structural way to dynamically load urls that is fed
     to other functions."""
 
+    issue_payload: dict = None
+
     @classmethod
     def myself(cls) -> str:
         """Return data on your own user.
@@ -1238,6 +1240,16 @@ class EndPoints:
 
         :return: A string of the url
         """
+        from warnings import warn
+
+        current_api = LOGIN.api
+        if current_api is True:
+            warn("This endpoint has been deprecated for Jira Cloud, "
+                 "please use the newer endpoint `search_cloud_issues`. "
+                 "For more info on this deprecation, "
+                 "[see](https://developer.atlassian.com/cloud/jira/platform/changelog/#CHANGE-2046)",
+                 category=DeprecationWarning,
+                 stacklevel=2)
         return "{}/rest/api/{}/search?jql={}&startAt={}&maxResults={}".format(
             LOGIN.base_url,
             "3" if LOGIN.api is True else "latest",
@@ -1245,6 +1257,119 @@ class EndPoints:
             start_at,
             max_results,
         )
+
+    @classmethod
+    def search_cloud_issues(cls,
+                            query: str,
+                            next_page: str = None,
+                            max_results: int = 50,
+                            **kwargs: Any) -> str:
+        """
+            Searches for cloud issues using JQL. In order to send a POST request,
+            you must send a payload in the request body.
+            `See <https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-jql-post>`_
+
+
+            :param query: A search term using JQL with a bounded query
+                         E.g. ``assignee = currentUser() order by key``
+
+            :param next_page: A next page data URL.
+
+            :param max_results: A max result to return, default is 50 and
+                                max result is 5000
+
+            :param kwargs: Additional keyword arguments.
+
+                         **Acceptable arguments are**:
+                         * method - string values "GET" or "POST"
+                         * fields - list[str] defaults to "*all", you can use
+                                    "*all,-comment" - return all fields except
+                                     comments. Specify fields returned by name
+                         * expand - string defaults to None, you can use
+                                    "schema,names"
+                         * properties - string -A list of up to 5 issue
+                                        properties to include in the results
+                                        defaults to None
+                         * fields_by_keys - bool - Reference fields by their key
+                                        (rather than ID)
+                         * fail_fast - bool - Fail this request early if we
+                                     can't retrieve all field data. Only for GET request.
+                         * reconcile_issues - list[int] - Strong consistency
+                                          issue ids to be reconciled
+
+
+
+            .. _See
+            :return: A string of the url
+        """
+        from jiraone.utils import create_urls, validate_argument_name
+
+        method: str = kwargs.get("method", "GET")
+        fields: Union[str, list[str], None] = kwargs.get("fields", "*all")
+        expand: Union[str, None] = kwargs.get("expand", "schema,names")
+        properties: Union[str, list[str], None] = kwargs.get("properties", None)
+        fields_by_keys: bool = kwargs.get("fields_by_keys", False)
+        fail_fast: bool = kwargs.get("fail_fast", False)
+        reconcile_issues: Union[int, list[int], None] = kwargs.get(
+            "reconcile_issues", None)
+        field_names: list = ["method", "fields", "expand", "properties", "fields_by_keys",
+                       "reconcile_issues", "payload", "next_page",
+                       "query", "max_results", "fail_fast"]
+        for key, value in kwargs.items():
+            validate_argument_name(key, field_names)
+        if max_results < 1:
+            raise JiraOneErrors(
+                "error",
+                "The `max_results` argument cannot be "
+                "lesser than 1 item")
+        if max_results > 5000:
+            raise JiraOneErrors(
+                "error",
+                "The `max_results` argument cannot be "
+                "greater than 5000")
+        return (LOGIN.base_url + create_urls(
+            query=query,
+            method=method,
+            fields=fields,
+            expand=expand,
+            properties=properties,
+            fields_by_keys=fields_by_keys,
+            fail_fast=fail_fast,
+            reconcile_issues=reconcile_issues,
+            max_results=max_results,
+            next_page=next_page,
+        )
+                )
+
+
+    @property
+    def get_issue_search_payload(self) -> dict:
+        """
+        Returns a dict object of the ``endpoint.search_cloud_issues`` arguments
+        """
+        return self.issue_payload
+
+    @get_issue_search_payload.setter
+    def get_issue_search_payload(self, payload: dict) -> None:
+        """
+        Sets the POST request payload of ``endpoint.search_cloud_issues``
+        """
+        self.issue_payload = payload
+
+    @classmethod
+    def search_issue_count(cls) -> str:
+        """Returns a URL for JQL issue search count.
+        :request POST: The endpoint requires that you send a POST request
+                      with a payload in the request body.
+
+                  :body param:
+
+                    * jql - A search term using JQL in strings
+
+        :return: A string of the url
+        """
+        return LOGIN.base_url + "/rest/api/3/search/approximate-count"
+
 
     @classmethod
     def search_for_filters(cls, query: Optional[str] = None, start_at: int = 0) -> str:
