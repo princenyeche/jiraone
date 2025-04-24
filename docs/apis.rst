@@ -281,3 +281,13 @@ threads to start with by increasing the ``workers`` argument
 .. autofunction:: validate_on_error
 
 .. autofunction:: validate_argument_name
+
+.. autofunction:: check_is_type
+
+.. autofunction:: get_datetime_utcnow
+
+.. autofunction:: from_datetime_utcnow
+
+.. autofunction:: create_urls
+
+.. autofunction:: enhance_search
