@@ -22,21 +22,27 @@ class DotNotation(dict):
         """
          Initializes the data within this class.
 
-        .. code-block:: python
+        Example 1::
 
-             # for dict operation
-             my_dict = {"name": "John", "unit": 7}
-             notation =  DotNotation(my_dict)
-             print(notation.name)
-             # result
-             # >>> John
+        # for dict operation
+        my_dict = {"name": "John", "unit": 7}
+        notation =  DotNotation(my_dict)
+        print(notation.name)
 
-             # for list[dict] operations
-             my_dict = [{"name": "John", "unit": 7}, {"name": "Jane", "unit" 8}]
-             notation =  DotNotation(value=my_dict)
-             print(notation.value[0].name)
-             # result - access the list using index
-             # >>> John
+        # result
+
+        # John
+
+        Example 2::
+
+        # for list[dict] operations
+        my_dict = [{"name": "John", "unit": 7}, {"name": "Jane", "unit" 8}]
+        notation =  DotNotation(value=my_dict)
+        print(notation.value[0].name)
+
+        # result - access the list using index
+
+        # John
 
          :param args: Any argument
 
@@ -321,10 +327,10 @@ def validate_on_error(
 
 
 def validate_argument_name(
-    name_field: str, valid_args: t.Union[dict, list] = None
+    name_field: str, valid_args: t.Union[dict, list] = None,
 ):
     """
-    Validates the key word argument name and type of the argument
+    Validates the key word argument name of the argument
 
     :param name_field: The key word argument name
     :param valid_args: The values of arguments expected
@@ -556,6 +562,16 @@ def enhance_search(
     """
     from jiraone import endpoint, LOGIN
 
+    if not isinstance(defined_url, str):
+        raise JiraOneErrors(
+            "error", "The `defined_url` argument must "
+                     "be a string that is a valid URL."
+        )
+    if defined_url == "":
+        raise JiraOneErrors(
+            "error", "The `defined_url` argument "
+                     "must not be an empty string."
+        )
     data_obj: dict = {}
     # switch between GET or POST method automatically based on the provided
     # arguments.
@@ -580,17 +596,20 @@ def enhance_search(
         )
         if resp.status_code < 300:
             resp_obj = resp.json()
-            if "issues" in resp_obj:
-                issues = resp_obj["issues"]
-                if "issues" not in data_obj:
-                    data_obj["issues"] = issues
-
-            while "nextPageToken" in resp_obj:
+            def get_issues() -> None:
+                """
+                process the issue response
+                """
                 if "issues" in resp_obj:
                     issues = resp_obj["issues"]
+                    if "issues" not in data_obj:
+                        data_obj["issues"] = issues
                     if "issues" in data_obj:
                         data_obj["issues"] = data_obj["issues"] + issues
+            get_issues()
 
+            while "nextPageToken" in resp_obj:
+                get_issues()
                 next_token, token = resp_obj["nextPageToken"], None
                 if "nextPageToken=" in defined_url:
                     get_token_list = defined_url.split("?")[1].split("&")

@@ -663,7 +663,7 @@ class EndPoints:
     """A Structural way to dynamically load urls that is fed
     to other functions."""
 
-    issue_payload: dict = None
+    _issue_payload_: dict = None
 
     @classmethod
     def myself(cls) -> str:
@@ -1312,8 +1312,8 @@ class EndPoints:
         fail_fast: bool = kwargs.get("fail_fast", False)
         reconcile_issues: Union[int, list[int], None] = kwargs.get(
             "reconcile_issues", None)
-        field_names: list = ["method", "fields", "expand", "properties", "fields_by_keys",
-                       "reconcile_issues", "payload", "next_page",
+        field_names: list = ["method", "fields", "expand", "properties",
+                             "fields_by_keys", "reconcile_issues", "next_page",
                        "query", "max_results", "fail_fast"]
         for key, value in kwargs.items():
             validate_argument_name(key, field_names)
@@ -1347,14 +1347,14 @@ class EndPoints:
         """
         Returns a dict object of the ``endpoint.search_cloud_issues`` arguments
         """
-        return self.issue_payload
+        return self._issue_payload_
 
     @get_issue_search_payload.setter
     def get_issue_search_payload(self, payload: dict) -> None:
         """
         Sets the POST request payload of ``endpoint.search_cloud_issues``
         """
-        self.issue_payload = payload
+        self._issue_payload_ = payload
 
     @classmethod
     def search_issue_count(cls) -> str:

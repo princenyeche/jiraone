@@ -1,6 +1,6 @@
 [project]
 name = "jiraone"
-version = "v0.8.7"
+version = "v0.8.8"
 authors = [
     { name="Prince Nyeche", email="support@elfapp.website" },
 ]
@@ -53,7 +53,7 @@ namespaces = false
 
 [build-system]
 requires = [
-    "setuptools>=65",
+    "setuptools>=75",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"

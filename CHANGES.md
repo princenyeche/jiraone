@@ -1,5 +1,12 @@
 # Jira one change log
 
+**Release 0.8.8** - 2025-05-13
+
+Fixes:
+- Minor fixes in `jira.utils` module
+- Minor fixes in  `jira.management` module
+- Fix on `issue_export` function not working when `merge_files` argument is used
+
 
 **Release 0.8.7** - 2025-04-23
 

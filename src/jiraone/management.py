@@ -47,6 +47,7 @@ class UserManagement:
         self._domain_id_ = None
         self._policy_id_ = None
         self._event_id_ = None
+        self._obj_resp_ = None
 
     def get_user_permission(self, account_id: str, query: list = None) -> t.Any:
         """Returns the set of permissions you have for managing the
@@ -309,6 +310,8 @@ class UserManagement:
                 url = f"{self.LINK}/admin/v1/orgs"
                 resp = requests.get(url, headers=self.AUTH, **kwargs)
                 self._parse_data_obj(resp, types="org")
+                if resp.status_code > 300:
+                    self.obj_resp = resp.text
                 return resp
             elif org_id is not None and domain_id is None:
                 url = f"{self.LINK}/admin/v1/orgs/{org_id}"
@@ -323,6 +326,8 @@ class UserManagement:
                     url = f"{self.LINK}/admin/v1/orgs/{org_id}/domains"
                     resp = requests.get(url, headers=self.AUTH, **kwargs)
                     self._parse_data_obj(resp, types="domain")
+                    if resp.status_code > 300:
+                        self.obj_resp = resp.text
                     return resp
                 elif org_id is not None and domain_id is not None:
                     url = f"{self.LINK}/admin/v1/orgs/{org_id}/domains/{domain_id}"
@@ -333,6 +338,8 @@ class UserManagement:
                         url = f"{self.LINK}/admin/v1/orgs/{org_id}/events"
                         resp = requests.get(url, headers=self.AUTH, **kwargs)
                         self._parse_data_obj(resp, types="event")
+                        if resp.status_code > 300:
+                            self.obj_resp = resp.text
                         return resp
                     elif action is False and event_id is not None:
                         url = f"{self.LINK}/admin/v1/orgs/{org_id}/events/{event_id}"
@@ -352,6 +359,8 @@ class UserManagement:
                         url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies"
                         resp = requests.get(url, headers=self.AUTH, **kwargs)
                         self._parse_data_obj(resp, types="policy")
+                        if resp.status_code > 300:
+                            self.obj_resp = resp.text
                         return resp
                     elif policy_id is not None:
                         url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies/{policy_id}"
@@ -478,54 +487,64 @@ class UserManagement:
             )
 
     @property
-    def org_id(self):
+    def org_id(self) -> t.Union[str, None]:
         """Get property of organization id"""
         return self._org_id_
 
     @org_id.setter
-    def org_id(self, content):
+    def org_id(self, content) -> None:
         """Sets the value property of organization id"""
         self._org_id_ = content
 
     @property
-    def org_ids(self):
+    def org_ids(self) -> t.List[str, None]:
         """Get property of organization ids"""
         return self._org_ids_
 
     @org_ids.setter
-    def org_ids(self, content):
+    def org_ids(self, content) -> None:
         """Sets the value property of organization ids"""
         self._org_ids_ = content
 
     @property
-    def domain_id(self):
+    def domain_id(self) -> t.Union[str, None]:
         """Get property of organization domain id"""
         return self._domain_id_
 
     @domain_id.setter
-    def domain_id(self, content):
+    def domain_id(self, content) -> None:
         """Sets the value property of organization domain id"""
         self._domain_id_ = content
 
     @property
-    def policy_id(self):
+    def policy_id(self) -> t.Union[str, None]:
         """Get property of organization  policy id"""
         return self._policy_id_
 
     @policy_id.setter
-    def policy_id(self, content):
+    def policy_id(self, content) -> None:
         """Sets the value property of organization policy id"""
         self._policy_id_ = content
 
     @property
-    def event_id(self):
+    def event_id(self) -> t.Union[str, None]:
         """Get property of organization  event id"""
         return self._event_id_
 
     @event_id.setter
-    def event_id(self, content):
+    def event_id(self, content) -> None:
         """Sets the value property of organization event id"""
         self._event_id_ = content
+
+    @property
+    def obj_resp(self) -> t.Any:
+        """Get object response from API"""
+        return self._obj_resp_
+
+    @obj_resp.setter
+    def obj_resp(self, content) -> None:
+        """Sets the object response from API"""
+        self._obj_resp_ = content
 
     def __repr__(self):
         return f"<JiraOne: {self.LINK} \n" f"This API is accessible>"
@@ -611,7 +630,9 @@ class UserManagement:
             raise JiraOneErrors(
                 "warning",
                 "Your connection has failed. "
-                "Please check the response to see the reason!",
+                "Please check the response to see the reason! - {}".format(
+                    self.obj_resp
+                ),
             )
 
     def get_all_users(self, source, detail: bool = False) -> deque:
