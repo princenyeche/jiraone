@@ -497,7 +497,7 @@ class UserManagement:
         self._org_id_ = content
 
     @property
-    def org_ids(self) -> t.List[str, None]:
+    def org_ids(self) -> t.Any:
         """Get property of organization ids"""
         return self._org_ids_
 
