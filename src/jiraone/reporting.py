@@ -3995,11 +3995,7 @@ class Projects:
             validate_query,
         ) = (
             0,
-            0 if LOGIN.api is False else LOGIN.post(
-                endpoint.search_issue_count(), payload={
-                    "jql": jql
-                }
-            ).json()["count"],
+            0,
             LOGIN.get(endpoint.search_issues_jql(jql)
                 if LOGIN.api is False else
                 endpoint.search_cloud_issues(jql)),
@@ -7455,11 +7451,7 @@ class Projects:
             total,
             validate_query,
         ) = (
-            0 if LOGIN.api is False else LOGIN.post(
-                endpoint.search_issue_count(), payload={
-                    "jql": jql
-                }
-            ).json()["count"],
+            0,
             LOGIN.get(endpoint.search_issues_jql(jql)
                       if LOGIN.api is False else
                       endpoint.search_cloud_issues(jql)
