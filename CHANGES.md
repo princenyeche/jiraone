@@ -1,6 +1,6 @@
 # Jira one change log
 
-**Release 0.8.8** - 2025-05-13
+**Release 0.8.8** - 2025-05-12
 
 Fixes:
 - Minor fixes in `jira.utils` module
