@@ -1,5 +1,11 @@
 # Jira one change log
 
+**Release 0.8.9** - 2025-05-12
+
+Fixes:
+- Fix to typing error in `jira.management` module
+
+
 **Release 0.8.8** - 2025-05-12
 
 Fixes:
