@@ -327,7 +327,7 @@ def validate_on_error(
 
 
 def validate_argument_name(
-    name_field: str, valid_args: t.Union[dict, list] = None,
+    name_field: str, valid_args: t.Union[dict, list] = None
 ):
     """
     Validates the key word argument name of the argument
