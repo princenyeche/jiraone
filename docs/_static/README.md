@@ -1,1 +1,1 @@
-Place static files used by the documentation here
+Place static files used by the documentation here.
