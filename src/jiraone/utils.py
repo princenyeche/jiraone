@@ -509,7 +509,6 @@ def create_urls(**kwargs: t.Any) -> str:
 def enhance_search(
         defined_url: str,
         method: str = "GET",
-        limit: int = 5000,
 ) -> dict:
     """Performs a search of issues keeping the payload mechanism looking like
     the old API for search, while retaining the new features of search in Cloud.
@@ -568,8 +567,6 @@ def enhance_search(
       # {"total": 123, "issues": [...] }
 
 
-    :param limit: maximum number of results to return, defaults to 5000.
-
     :return: A dictionary with the results of the search
     """
     from jiraone import endpoint, LOGIN
@@ -585,7 +582,6 @@ def enhance_search(
                      "must not be an empty string."
         )
     data_obj: dict = {}
-    issue_count = 0
     # switch between GET or POST method automatically based on the provided
     # arguments.
     if "?" in defined_url:
@@ -652,10 +648,6 @@ def enhance_search(
                         )
                 if resp.status_code < 300:
                     resp_obj = resp.json()
-
-                if issue_count >= limit:
-                    break
-                issue_count += 1
         else:
             raise JiraOneErrors(
                 "error","Failed to get issue data - {}".format(

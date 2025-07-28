@@ -1,5 +1,11 @@
 # Jira one change log
 
+**Release 0.9.1** - 2025-07-29
+Update:
+- License file update
+- Removed new argument from enhance_search
+
+
 **Release 0.9.0** - 2025-07-28
 
 Fixes:
