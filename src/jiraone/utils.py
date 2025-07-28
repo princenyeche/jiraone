@@ -171,8 +171,9 @@ class DateFormat:
 
 
 def convert_to_local_time(
-    tzinfo: str = None, ahead: int = 0, use_format: str = None, sep: str = "T"
-) -> tuple:
+    tzinfo: str = None, ahead: int = 0, use_format: str = None,
+        sep: str = "T", curr_time: bool = True
+) -> t.Union[tuple, str]:
     """Converts from any time to user time given data extracted from
     user timezone
 
@@ -207,6 +208,9 @@ def convert_to_local_time(
     :param sep: A separator string, used to separate date, time and
                datetime values
 
+    :param curr_time: Whether the output should be current time or time
+                      that should be converted to local time.
+
     :return: tuple of date, time, and datetime all in strings
     """
 
@@ -226,7 +230,11 @@ def convert_to_local_time(
             if int(hour_or_min[0]) == 0
             else int(f"{hour_or_min[0]}{hour_or_min[1]}")
         )
-        current_time = dt.now(timezone.utc)  # noqa
+        get_time_info = tzinfo.split("GMT")[0].rstrip(" ")
+        current_time = (dt.now(timezone.utc)  # noqa
+                        if curr_time is True
+                        else from_datetime_utcnow(
+            get_time_info, "%a %b %d %Y %H:%M:%S"))
         if int(hour_or_min[2]) != 0:
             min_hand = 30
             if sign == "-":
@@ -261,12 +269,12 @@ def convert_to_local_time(
             else use_format
         )
     )
-    (mk_date, mk_time, mk_full) = (
+    partition = (
         datetime_string.split(sep)[0],
-        datetime_string.split(sep)[1].split(".")[0],
+        datetime_string.split(sep)[1],
         datetime_string,
-    )
-    return mk_date, mk_time, mk_full
+    ) if curr_time is True else datetime_string
+    return partition
 
 
 def validate_on_error(
@@ -501,6 +509,7 @@ def create_urls(**kwargs: t.Any) -> str:
 def enhance_search(
         defined_url: str,
         method: str = "GET",
+        limit: int = 5000,
 ) -> dict:
     """Performs a search of issues keeping the payload mechanism looking like
     the old API for search, while retaining the new features of search in Cloud.
@@ -558,6 +567,9 @@ def enhance_search(
       # output
       # {"total": 123, "issues": [...] }
 
+
+    :param limit: maximum number of results to return, defaults to 5000.
+
     :return: A dictionary with the results of the search
     """
     from jiraone import endpoint, LOGIN
@@ -573,6 +585,7 @@ def enhance_search(
                      "must not be an empty string."
         )
     data_obj: dict = {}
+    issue_count = 0
     # switch between GET or POST method automatically based on the provided
     # arguments.
     if "?" in defined_url:
@@ -639,6 +652,10 @@ def enhance_search(
                         )
                 if resp.status_code < 300:
                     resp_obj = resp.json()
+
+                if issue_count >= limit:
+                    break
+                issue_count += 1
         else:
             raise JiraOneErrors(
                 "error","Failed to get issue data - {}".format(

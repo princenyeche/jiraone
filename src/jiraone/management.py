@@ -309,9 +309,9 @@ class UserManagement:
             if org_id is None and domain_id is None:
                 url = f"{self.LINK}/admin/v1/orgs"
                 resp = requests.get(url, headers=self.AUTH, **kwargs)
-                self._parse_data_obj(resp, types="org")
                 if resp.status_code > 300:
                     self.obj_resp = resp.text
+                self._parse_data_obj(resp, types="org")
                 return resp
             elif org_id is not None and domain_id is None:
                 url = f"{self.LINK}/admin/v1/orgs/{org_id}"
@@ -325,9 +325,9 @@ class UserManagement:
                 if org_id is not None and domain_id is None:
                     url = f"{self.LINK}/admin/v1/orgs/{org_id}/domains"
                     resp = requests.get(url, headers=self.AUTH, **kwargs)
-                    self._parse_data_obj(resp, types="domain")
                     if resp.status_code > 300:
                         self.obj_resp = resp.text
+                    self._parse_data_obj(resp, types="domain")
                     return resp
                 elif org_id is not None and domain_id is not None:
                     url = f"{self.LINK}/admin/v1/orgs/{org_id}/domains/{domain_id}"
@@ -337,9 +337,9 @@ class UserManagement:
                     if action is False and event_id is None:
                         url = f"{self.LINK}/admin/v1/orgs/{org_id}/events"
                         resp = requests.get(url, headers=self.AUTH, **kwargs)
-                        self._parse_data_obj(resp, types="event")
                         if resp.status_code > 300:
                             self.obj_resp = resp.text
+                        self._parse_data_obj(resp, types="event")
                         return resp
                     elif action is False and event_id is not None:
                         url = f"{self.LINK}/admin/v1/orgs/{org_id}/events/{event_id}"
@@ -358,9 +358,9 @@ class UserManagement:
                     if policy_id is None:
                         url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies"
                         resp = requests.get(url, headers=self.AUTH, **kwargs)
-                        self._parse_data_obj(resp, types="policy")
                         if resp.status_code > 300:
                             self.obj_resp = resp.text
+                        self._parse_data_obj(resp, types="policy")
                         return resp
                     elif policy_id is not None:
                         url = f"{self.LINK}/admin/v1/orgs/{org_id}/policies/{policy_id}"
