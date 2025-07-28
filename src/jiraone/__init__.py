@@ -37,7 +37,7 @@ from jiraone.reporting import (
 from jiraone.management import manage
 
 __author__ = "Prince Nyeche"
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 __all__ = [
     "LOGIN",
     "endpoint",
