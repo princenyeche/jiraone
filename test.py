@@ -351,6 +351,32 @@ class JiraOne(unittest.TestCase):
             self.assertTrue(download_count >= 3, "Attachment download failed")
             delete_attachments(search=self.key_issues)
 
+    def test_for_enhance_search(self):
+        """Test for the enhance_search"""
+        if __version__ >= "0.9.2":
+            from jiraone.utils import enhance_search
+            from jiraone.exceptions import JiraOneErrors
+
+            jql = "project in (IP, AT2) AND order by createdDate DESC"
+            search_post = enhance_search(
+                endpoint.search_cloud_issues(jql, method="POST", fields=None),
+                method="POST")
+            self.assertTrue(search_post.status_code < 300,
+                            "POST request for enhance search failed")
+
+            search_get = enhance_search(
+                endpoint.search_cloud_issues(jql, fields=None))
+            self.assertTrue(search_get.status_code < 300,
+                            "GET request for enhance search failed")
+
+            try:
+                enhance_search(
+                    endpoint.search_cloud_issues(jql, fields=None),
+                    limit=100)
+            except JiraOneErrors as err:
+                self.assertIsInstance(err, JiraOneErrors,
+                                      "Enhance search limit failed")
+
     def uploader(self) -> bool:
         """uploader function"""
         count = 0
