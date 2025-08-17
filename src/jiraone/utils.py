@@ -509,6 +509,7 @@ def create_urls(**kwargs: t.Any) -> str:
 def enhance_search(
         defined_url: str,
         method: str = "GET",
+        limit: int = None,
 ) -> dict:
     """Performs a search of issues keeping the payload mechanism looking like
     the old API for search, while retaining the new features of search in Cloud.
@@ -566,6 +567,22 @@ def enhance_search(
       # output
       # {"total": 123, "issues": [...] }
 
+    :param limit: A limit to the amount of results to return
+
+    Example 4::
+
+      from jiraone.utils import enhance_search
+      from jiraone import endpoint, LOGIN
+
+      # auth process here
+      jql = "project = IT AND order by createdDate DESC"
+      url = "https://yoursite.atlassian.net/rest/api/3/search/jql"
+      search = enhance_search(endpoint.search_cloud_issues(
+      jql, method="POST", fields=*all), method="POST", limit=110)
+      print(search)
+      # output 110 items returned instead of total 123
+      # {"total": 123, "issues": [...], "limit": 110 }
+
 
     :return: A dictionary with the results of the search
     """
@@ -581,6 +598,17 @@ def enhance_search(
             "error", "The `defined_url` argument "
                      "must not be an empty string."
         )
+    if limit is not None:
+        if not isinstance(limit, int):
+            raise JiraOneErrors(
+                "error",
+                "The `limit` argument must be an integer."
+            )
+        if limit <= 100:
+            raise JiraOneErrors(
+                "error",
+                "The `limit` argument must be an integer greater than 100"
+            )
     data_obj: dict = {}
     # switch between GET or POST method automatically based on the provided
     # arguments.
@@ -613,12 +641,11 @@ def enhance_search(
                     issues = resp_obj["issues"]
                     if "issues" not in data_obj:
                         data_obj["issues"] = issues
-                    if "issues" in data_obj:
+                    elif "issues" in data_obj:
                         data_obj["issues"] = data_obj["issues"] + issues
-            get_issues()
 
+            get_issues()
             while "nextPageToken" in resp_obj:
-                get_issues()
                 next_token, token = resp_obj["nextPageToken"], None
                 if "nextPageToken=" in defined_url:
                     get_token_list = defined_url.split("?")[1].split("&")
@@ -648,6 +675,7 @@ def enhance_search(
                         )
                 if resp.status_code < 300:
                     resp_obj = resp.json()
+                    get_issues()
         else:
             raise JiraOneErrors(
                 "error","Failed to get issue data - {}".format(
@@ -655,5 +683,8 @@ def enhance_search(
                 )
             )
 
-
+    if limit is not None:
+        if len(data_obj["issues"]) > limit:
+            data_obj["issues"] = data_obj["issues"][:limit]
+            data_obj["limit"] = limit
     return data_obj

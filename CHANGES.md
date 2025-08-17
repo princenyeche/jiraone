@@ -1,5 +1,10 @@
 # Jira one change log
 
+**Release 0.9.2** - 2025-08-17
+Fixes::
+- 🐛An issue with enhance_search returning duplicated results
+
+
 **Release 0.9.1** - 2025-07-29
 Update:
 - License file update
