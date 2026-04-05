@@ -2940,7 +2940,7 @@ class Projects:
                   Example::
 
                      # previous statements
-                     my_files = ["file1.csv", "file2.csv", file3.csv"]
+                     my_files = ["file1.csv", "file2.csv", "file3.csv"]
                      PROJECT.export_issues(merge_files=my_files)
 
                   When merge_files argument is used, it overrides other
