@@ -1,5 +1,10 @@
 # Jira one change log
 
+**Release 0.9.4** - 2026-04-09
+Update:
+- Documentation correction
+
+
 **Release 0.9.3** - 2025-10-15
 Update:
 - An update to API in `jira.management` module
